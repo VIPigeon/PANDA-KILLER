@@ -158,7 +158,8 @@ function player.update(self)
     if not is_on_ground and self.velocity.y <= 0 and self.was_on_ground_last_frame then
        self.coyote_time = PLAYER_COYOTE_TIME
     end
-    if btnp(BUTTON_UP) or btnp(BUTTON_A) then
+    local jump_inputted = btnp(BUTTON_UP) or btnp(BUTTON_A)
+    if jump_inputted then
        if self.coyote_time > 0.0 then
           self.velocity.y = PLAYER_JUMP_STRENGTH
           self.coyote_time = 0.0
@@ -172,6 +173,36 @@ function player.update(self)
        self.coyote_time = 0.0
        self.jump_buffer_time = 0.0
     end
+
+    local line_to_left = {
+        x1 = hitbox_left(self) - 1,
+        y1 = hitbox_bottom(self) - 2,
+        x2 = hitbox_left(self) - 1,
+        y2 = hitbox_top(self) + 1,
+    }
+    local is_on_left_wall, _, _ = check_vertical_line_tilemap_collision(line_to_left)
+    if is_on_left_wall and self.velocity.y < 0 and jump_inputted then
+        self.velocity.y = PLAYER_JUMP_STRENGTH
+        self.coyote_time = 0.0
+        self.jump_buffer_time = 0.0
+    end
+
+    local line_to_right = {
+        x1 = hitbox_right(self),
+        y1 = hitbox_bottom(self) - 2,
+        x2 = hitbox_right(self),
+        y2 = hitbox_top(self) + 1,
+    }
+    local is_on_right, _, _ = check_vertical_line_tilemap_collision(line_to_right)
+    if is_on_right and self.velocity.y < 0 and jump_inputted then
+        self.velocity.y = PLAYER_JUMP_STRENGTH
+        self.coyote_time = 0.0
+        self.jump_buffer_time = 0.0
+    end
+
+    --local is_hitting_right, _, _ = check_vertical_line_tilemap_collision(line_to_the_right_of_hitbox(self))
+    --if is_hitting_right and then
+    --end
 
     if self.velocity.x > 0 then
         self.looking_left = false
@@ -226,7 +257,7 @@ function player.update(self)
 end
 
 function player.draw(self)
-    local colorkey = -1
+    local colorkey = 0
     local scale = 1
     local flip = self.looking_left and 1 or 0
     spr(257, self.x, self.y, colorkey, scale, flip)
