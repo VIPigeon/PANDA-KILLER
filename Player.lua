@@ -2,7 +2,9 @@
 -- https://2dengine.com/doc/platformers.html
 --
 -- Всё измеряется в пикселях / секундах
-PLAYER_HORIZONTAL_SPEED = 80.0
+PLAYER_MAX_HORIZONTAL_SPEED = 80.0
+PLAYER_HORIZONTAL_ACCELERATION = 1000.0
+PLAYER_FRICTION = 0.3
 
 PLAYER_COYOTE_TIME = 0.15
 PLAYER_JUMP_BUFFER_TIME = 0.23
@@ -11,6 +13,9 @@ PLAYER_JUMP_HEIGHT  = 24
 PLAYER_TIME_TO_APEX = 0.33
 PLAYER_GRAVITY = (2 * PLAYER_JUMP_HEIGHT) / (PLAYER_TIME_TO_APEX * PLAYER_TIME_TO_APEX)
 PLAYER_JUMP_STRENGTH = math.sqrt(2 * PLAYER_GRAVITY * PLAYER_JUMP_HEIGHT)
+
+PLAYER_SLIDE_SPEED = 40.0
+
 
 local player = {
     x = 0,
@@ -29,14 +34,12 @@ local player = {
     coyote_time = 0.0,
     jump_buffer_time = 0.0,
 
+    stuck_to_left_wall = false,
+    stuck_to_right_wall = false,
+
     looking_left = false,
     was_on_ground_last_frame = false,
 }
-
-local function trace_hitbox(hitbox)
-    trace('x = ' .. hitbox.x .. ' y = ' .. hitbox.y .. ' w = ' .. hitbox.w .. ' h = ' .. hitbox.h)
-end
-
 
 -- Одной из проблем в бумеранге было то, что координаты
 -- объекта (x, y) нужно было постоянно копировать в hitbox,
@@ -54,40 +57,8 @@ end
 local function hitbox_right(something_with_hitbox)
     return hitbox_left(something_with_hitbox) + something_with_hitbox.hitbox.width
 end
-local function line_under_hitbox(something_with_hitbox)
-    -- Помню как выделения памяти из-за таблиц были большой проблемой.
-    -- Теперь страшно их делать 😖
-    return {
-        x1 = hitbox_left(something_with_hitbox),
-        y1 = hitbox_bottom(something_with_hitbox),
-        x2 = hitbox_right(something_with_hitbox) - 1,
-        y2 = hitbox_bottom(something_with_hitbox),
-    }
-end
-local function line_to_the_top_of_hitbox(something_with_hitbox)
-    return {
-        x1 = hitbox_left(something_with_hitbox),
-        y1 = hitbox_top(something_with_hitbox),
-        x2 = hitbox_right(something_with_hitbox) - 1,
-        y2 = hitbox_top(something_with_hitbox),
-    }
-end
-local function line_to_the_right_of_hitbox(something_with_hitbox)
-    return {
-        x1 = hitbox_right(something_with_hitbox),
-        y1 = hitbox_bottom(something_with_hitbox) - 2,
-        x2 = hitbox_right(something_with_hitbox),
-        y2 = hitbox_top(something_with_hitbox) + 1,
-    }
-end
-local function line_to_the_left_of_hitbox(something_with_hitbox)
-    return {
-        x1 = hitbox_left(something_with_hitbox),
-        y1 = hitbox_bottom(something_with_hitbox) - 2,
-        x2 = hitbox_left(something_with_hitbox),
-        y2 = hitbox_top(something_with_hitbox) + 1,
-    }
-end
+
+
 
 -- TODO: Эту документацию нужно куда-то выделить
 --
@@ -110,46 +81,6 @@ local function tile_to_world(x, y)
     return world_x, world_y
 end
 
-local function check_point_tilemap_collision(world_x, world_y)
-    local tile_x, tile_y = world_to_tile(world_x, world_y)
-    local tile = mget(tile_x, tile_y)
-    return tile == 1
-end
-
--- Оригинально... Нужна отдельно горизонтальная и вертикальная линии
-local function check_horizontal_line_tilemap_collision(line)
-    if check_point_tilemap_collision(line.x1, line.y1) then
-        return true, line.x1, line.y1
-    elseif check_point_tilemap_collision(line.x2, line.y1) then
-        return true, line.x2, line.y1
-    end
-
-    local x = line.x1 + 8
-    while x <= line.x2 do
-        if check_point_tilemap_collision(x, line.y1) then
-            return true, x, line.y1
-        end
-        x = x + 8
-    end
-    return false, nil, nil
-end
-
-local function check_vertical_line_tilemap_collision(line)
-    if check_point_tilemap_collision(line.x1, line.y1) then
-        return true, line.x1, line.y1
-    elseif check_point_tilemap_collision(line.x1, line.y2) then
-        return true, line.x1, line.y2
-    end
-
-    local y = line.y1 + 8
-    while y <= line.y2 do
-        if check_point_tilemap_collision(line.x1, y) then
-            return true, line.x1, y
-        end
-        y = y + 8
-    end
-    return false, nil, nil
-end
 
 
 local function is_tile_solid(tile_id)
@@ -226,39 +157,67 @@ local function check_collision_hitbox_tilemap(hitbox)
     return nil
 end
 
+local function clamp(x, lo, hi)
+    if x < lo then
+        return lo
+    elseif x > hi then
+        return hi
+    else
+        return x
+    end
+end
 
-
-
+local function trace_hitbox(hitbox)
+    trace('x = ' .. hitbox.x .. ' y = ' .. hitbox.y .. ' w = ' .. hitbox.w .. ' h = ' .. hitbox.h)
+end
 
 function player.update(self)
-    self.velocity.x = 0
+    local is_on_ground = check_collision_hitbox_tilemap(hitbox_as_if_it_was_at(self.hitbox, self.x, self.y + 1)) ~= nil
+
     if btn(BUTTON_RIGHT) then
-        self.velocity.x = self.velocity.x + PLAYER_HORIZONTAL_SPEED
+        self.velocity.x = self.velocity.x + PLAYER_HORIZONTAL_ACCELERATION * Time.dt()
     elseif btn(BUTTON_LEFT) then
-        self.velocity.x = self.velocity.x - PLAYER_HORIZONTAL_SPEED
+        self.velocity.x = self.velocity.x - PLAYER_HORIZONTAL_ACCELERATION * Time.dt()
+    else
+        if is_on_ground then
+            self.velocity.x = self.velocity.x - self.velocity.x * PLAYER_FRICTION
+        else
+            -- Типа в воздухе другое сопротивление 💨
+            -- Не знаю, на сколько это нужно 😅
+            self.velocity.x = self.velocity.x - 0.5 * self.velocity.x * PLAYER_FRICTION
+        end
     end
+
+    self.velocity.x = clamp(self.velocity.x, -PLAYER_MAX_HORIZONTAL_SPEED, PLAYER_MAX_HORIZONTAL_SPEED)
+
     if self.velocity.x > 0 then
         self.looking_left = false
     elseif self.velocity.x < 0 then
         self.looking_left = true
     end
 
-    local is_on_ground, cx, cy = check_horizontal_line_tilemap_collision(line_under_hitbox(self))
     if not is_on_ground and self.velocity.y <= 0 and self.was_on_ground_last_frame then
        self.coyote_time = PLAYER_COYOTE_TIME
     end
     local jump_inputted = btnp(BUTTON_UP) or btnp(BUTTON_A)
     if jump_inputted then
-       if self.coyote_time > 0.0 then
-          self.velocity.y = PLAYER_JUMP_STRENGTH
-          self.coyote_time = 0.0
-          self.jump_buffer_time = 0.0
-       else
-          self.jump_buffer_time = PLAYER_JUMP_BUFFER_TIME
-       end
+      self.jump_buffer_time = PLAYER_JUMP_BUFFER_TIME
     end
-    if is_on_ground and self.jump_buffer_time > 0.0 and self.velocity.y <= 0 then
-       self.velocity.y = PLAYER_JUMP_STRENGTH
+
+    if (is_on_ground and self.jump_buffer_time > 0.0 and self.velocity.y <= 0) or
+       (self.jump_buffer_time > 0.0 and self.coyote_time > 0.0) or
+       (self.jump_buffer_time > 0.0 and self.stuck_to_left_wall) or
+       (self.jump_buffer_time > 0.0 and self.stuck_to_right_wall)
+    then
+       if self.stuck_to_left_wall then
+           self.velocity.y = PLAYER_JUMP_STRENGTH
+           self.velocity.x = PLAYER_JUMP_STRENGTH
+       elseif self.stuck_to_right_wall then
+           self.velocity.y = PLAYER_JUMP_STRENGTH
+           self.velocity.x = -1 * PLAYER_JUMP_STRENGTH
+       else
+           self.velocity.y = PLAYER_JUMP_STRENGTH
+       end
        self.coyote_time = 0.0
        self.jump_buffer_time = 0.0
     end
@@ -266,6 +225,22 @@ function player.update(self)
         self.velocity.y = self.velocity.y - PLAYER_GRAVITY * Time.dt()
     end
     self.was_on_ground_last_frame = is_on_ground
+
+    local sticking_to_left_wall = check_collision_hitbox_tilemap(hitbox_as_if_it_was_at(self.hitbox, self.x - 1, self.y))
+    if self.velocity.x < 0 and not is_on_ground and sticking_to_left_wall ~= nil then
+        self.stuck_to_left_wall = true
+        self.velocity.y = -1 * PLAYER_SLIDE_SPEED
+    elseif self.stuck_to_left_wall and self.velocity.x > 0 then
+        self.stuck_to_left_wall = false
+    end
+
+    local sticking_to_right_wall = check_collision_hitbox_tilemap(hitbox_as_if_it_was_at(self.hitbox, self.x + self.hitbox.offset_x + self.hitbox.width, self.y))
+    if self.velocity.x > 0 and not is_on_ground and sticking_to_right_wall ~= nil then
+        self.stuck_to_right_wall = true
+        self.velocity.y = -1 * PLAYER_SLIDE_SPEED
+    elseif self.stuck_to_right_wall and self.velocity.x < 0 then
+        self.stuck_to_right_wall = false
+    end
 
     local desired_x = self.x + self.velocity.x * Time.dt()
     local hitbox_after_x_move = combine_hitboxes(
@@ -275,7 +250,6 @@ function player.update(self)
     local horizontal_collision = check_collision_hitbox_tilemap(hitbox_after_x_move)
     if horizontal_collision ~= nil then
         -- desired_x is busted 💣
-        --trace('what: ' .. ' x = ' .. desired_x .. ' cx = ' .. horizontal_collision.x)
         local going_to_the_right = self.velocity.x > 0
         if going_to_the_right then
             desired_x = horizontal_collision.x - self.hitbox.width - self.hitbox.offset_x
@@ -287,6 +261,7 @@ function player.update(self)
 
     local desired_y = self.y - self.velocity.y * Time.dt()
     local hitbox_after_y_move = hitbox_as_if_it_was_at(self.hitbox, self.x, desired_y)
+    -- Вот этот код более правильный, но с ним другая проблема... 😡
     --combine_hitboxes(
     --    hitbox_as_if_it_was_at(self.hitbox, self.x, self.y),
     --    hitbox_as_if_it_was_at(self.hitbox, self.x, desired_y)
@@ -294,7 +269,6 @@ function player.update(self)
     local vertical_collision = check_collision_hitbox_tilemap(hitbox_after_y_move)
     if vertical_collision ~= nil then
         -- desired_y is busted 💣
-        --trace('what: ' .. ' x = ' .. desired_x .. ' cx = ' .. vertical_collision.x)
         local flying_down = self.velocity.y < 0
         if flying_down then
             desired_y = vertical_collision.y - self.hitbox.height
@@ -304,8 +278,6 @@ function player.update(self)
         self.velocity.y = 0
     end
 
-    --trace_hitbox(hitbox_after_y_move)
-    --trace('px = ' .. self.x .. ' dx = ' .. desired_x .. ' py = ' .. self.y .. ' dy = ' .. desired_y)
     self.x = desired_x
     self.y = desired_y
 
@@ -318,7 +290,7 @@ function player.draw(self)
     local scale = 1
     local flip = self.looking_left and 1 or 0
     spr(257, self.x, self.y, colorkey, scale, flip)
-    rect(self.x + self.hitbox.offset_x, self.y + self.hitbox.offset_y, self.hitbox.width, self.hitbox.height, 2)
+    --rect(self.x + self.hitbox.offset_x, self.y + self.hitbox.offset_y, self.hitbox.width, self.hitbox.height, 2)
 end
 
 return player
