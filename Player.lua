@@ -16,7 +16,6 @@ PLAYER_JUMP_STRENGTH = math.sqrt(2 * PLAYER_GRAVITY * PLAYER_JUMP_HEIGHT)
 
 PLAYER_SLIDE_SPEED = 40.0
 
-
 local player = {
     x = 0,
     y = 40,
@@ -123,6 +122,11 @@ local function check_collision_hitbox_tilemap(hitbox)
     local tile_x = x // 8
     local tile_y = y // 8
 
+    local tile_x1 = x // 8
+    local tile_y1 = y // 8
+    local tile_x2 = x2 // 8
+    local tile_y2 = y2 // 8
+
     while y <= y2 do
         while x <= x2 do
             local tile_id = mget(tile_x, tile_y)
@@ -144,14 +148,16 @@ local function check_collision_hitbox_tilemap(hitbox)
         tile_x = x // 8
     end
 
-    local tile_x2 = x2 // 8
-    local tile_y2 = y2 // 8
-    local tile_id = mget(tile_x2, tile_y2)
-    if is_tile_solid(tile_id) then
-        return {
-            x = 8 * tile_x2,
-            y = 8 * tile_y2,
-        }
+    if is_tile_solid(mget(tile_x2, tile_y1)) then
+        return { x = 8 * tile_x2, y = 8 * tile_y1 }
+    end
+
+    if is_tile_solid(mget(tile_x1, tile_y2)) then
+        return { x = 8 * tile_x1, y = 8 * tile_y2 }
+    end
+
+    if is_tile_solid(mget(tile_x2, tile_y2)) then
+        return { x = 8 * tile_x2, y = 8 * tile_y2 }
     end
 
     return nil
@@ -171,8 +177,26 @@ local function trace_hitbox(hitbox)
     trace('x = ' .. hitbox.x .. ' y = ' .. hitbox.y .. ' w = ' .. hitbox.w .. ' h = ' .. hitbox.h)
 end
 
+local debug_rects = {}
+
 function player.update(self)
-    local is_on_ground = check_collision_hitbox_tilemap(hitbox_as_if_it_was_at(self.hitbox, self.x, self.y + 1)) ~= nil
+    local ground_collision = check_collision_hitbox_tilemap(hitbox_as_if_it_was_at(self.hitbox, self.x, self.y + 1))
+    local is_on_ground = ground_collision ~= nil
+    if is_on_ground then
+        table.insert(debug_rects, { x = ground_collision.x, y = ground_collision.y, w = 8, h = 8 })
+    end
+
+    local collision_to_the_left = check_collision_hitbox_tilemap(hitbox_as_if_it_was_at(self.hitbox, self.x - 1, self.y))
+    local hugging_left_wall = collision_to_the_left ~= nil
+    if hugging_left_wall then
+        table.insert(debug_rects, { x = collision_to_the_left.x, y = collision_to_the_left.y, w = 8, h = 8 })
+    end
+
+    local collision_to_the_right = check_collision_hitbox_tilemap(hitbox_as_if_it_was_at(self.hitbox, self.x + 1, self.y))
+    local hugging_right_wall = collision_to_the_right ~= nil
+    if hugging_right_wall then
+        table.insert(debug_rects, { x = collision_to_the_right.x, y = collision_to_the_right.y, w = 8, h = 8 })
+    end
 
     if btn(BUTTON_RIGHT) then
         self.velocity.x = self.velocity.x + PLAYER_HORIZONTAL_ACCELERATION * Time.dt()
@@ -209,10 +233,10 @@ function player.update(self)
        (self.jump_buffer_time > 0.0 and self.stuck_to_left_wall) or
        (self.jump_buffer_time > 0.0 and self.stuck_to_right_wall)
     then
-       if self.stuck_to_left_wall then
+       if not is_on_ground and self.stuck_to_left_wall then
            self.velocity.y = PLAYER_JUMP_STRENGTH
            self.velocity.x = PLAYER_JUMP_STRENGTH
-       elseif self.stuck_to_right_wall then
+       elseif not is_on_ground and self.stuck_to_right_wall then
            self.velocity.y = PLAYER_JUMP_STRENGTH
            self.velocity.x = -1 * PLAYER_JUMP_STRENGTH
        else
@@ -226,19 +250,17 @@ function player.update(self)
     end
     self.was_on_ground_last_frame = is_on_ground
 
-    local sticking_to_left_wall = check_collision_hitbox_tilemap(hitbox_as_if_it_was_at(self.hitbox, self.x - 1, self.y))
-    if self.velocity.x < 0 and not is_on_ground and sticking_to_left_wall ~= nil then
+    if hugging_left_wall and self.velocity.x < 0 and self.velocity.y < 0 then
         self.stuck_to_left_wall = true
         self.velocity.y = -1 * PLAYER_SLIDE_SPEED
-    elseif self.stuck_to_left_wall and self.velocity.x > 0 then
+    elseif self.velocity.x > 0 then
         self.stuck_to_left_wall = false
     end
 
-    local sticking_to_right_wall = check_collision_hitbox_tilemap(hitbox_as_if_it_was_at(self.hitbox, self.x + self.hitbox.offset_x + self.hitbox.width, self.y))
-    if self.velocity.x > 0 and not is_on_ground and sticking_to_right_wall ~= nil then
+    if hugging_right_wall and self.velocity.x > 0 and self.velocity.y < 0 then
         self.stuck_to_right_wall = true
         self.velocity.y = -1 * PLAYER_SLIDE_SPEED
-    elseif self.stuck_to_right_wall and self.velocity.x < 0 then
+    elseif self.velocity.x < 0 then
         self.stuck_to_right_wall = false
     end
 
@@ -260,12 +282,11 @@ function player.update(self)
     end
 
     local desired_y = self.y - self.velocity.y * Time.dt()
-    local hitbox_after_y_move = hitbox_as_if_it_was_at(self.hitbox, self.x, desired_y)
     -- Вот этот код более правильный, но с ним другая проблема... 😡
-    --combine_hitboxes(
-    --    hitbox_as_if_it_was_at(self.hitbox, self.x, self.y),
-    --    hitbox_as_if_it_was_at(self.hitbox, self.x, desired_y)
-    --)
+    local hitbox_after_y_move = combine_hitboxes(
+        hitbox_as_if_it_was_at(self.hitbox, self.x, self.y),
+        hitbox_as_if_it_was_at(self.hitbox, self.x, desired_y)
+    )
     local vertical_collision = check_collision_hitbox_tilemap(hitbox_after_y_move)
     if vertical_collision ~= nil then
         -- desired_y is busted 💣
@@ -281,6 +302,9 @@ function player.update(self)
     self.x = desired_x
     self.y = desired_y
 
+    local player_hitbox = hitbox_as_if_it_was_at(self.hitbox, self.x, self.y)
+    table.insert(debug_rects, player_hitbox)
+
     self.jump_buffer_time = math.max(self.jump_buffer_time - Time.dt(), 0.0)
     self.coyote_time = math.max(self.coyote_time - Time.dt(), 0.0)
 end
@@ -290,7 +314,12 @@ function player.draw(self)
     local scale = 1
     local flip = self.looking_left and 1 or 0
     spr(257, self.x, self.y, colorkey, scale, flip)
-    --rect(self.x + self.hitbox.offset_x, self.y + self.hitbox.offset_y, self.hitbox.width, self.hitbox.height, 2)
+    if false then
+        for i, r in ipairs(debug_rects) do
+            rect(r.x, r.y, r.w, r.h, 5 + i)
+        end
+    end
+    debug_rects = {}
 end
 
 return player
