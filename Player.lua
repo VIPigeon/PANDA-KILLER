@@ -1,20 +1,46 @@
--- Референс:
--- https://2dengine.com/doc/platformers.html
---
--- Всё измеряется в пикселях / секундах
+--[[
+
+Добро пожаловать в джунгли! 🌴🐒
+
+Ниже находится полотно кода, которое тиранически управляет игроком. Практически
+вся логика лежит в player.update(). А что? Думаете это не круто, что у меня большая
+функция, которая будет расти ещё больше в будущем? Вот что Джон Кармак (🤯) сказал
+бы вам: https://cbarrete.com/carmack.html
+
+Не знаете кто такой Джон Кармак? Позор. Не, реально, посмотрите кто это 🤬.
+И статью прочитайте.
+
+Не верите этому старичку? Тогда более реальный пример: класс игрока из Celeste 🍓,
+платформера с, пожалуй, самым лучшим управлением когда либо сделанным. Он есть
+в открытом доступе: https://github.com/NoelFB/Celeste/blob/master/Source/Player/Player.cs
+В этом монолите 5000 строк кода. И они работают безупречно. Вот так!
+
+Референс для физики игрока: https://2dengine.com/doc/platformers.html
+Крутой видос про Celeste: https://www.youtube.com/watch?v=yorTG9at90g
+
+ЛИЦЕНЗИЯ: Использовать этот код в коммерческих целях ЗАПРЕЩЕНО.
+Если очень хочется, то нужно заплатить мне $10. (c) кавайный-код
+
+--]]
+
+
+-- Всё константы измеряются в 'пикселях', либо в 'секундах', либо в 'пикселях в секунду'.
+-- Ещё есть проценты от 0 до 1 ⚖
 PLAYER_MAX_HORIZONTAL_SPEED = 80.0
 PLAYER_HORIZONTAL_ACCELERATION = 1000.0
+PLAYER_WALL_SLIDE_SPEED = 40.0
 PLAYER_FRICTION = 0.3
 
 PLAYER_COYOTE_TIME = 0.15
 PLAYER_JUMP_BUFFER_TIME = 0.23
 
+PLAYER_DELAY_AFTER_JUMP_BEFORE_STICKING_TO_WALL = 0.2
+PLAYER_MAX_FALL_SPEED = 200.0
 PLAYER_JUMP_HEIGHT  = 24
 PLAYER_TIME_TO_APEX = 0.33
 PLAYER_GRAVITY = (2 * PLAYER_JUMP_HEIGHT) / (PLAYER_TIME_TO_APEX * PLAYER_TIME_TO_APEX)
 PLAYER_JUMP_STRENGTH = math.sqrt(2 * PLAYER_GRAVITY * PLAYER_JUMP_HEIGHT)
 
-PLAYER_SLIDE_SPEED = 40.0
 
 local player = {
     x = 0,
@@ -30,16 +56,19 @@ local player = {
         height = 8,
     },
 
-    coyote_time = 0.0,
-    jump_buffer_time = 0.0,
-
     stuck_to_left_wall = false,
     stuck_to_right_wall = false,
-
     looking_left = false,
     was_on_ground_last_frame = false,
+
+    time_before_we_can_stick_to_wall = 0.0,
+    coyote_time = 0.0,
+    jump_buffer_time = 0.0,
 }
 
+
+-- TODO: Все эти функции с хитбоксами нужно куда-то убрать
+--
 -- Одной из проблем в бумеранге было то, что координаты
 -- объекта (x, y) нужно было постоянно копировать в hitbox,
 -- потому что он тоже требовал глобальные координаты.
@@ -47,16 +76,55 @@ local player = {
 local function hitbox_top(something_with_hitbox)
     return something_with_hitbox.y + something_with_hitbox.hitbox.offset_y
 end
+
 local function hitbox_bottom(something_with_hitbox)
     return hitbox_top(something_with_hitbox) + something_with_hitbox.hitbox.height
 end
+
 local function hitbox_left(something_with_hitbox)
     return something_with_hitbox.x + something_with_hitbox.hitbox.offset_x
 end
+
 local function hitbox_right(something_with_hitbox)
     return hitbox_left(something_with_hitbox) + something_with_hitbox.hitbox.width
 end
 
+--[[
+
++---+     +-+      +---+
+|   |  +  | |   =  |   |
++---+     | |      |   |
+          +-+      +---+
+
+--]]
+local function combine_hitboxes(h1, h2)
+    local x1 = math.min(h1.x, h2.x)
+    local y1 = math.min(h1.y, h2.y)
+    local x2 = math.max(h1.x + h1.w, h2.x + h2.w)
+    local y2 = math.max(h1.y + h1.h, h2.y + h2.h)
+    return {
+        x = x1,
+        y = y1,
+        w = x2 - x1,
+        h = y2 - y1,
+    }
+end
+
+-- Дуальность хитбоксов с оффсетом и без меня подбешивает 🤬
+-- Есть хитбокс с offset_x, offset_y, который нужно прицеплять к другому
+-- игровому объекту, а есть самостоятельный хитбокс (просто прямоугольник)
+-- у которого есть x, y -- мировые координаты. И с ними
+-- немного путаница. Вот бы строго типизированный язык 😋
+--
+-- Эта функция переводит из оффсетного в самостоятельный прямоугольник
+local function hitbox_as_if_it_was_at(hitbox, x, y)
+    return {
+        x = x + hitbox.offset_x,
+        y = y + hitbox.offset_y,
+        w = hitbox.width,
+        h = hitbox.height,
+    }
+end
 
 
 -- TODO: Эту документацию нужно куда-то выделить
@@ -80,36 +148,13 @@ local function tile_to_world(x, y)
     return world_x, world_y
 end
 
-
-
 local function is_tile_solid(tile_id)
     -- XD Это кому-то исправлять 😆😂😂
     return tile_id == 1
 end
 
-local function combine_hitboxes(h1, h2)
-    local x1 = math.min(h1.x, h2.x)
-    local y1 = math.min(h1.y, h2.y)
-    local x2 = math.max(h1.x + h1.w, h2.x + h2.w)
-    local y2 = math.max(h1.y + h1.h, h2.y + h2.h)
-    return {
-        x = x1,
-        y = y1,
-        w = x2 - x1,
-        h = y2 - y1,
-    }
-end
-
--- Дуальность хитбоксов с оффсетом и без меня подбешивает 🤬
-local function hitbox_as_if_it_was_at(rect, x, y)
-    return {
-        x = x + rect.offset_x,
-        y = y + rect.offset_y,
-        w = rect.width,
-        h = rect.height,
-    }
-end
-
+-- TODO: Уверен, в будущем нужно будет возвращать не только самое первое
+-- столкновение, но вообще все столкновения, которые случились.
 local function check_collision_hitbox_tilemap(hitbox)
     assert(hitbox.w ~= 0)
     assert(hitbox.h ~= 0)
@@ -163,6 +208,7 @@ local function check_collision_hitbox_tilemap(hitbox)
     return nil
 end
 
+
 local function clamp(x, lo, hi)
     if x < lo then
         return lo
@@ -179,25 +225,50 @@ end
 
 local debug_rects = {}
 
+
 function player.update(self)
+    -- Краткое описание update() 📰
+    --
+    -- 1. На начале кадра делаем несколько "запросов" к физике, чтобы определить
+    --    какие стены рядом с нами, на земле ли мы, т.д.
+    --
+    -- 2. Считываем ввод игрока и преобразуем его в "физические силы", что
+    --    действуют на игрока.  Например, если мы нажимаем RIGHT, то на игрока
+    --    подействует ускорение(!) направленное направо. Фактически здесь мы
+    --    определяем player.velocity
+    --
+    -- 3. Пытаемся применить изменения в позиции (desired_x, desired_y). Однако
+    --    реальный мир забирает нашу свободу 🗽❌! Нужно проверить, что мы не
+    --    столкнулись ни с чем. А если столкнулись, то нужно поставить игрока
+    --    настолько близко к месту к столкновению, насколько возможно. Другими
+    --    словами, если (2) ставит player.velocity, то (3) ставит player.x, player.y.
+    --    Я не очень хорошо объясняю, мне надоело писать комменты. Читайте код сами 😡!
+    --
+
+
+    -- 1. Запросы. Ничего интересного
     local ground_collision = check_collision_hitbox_tilemap(hitbox_as_if_it_was_at(self.hitbox, self.x, self.y + 1))
     local is_on_ground = ground_collision ~= nil
-    if is_on_ground then
-        table.insert(debug_rects, { x = ground_collision.x, y = ground_collision.y, w = 8, h = 8 })
-    end
 
     local collision_to_the_left = check_collision_hitbox_tilemap(hitbox_as_if_it_was_at(self.hitbox, self.x - 1, self.y))
     local hugging_left_wall = collision_to_the_left ~= nil
-    if hugging_left_wall then
-        table.insert(debug_rects, { x = collision_to_the_left.x, y = collision_to_the_left.y, w = 8, h = 8 })
-    end
 
     local collision_to_the_right = check_collision_hitbox_tilemap(hitbox_as_if_it_was_at(self.hitbox, self.x + 1, self.y))
     local hugging_right_wall = collision_to_the_right ~= nil
+
+    -- Для дебага
+    if is_on_ground then
+        table.insert(debug_rects, { x = ground_collision.x, y = ground_collision.y, w = 8, h = 8 })
+    end
+    if hugging_left_wall then
+        table.insert(debug_rects, { x = collision_to_the_left.x, y = collision_to_the_left.y, w = 8, h = 8 })
+    end
     if hugging_right_wall then
         table.insert(debug_rects, { x = collision_to_the_right.x, y = collision_to_the_right.y, w = 8, h = 8 })
     end
 
+
+    -- 2. Считываем ввод, работаем только с self.velocity
     if btn(BUTTON_RIGHT) then
         self.velocity.x = self.velocity.x + PLAYER_HORIZONTAL_ACCELERATION * Time.dt()
     elseif btn(BUTTON_LEFT) then
@@ -212,58 +283,82 @@ function player.update(self)
         end
     end
 
-    self.velocity.x = clamp(self.velocity.x, -PLAYER_MAX_HORIZONTAL_SPEED, PLAYER_MAX_HORIZONTAL_SPEED)
-
-    if self.velocity.x > 0 then
-        self.looking_left = false
-    elseif self.velocity.x < 0 then
-        self.looking_left = true
-    end
-
-    if not is_on_ground and self.velocity.y <= 0 and self.was_on_ground_last_frame then
-       self.coyote_time = PLAYER_COYOTE_TIME
-    end
-    local jump_inputted = btnp(BUTTON_UP) or btnp(BUTTON_A)
-    if jump_inputted then
-      self.jump_buffer_time = PLAYER_JUMP_BUFFER_TIME
-    end
-
-    if (is_on_ground and self.jump_buffer_time > 0.0 and self.velocity.y <= 0) or
-       (self.jump_buffer_time > 0.0 and self.coyote_time > 0.0) or
-       (self.jump_buffer_time > 0.0 and self.stuck_to_left_wall) or
-       (self.jump_buffer_time > 0.0 and self.stuck_to_right_wall)
-    then
-       if not is_on_ground and self.stuck_to_left_wall then
-           self.velocity.y = PLAYER_JUMP_STRENGTH
-           self.velocity.x = PLAYER_JUMP_STRENGTH
-       elseif not is_on_ground and self.stuck_to_right_wall then
-           self.velocity.y = PLAYER_JUMP_STRENGTH
-           self.velocity.x = -1 * PLAYER_JUMP_STRENGTH
-       else
-           self.velocity.y = PLAYER_JUMP_STRENGTH
-       end
-       self.coyote_time = 0.0
-       self.jump_buffer_time = 0.0
-    end
     if not is_on_ground then
         self.velocity.y = self.velocity.y - PLAYER_GRAVITY * Time.dt()
     end
+
+    if btnp(BUTTON_UP) or btnp(BUTTON_A) then
+      self.jump_buffer_time = PLAYER_JUMP_BUFFER_TIME
+    end
+
+    local should_jump = self.jump_buffer_time > 0.0
+    if should_jump and (
+        (is_on_ground and self.velocity.y <= 0) or self.coyote_time > 0.0 or
+        self.stuck_to_left_wall or self.stuck_to_right_wall
+    ) then
+       if not is_on_ground and hugging_left_wall and self.stuck_to_left_wall then
+           self.velocity.y = PLAYER_JUMP_STRENGTH
+           self.velocity.x = PLAYER_JUMP_STRENGTH
+           self.time_before_we_can_stick_to_wall = PLAYER_DELAY_AFTER_JUMP_BEFORE_STICKING_TO_WALL
+           self.coyote_time = 0.0
+           self.jump_buffer_time = 0.0
+       elseif not is_on_ground and hugging_right_wall and self.stuck_to_right_wall then
+           self.velocity.y = PLAYER_JUMP_STRENGTH
+           self.velocity.x = -1 * PLAYER_JUMP_STRENGTH
+           self.time_before_we_can_stick_to_wall = PLAYER_DELAY_AFTER_JUMP_BEFORE_STICKING_TO_WALL
+           self.coyote_time = 0.0
+           self.jump_buffer_time = 0.0
+       elseif is_on_ground and self.velocity.y <= 0 then
+           self.velocity.y = PLAYER_JUMP_STRENGTH
+           self.time_before_we_can_stick_to_wall = PLAYER_DELAY_AFTER_JUMP_BEFORE_STICKING_TO_WALL
+           self.coyote_time = 0.0
+           self.jump_buffer_time = 0.0
+       end
+    end
+
+    if not is_on_ground and self.was_on_ground_last_frame and self.velocity.y <= 0 then
+       self.coyote_time = PLAYER_COYOTE_TIME
+    end
     self.was_on_ground_last_frame = is_on_ground
 
-    if hugging_left_wall and self.velocity.x < 0 and self.velocity.y < 0 then
-        self.stuck_to_left_wall = true
-        self.velocity.y = -1 * PLAYER_SLIDE_SPEED
-    elseif self.velocity.x > 0 then
-        self.stuck_to_left_wall = false
+    local can_stick_to_wall = self.time_before_we_can_stick_to_wall == 0.0
+    if can_stick_to_wall then
+        if hugging_left_wall and self.velocity.x < 0 then
+            self.stuck_to_left_wall = true
+            self.velocity.y = -1 * PLAYER_WALL_SLIDE_SPEED
+        elseif self.velocity.x > 0 then
+            self.stuck_to_left_wall = false
+        end
+
+        if hugging_right_wall and self.velocity.x > 0 then
+            self.stuck_to_right_wall = true
+            self.velocity.y = -1 * PLAYER_WALL_SLIDE_SPEED
+        elseif self.velocity.x < 0 then
+            self.stuck_to_right_wall = false
+        end
     end
 
-    if hugging_right_wall and self.velocity.x > 0 and self.velocity.y < 0 then
-        self.stuck_to_right_wall = true
-        self.velocity.y = -1 * PLAYER_SLIDE_SPEED
-    elseif self.velocity.x < 0 then
-        self.stuck_to_right_wall = false
+
+    EPSILON = 0.1
+    if math.abs(self.velocity.x) < EPSILON then
+        self.velocity.x = 0
+    end
+    if math.abs(self.velocity.y) < EPSILON then
+        self.velocity.y = 0
+    end
+    self.velocity.x = clamp(self.velocity.x, -PLAYER_MAX_HORIZONTAL_SPEED, PLAYER_MAX_HORIZONTAL_SPEED)
+    self.velocity.y = clamp(self.velocity.y, -PLAYER_MAX_FALL_SPEED,       PLAYER_MAX_FALL_SPEED)
+
+    local moving_right = self.velocity.x > 0
+    local moving_left  = self.velocity.x < 0
+    if moving_right then
+        self.looking_left = false
+    elseif moving_left then
+        self.looking_left = true
     end
 
+
+    -- 3. Проверка коллизий
     local desired_x = self.x + self.velocity.x * Time.dt()
     local hitbox_after_x_move = combine_hitboxes(
         hitbox_as_if_it_was_at(self.hitbox, self.x, self.y),
@@ -272,8 +367,7 @@ function player.update(self)
     local horizontal_collision = check_collision_hitbox_tilemap(hitbox_after_x_move)
     if horizontal_collision ~= nil then
         -- desired_x is busted 💣
-        local going_to_the_right = self.velocity.x > 0
-        if going_to_the_right then
+        if moving_right then
             desired_x = horizontal_collision.x - self.hitbox.width - self.hitbox.offset_x
         else
             desired_x = horizontal_collision.x + self.hitbox.width + self.hitbox.offset_x
@@ -282,7 +376,6 @@ function player.update(self)
     end
 
     local desired_y = self.y - self.velocity.y * Time.dt()
-    -- Вот этот код более правильный, но с ним другая проблема... 😡
     local hitbox_after_y_move = combine_hitboxes(
         hitbox_as_if_it_was_at(self.hitbox, self.x, self.y),
         hitbox_as_if_it_was_at(self.hitbox, self.x, desired_y)
@@ -299,12 +392,11 @@ function player.update(self)
         self.velocity.y = 0
     end
 
+
     self.x = desired_x
     self.y = desired_y
 
-    local player_hitbox = hitbox_as_if_it_was_at(self.hitbox, self.x, self.y)
-    table.insert(debug_rects, player_hitbox)
-
+    self.time_before_we_can_stick_to_wall = math.max(self.time_before_we_can_stick_to_wall - Time.dt(), 0.0)
     self.jump_buffer_time = math.max(self.jump_buffer_time - Time.dt(), 0.0)
     self.coyote_time = math.max(self.coyote_time - Time.dt(), 0.0)
 end
@@ -314,6 +406,7 @@ function player.draw(self)
     local scale = 1
     local flip = self.looking_left and 1 or 0
     spr(257, self.x, self.y, colorkey, scale, flip)
+    -- Дебаг 🐜
     if false then
         for i, r in ipairs(debug_rects) do
             rect(r.x, r.y, r.w, r.h, 5 + i)
