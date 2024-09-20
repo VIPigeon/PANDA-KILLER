@@ -23,22 +23,44 @@
 
 --]]
 
+-- ⏰
 
--- Всё константы измеряются в 'пикселях', либо в 'секундах', либо в 'пикселях в секунду'.
--- Ещё есть проценты от 0 до 1 ⚖
+--[[
+
+Итак, объясняю как работает прыжок от стены 🤓
+
+1. Если игрок в воздухе врезается в стену, он "прилепляется" к ней.
+2. Если игрок продолжает идти в стену, то он будет скользит с
+   замедленной скоростью PLAYER_WALL_SLIDE_SPEED.
+3. Самое сложное: игрок отпрыгивает от стены. После прыжка на короткое
+   время (PLAYER_REMOVE_SPEED_LIMIT_AFTER_WALL_JUMP_TIME) у игрока
+   уменьшается гравитация, чтобы можно было легче контролировать полёт.
+   Такие дела.
+
+Всё константы измеряются либо в 'пикселях', либо в 'секундах', либо в 'пикселях в секунду'.
+Ещё есть проценты от 0 до 1 ⚖
+
+--]]
+
 PLAYER_MAX_HORIZONTAL_SPEED = 80.0
 PLAYER_HORIZONTAL_ACCELERATION = 1000.0
-PLAYER_WALL_SLIDE_SPEED = 40.0
-PLAYER_FRICTION = 0.3
+PLAYER_FRICTION = 0.2
+PLAYER_AIR_FRICTION = 0.5 * PLAYER_FRICTION
+
+PLAYER_WALL_SLIDE_SPEED = 30.0
+PLAYER_WALL_JUMP_HORIZONTAL_STRENGTH = 140.0
+PLAYER_WALL_JUMP_VERTICAL_STRENGTH = 120.0
+PLAYER_REMOVE_SPEED_LIMIT_AFTER_WALL_JUMP_TIME = 0.26
+PLAYER_DELAY_AFTER_JUMP_BEFORE_STICKING_TO_WALL = 0.2
 
 PLAYER_COYOTE_TIME = 0.15
 PLAYER_JUMP_BUFFER_TIME = 0.23
 
-PLAYER_DELAY_AFTER_JUMP_BEFORE_STICKING_TO_WALL = 0.2
 PLAYER_MAX_FALL_SPEED = 200.0
-PLAYER_JUMP_HEIGHT  = 24
-PLAYER_TIME_TO_APEX = 0.33
+PLAYER_JUMP_HEIGHT = 24
+PLAYER_TIME_TO_APEX = 0.33 -- Время, чтобы достичь высшей точки прыжка (apex)
 PLAYER_GRAVITY = (2 * PLAYER_JUMP_HEIGHT) / (PLAYER_TIME_TO_APEX * PLAYER_TIME_TO_APEX)
+PLAYER_GRAVITY_AFTER_WALL_JUMP = 0.75 * PLAYER_GRAVITY
 PLAYER_JUMP_STRENGTH = math.sqrt(2 * PLAYER_GRAVITY * PLAYER_JUMP_HEIGHT)
 
 
@@ -64,6 +86,7 @@ local player = {
     time_before_we_can_stick_to_wall = 0.0,
     coyote_time = 0.0,
     jump_buffer_time = 0.0,
+    remove_horizontal_speed_limit_time = 0.0,
 }
 
 
@@ -267,53 +290,67 @@ function player.update(self)
         table.insert(debug_rects, { x = collision_to_the_right.x, y = collision_to_the_right.y, w = 8, h = 8 })
     end
 
-
     -- 2. Считываем ввод, работаем только с self.velocity
-    if btn(BUTTON_RIGHT) then
-        self.velocity.x = self.velocity.x + PLAYER_HORIZONTAL_ACCELERATION * Time.dt()
-    elseif btn(BUTTON_LEFT) then
-        self.velocity.x = self.velocity.x - PLAYER_HORIZONTAL_ACCELERATION * Time.dt()
-    else
-        if is_on_ground then
-            self.velocity.x = self.velocity.x - self.velocity.x * PLAYER_FRICTION
-        else
-            -- Типа в воздухе другое сопротивление 💨
-            -- Не знаю, на сколько это нужно 😅
-            self.velocity.x = self.velocity.x - 0.5 * self.velocity.x * PLAYER_FRICTION
-        end
-    end
-
-    if not is_on_ground then
-        self.velocity.y = self.velocity.y - PLAYER_GRAVITY * Time.dt()
-    end
-
+    local walking_right = btn(BUTTON_RIGHT)
+    local walking_left = btn(BUTTON_LEFT)
     if btnp(BUTTON_UP) or btnp(BUTTON_A) then
       self.jump_buffer_time = PLAYER_JUMP_BUFFER_TIME
     end
 
+    if is_on_ground then
+        self.velocity.x = self.velocity.x - self.velocity.x * PLAYER_FRICTION
+    else
+        -- Типа в воздухе другое сопротивление 💨
+        -- Не знаю, на сколько это нужно 😅
+        self.velocity.x = self.velocity.x - self.velocity.x * PLAYER_AIR_FRICTION
+    end
+    local not_at_speed_limit = math.abs(self.velocity.x) < PLAYER_MAX_HORIZONTAL_SPEED
+    if not_at_speed_limit then
+        if walking_right then
+            if math.abs(self.velocity.x) < PLAYER_MAX_HORIZONTAL_SPEED then
+                self.velocity.x = self.velocity.x + PLAYER_HORIZONTAL_ACCELERATION * Time.dt()
+            end
+        end
+        if walking_left then
+            if math.abs(self.velocity.x) < PLAYER_MAX_HORIZONTAL_SPEED then
+                self.velocity.x = self.velocity.x - PLAYER_HORIZONTAL_ACCELERATION * Time.dt()
+            end
+        end
+        self.velocity.x = clamp(self.velocity.x, -PLAYER_MAX_HORIZONTAL_SPEED, PLAYER_MAX_HORIZONTAL_SPEED)
+    end
+
+    if not is_on_ground then
+        if self.remove_horizontal_speed_limit_time == 0.0 then
+            self.velocity.y = self.velocity.y - PLAYER_GRAVITY * Time.dt()
+        else
+            self.velocity.y = self.velocity.y - PLAYER_GRAVITY_AFTER_WALL_JUMP * Time.dt()
+        end
+    end
+
     local should_jump = self.jump_buffer_time > 0.0
-    if should_jump and (
-        (is_on_ground and self.velocity.y <= 0) or self.coyote_time > 0.0 or
-        self.stuck_to_left_wall or self.stuck_to_right_wall
-    ) then
-       if not is_on_ground and hugging_left_wall and self.stuck_to_left_wall then
-           self.velocity.y = PLAYER_JUMP_STRENGTH
-           self.velocity.x = PLAYER_JUMP_STRENGTH
-           self.time_before_we_can_stick_to_wall = PLAYER_DELAY_AFTER_JUMP_BEFORE_STICKING_TO_WALL
-           self.coyote_time = 0.0
-           self.jump_buffer_time = 0.0
-       elseif not is_on_ground and hugging_right_wall and self.stuck_to_right_wall then
-           self.velocity.y = PLAYER_JUMP_STRENGTH
-           self.velocity.x = -1 * PLAYER_JUMP_STRENGTH
-           self.time_before_we_can_stick_to_wall = PLAYER_DELAY_AFTER_JUMP_BEFORE_STICKING_TO_WALL
-           self.coyote_time = 0.0
-           self.jump_buffer_time = 0.0
-       elseif is_on_ground and self.velocity.y <= 0 then
-           self.velocity.y = PLAYER_JUMP_STRENGTH
-           self.time_before_we_can_stick_to_wall = PLAYER_DELAY_AFTER_JUMP_BEFORE_STICKING_TO_WALL
-           self.coyote_time = 0.0
-           self.jump_buffer_time = 0.0
-       end
+    if should_jump then
+        local has_jumped = false
+
+        if is_on_ground and self.velocity.y <= 0 then
+            self.velocity.y = PLAYER_JUMP_STRENGTH
+            has_jumped = true
+            self.time_before_we_can_stick_to_wall = PLAYER_DELAY_AFTER_JUMP_BEFORE_STICKING_TO_WALL
+        elseif hugging_left_wall and not is_on_ground then
+            self.velocity.y = PLAYER_WALL_JUMP_VERTICAL_STRENGTH
+            self.velocity.x = PLAYER_WALL_JUMP_HORIZONTAL_STRENGTH
+            self.remove_horizontal_speed_limit_time = PLAYER_REMOVE_SPEED_LIMIT_AFTER_WALL_JUMP_TIME
+            has_jumped = true
+        elseif hugging_right_wall and not is_on_ground then
+            self.velocity.y = PLAYER_WALL_JUMP_VERTICAL_STRENGTH
+            self.velocity.x = -1 * PLAYER_WALL_JUMP_HORIZONTAL_STRENGTH
+            self.remove_horizontal_speed_limit_time = PLAYER_REMOVE_SPEED_LIMIT_AFTER_WALL_JUMP_TIME
+            has_jumped = true
+        end
+
+        if has_jumped then
+            self.coyote_time = 0.0
+            self.jump_buffer_time = 0.0
+        end
     end
 
     if not is_on_ground and self.was_on_ground_last_frame and self.velocity.y <= 0 then
@@ -322,19 +359,12 @@ function player.update(self)
     self.was_on_ground_last_frame = is_on_ground
 
     local can_stick_to_wall = self.time_before_we_can_stick_to_wall == 0.0
-    if can_stick_to_wall then
+    if not is_on_ground and can_stick_to_wall then
         if hugging_left_wall and self.velocity.x < 0 then
-            self.stuck_to_left_wall = true
             self.velocity.y = -1 * PLAYER_WALL_SLIDE_SPEED
-        elseif self.velocity.x > 0 then
-            self.stuck_to_left_wall = false
         end
-
         if hugging_right_wall and self.velocity.x > 0 then
-            self.stuck_to_right_wall = true
             self.velocity.y = -1 * PLAYER_WALL_SLIDE_SPEED
-        elseif self.velocity.x < 0 then
-            self.stuck_to_right_wall = false
         end
     end
 
@@ -346,7 +376,7 @@ function player.update(self)
     if math.abs(self.velocity.y) < EPSILON then
         self.velocity.y = 0
     end
-    self.velocity.x = clamp(self.velocity.x, -PLAYER_MAX_HORIZONTAL_SPEED, PLAYER_MAX_HORIZONTAL_SPEED)
+
     self.velocity.y = clamp(self.velocity.y, -PLAYER_MAX_FALL_SPEED,       PLAYER_MAX_FALL_SPEED)
 
     local moving_right = self.velocity.x > 0
@@ -392,13 +422,13 @@ function player.update(self)
         self.velocity.y = 0
     end
 
-
     self.x = desired_x
     self.y = desired_y
 
     self.time_before_we_can_stick_to_wall = math.max(self.time_before_we_can_stick_to_wall - Time.dt(), 0.0)
     self.jump_buffer_time = math.max(self.jump_buffer_time - Time.dt(), 0.0)
     self.coyote_time = math.max(self.coyote_time - Time.dt(), 0.0)
+    self.remove_horizontal_speed_limit_time = math.max(self.remove_horizontal_speed_limit_time - Time.dt(), 0.0)
 end
 
 function player.draw(self)
