@@ -1,16 +1,16 @@
 game = {}
+local dialog_window = DialogWindow:new()
 
 function game.update()
     local player = game.player
     player:update()
 
-    local dialog_window = game.dialog_window
-    dialog_window.text = "SKNKnklsn\n idan"
+    dialog_window:update(100,50,"Hello! dvfs\njsidf")
     
     map()
     player:draw()
 
-    dialog_window:draw(100,100)
+    dialog_window:draw()
 
     -- Обязательно должно выполняться последним
     Time.update()
