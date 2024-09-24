@@ -1,4 +1,5 @@
 game = {}
+local dialog_window = DialogWindow:new()
 
 function game.debug_features_init()
 
@@ -17,9 +18,14 @@ function game.update()
     player:update()
     entities:update(pandas)
 
+    dialog_window:update(100,50,"dhslj\naio")
+    
     map()
     player:draw()
     entities:draw(pandas)
+
+    dialog_window:draw()
+    dialog_window:close()
 
     -- Обязательно должно выполняться последним
     Time.update()
