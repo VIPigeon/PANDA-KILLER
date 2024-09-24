@@ -11,6 +11,9 @@ function game.init()
     end
 end
 
+local replic = 'СЪЕШЬ ЕЩЁ ЭТИХ МЯГКИХ ФРАНЦУЗСКИХ\nБУЛОК ДА ВЫПЕЙ ЧАЯ'
+local translation = russian_to_translit(replic)
+
 function game.update()
     local player = game.player
     local pandas = game.pandas
@@ -23,6 +26,7 @@ function game.update()
     update_psystems()
     
     map()
+    local width = font(translation, 0, 40, 0, 4, 7, false, 1)
     player:draw()
     entities:draw(pandas)
 
