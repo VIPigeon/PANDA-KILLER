@@ -148,9 +148,9 @@ end
 
 function player.update(self)
     self.velocity.x = 0
-    if btn(BUTTON_RIGHT) then
+    if btn(BUTTON_RIGHT) or key(KEY_D) then
         self.velocity.x = self.velocity.x + PLAYER_HORIZONTAL_SPEED
-    elseif btn(BUTTON_LEFT) then
+    elseif btn(BUTTON_LEFT) or key(KEY_A) then
         self.velocity.x = self.velocity.x - PLAYER_HORIZONTAL_SPEED
     end
 
@@ -158,7 +158,7 @@ function player.update(self)
     if not is_on_ground and self.velocity.y <= 0 and self.was_on_ground_last_frame then
        self.coyote_time = PLAYER_COYOTE_TIME
     end
-    local jump_inputted = btnp(BUTTON_UP) or btnp(BUTTON_A)
+    local jump_inputted = btnp(BUTTON_UP) or btnp(BUTTON_A) or key(KEY_W)
     if jump_inputted then
        if self.coyote_time > 0.0 then
           self.velocity.y = PLAYER_JUMP_STRENGTH
@@ -254,6 +254,8 @@ function player.update(self)
 
     self.jump_buffer_time = math.max(self.jump_buffer_time - Time.dt(), 0.0)
     self.coyote_time = math.max(self.coyote_time - Time.dt(), 0.0)
+
+    -- Не осилел - многа букав
 end
 
 function player.draw(self)
