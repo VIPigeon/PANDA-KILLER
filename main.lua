@@ -1,4 +1,5 @@
 
+require 'DialogWindow'
 require 'Game'
 -- require 'Body'
 
