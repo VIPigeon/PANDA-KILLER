@@ -19,12 +19,18 @@ function game.update()
     entities:update(pandas)
 
     dialog_window:update()
+
+    update_psystems()
     
     map()
     player:draw()
     entities:draw(pandas)
 
     dialog_window:draw()
+
+    draw_blood(80,80,-1)
+
+    draw_psystems()
 
     -- Обязательно должно выполняться последним
     Time.update()

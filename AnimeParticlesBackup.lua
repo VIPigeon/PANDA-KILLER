@@ -810,45 +810,45 @@ currdemo = 1
 -- INIT ============================================================================--
 --==================================================================================--
 
-function deleteallps()
-	for key,ps in pairs(particle_systems) do
-		particle_systems[key] = nil
-	end
-end
+-- function deleteallps()
+-- 	for key,ps in pairs(particle_systems) do
+-- 		particle_systems[key] = nil
+-- 	end
+-- end
 
-demos[currdemo].createfunc()
+-- demos[currdemo].createfunc()
 
-function TIC()
+-- function TIC()
 	
-	if btnp(3) then
-		currdemo = currdemo + 1
-		if (currdemo>#demos) then
-		 	currdemo = 1
-		 end 
-		 deleteallps()
-		 demos[currdemo].createfunc()
-	end
-	if btnp(2) then
-		currdemo = currdemo - 1
-		if (currdemo<=0) then
-		 	currdemo = #demos
-		 end 
-		 deleteallps()
-		 demos[currdemo].createfunc()
-	end
-	if btnp(5) then
-		demos[currdemo].createfunc()
-	end
+-- 	if btnp(3) then
+-- 		currdemo = currdemo + 1
+-- 		if (currdemo>#demos) then
+-- 		 	currdemo = 1
+-- 		 end 
+-- 		 deleteallps()
+-- 		 demos[currdemo].createfunc()
+-- 	end
+-- 	if btnp(2) then
+-- 		currdemo = currdemo - 1
+-- 		if (currdemo<=0) then
+-- 		 	currdemo = #demos
+-- 		 end 
+-- 		 deleteallps()
+-- 		 demos[currdemo].createfunc()
+-- 	end
+-- 	if btnp(5) then
+-- 		demos[currdemo].createfunc()
+-- 	end
 
-	update_psystems()
+-- 	update_psystems()
 	
-	cls(0)
+-- 	cls(0)
 	
-	draw_psystems()
+-- 	draw_psystems()
 
-	print(demos[currdemo].name,0,0,7)
-	print(demos[currdemo].desc,0,8,7)
-	print("left/right to change demo", 0, 112, 5)
-	print("x to spawn particle system",0,120,5)
+-- 	print(demos[currdemo].name,0,0,7)
+-- 	print(demos[currdemo].desc,0,8,7)
+-- 	print("left/right to change demo", 0, 112, 5)
+-- 	print("x to spawn particle system",0,120,5)
 
-end
+-- end

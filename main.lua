@@ -10,6 +10,8 @@ Time = require 'Time'
 require 'Constants'
 
 require 'Sprite'
+require 'AnimeParticlesBackup'
+require 'Blood'
 require 'Hitbox'
 require 'Body'
 
