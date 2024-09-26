@@ -42,8 +42,8 @@
 
 --]]
 
-PLAYER_MAX_HORIZONTAL_SPEED = 80.0
-PLAYER_HORIZONTAL_ACCELERATION = 1000.0
+PLAYER_MAX_HORIZONTAL_SPEED = 67.0
+PLAYER_HORIZONTAL_ACCELERATION = 900.0
 PLAYER_FRICTION = 0.2
 PLAYER_AIR_FRICTION = 0.5 * PLAYER_FRICTION
 
@@ -53,8 +53,8 @@ PLAYER_WALL_JUMP_VERTICAL_STRENGTH = 120.0
 PLAYER_REMOVE_SPEED_LIMIT_AFTER_WALL_JUMP_TIME = 0.26
 PLAYER_DELAY_AFTER_JUMP_BEFORE_STICKING_TO_WALL = 0.2
 
-PLAYER_COYOTE_TIME = 0.15
-PLAYER_JUMP_BUFFER_TIME = 0.23
+PLAYER_COYOTE_TIME = 0.23
+PLAYER_JUMP_BUFFER_TIME = 0.18
 
 PLAYER_MAX_FALL_SPEED = 200.0
 PLAYER_JUMP_HEIGHT = 24
@@ -293,7 +293,8 @@ function player.update(self)
     -- 2. Считываем ввод, работаем только с self.velocity
     local walking_right = btn(BUTTON_RIGHT)
     local walking_left = btn(BUTTON_LEFT)
-    if btnp(BUTTON_UP) or btnp(BUTTON_A) then
+    local jump_inputted = btnp(BUTTON_UP) or btnp(BUTTON_A)
+    if jump_inputted then
       self.jump_buffer_time = PLAYER_JUMP_BUFFER_TIME
     end
 
@@ -328,9 +329,8 @@ function player.update(self)
     end
 
     local should_jump = self.jump_buffer_time > 0.0
+    local has_jumped = false
     if should_jump then
-        local has_jumped = false
-
         if is_on_ground and self.velocity.y <= 0 then
             self.velocity.y = PLAYER_JUMP_STRENGTH
             has_jumped = true
@@ -346,11 +346,15 @@ function player.update(self)
             self.remove_horizontal_speed_limit_time = PLAYER_REMOVE_SPEED_LIMIT_AFTER_WALL_JUMP_TIME
             has_jumped = true
         end
-
-        if has_jumped then
-            self.coyote_time = 0.0
-            self.jump_buffer_time = 0.0
-        end
+    end
+    if jump_inputted and self.coyote_time > 0.0 and self.velocity.y <= 0.0 then
+        self.velocity.y = PLAYER_JUMP_STRENGTH
+        self.time_before_we_can_stick_to_wall = PLAYER_DELAY_AFTER_JUMP_BEFORE_STICKING_TO_WALL
+        has_jumped = true
+    end
+    if has_jumped then
+        self.coyote_time = 0.0
+        self.jump_buffer_time = 0.0
     end
 
     if not is_on_ground and self.was_on_ground_last_frame and self.velocity.y <= 0 then
@@ -369,7 +373,7 @@ function player.update(self)
     end
 
 
-    EPSILON = 0.1
+    EPSILON = 0.4
     if math.abs(self.velocity.x) < EPSILON then
         self.velocity.x = 0
     end
