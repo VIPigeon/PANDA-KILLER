@@ -64,7 +64,7 @@ PLAYER_GRAVITY_AFTER_WALL_JUMP = 0.75 * PLAYER_GRAVITY
 PLAYER_JUMP_STRENGTH = math.sqrt(2 * PLAYER_GRAVITY * PLAYER_JUMP_HEIGHT)
 
 
-local player = {
+player = {
     x = 0,
     y = 40,
     velocity = {
@@ -448,5 +448,3 @@ function player.draw(self)
     end
     debug_rects = {}
 end
-
-return player

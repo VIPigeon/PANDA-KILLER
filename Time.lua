@@ -1,4 +1,4 @@
-local Time = {
+Time = {
     total_time_passed_ms = 0,
     -- Хранится в миллисекундах, например 16.837
     delta_ms = 0,
@@ -27,5 +27,3 @@ end
 function Time.next_dt()
     return 0.016
 end
-
-return Time
