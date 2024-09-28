@@ -439,7 +439,9 @@ function player.draw(self)
     local colorkey = 0
     local scale = 1
     local flip = self.looking_left and 1 or 0
-    spr(257, self.x, self.y, colorkey, scale, flip)
+
+    local tx, ty = game.camera_window:transform_coordinates(self.x, self.y)
+    spr(257, tx, ty, colorkey, scale, flip)
     -- Дебаг 🐜
     if false then
         for i, r in ipairs(debug_rects) do

@@ -9,6 +9,9 @@ function game.init()
     game.pandas = {Panda:new(20,20), Panda:new(10,10), Panda:new(20,10)}
     game.dialog_window = DialogWindow:new(100,50,"dhslj\naio")
 
+    local camera_rect = Rect:new(player.x - 16, player.y - 8, CAMERA_WINDOW_WIDTH, CAMERA_WINDOW_HEIGHT)
+    game.camera_window = CameraWindow:new(camera_rect, player, 8, 8)
+
     if GAMEMODE == GAMEMODE_DEBUG then
        game.debug_features_init() 
     end
@@ -20,26 +23,34 @@ local translation = russian_to_translit(replic)
 function game.update()
     local player = game.player
     local dialog_window = game.dialog_window
+    local camera_window = game.camera_window
     local pandas = game.pandas
 
-    player:update()
     entities:update(pandas)
-
     dialog_window:update()
+    player:update()
+    camera_window:update()
 
     update_psystems()
 
-    map()
-    local width = font(translation, 0, 40, 0, 4, 7, false, 1)
-    player:draw()
+    map(camera_window.gm.x, camera_window.gm.y, 31, 18, camera_window.gm.sx, camera_window.gm.sy)
     entities:draw(pandas)
-
+    player:draw()
     dialog_window:draw()
-
     draw_blood(80,80,-1)
-
     draw_psystems()
+
+    local width = font(translation, 0, 40, 0, 4, 7, false, 1)
 
     -- Обязательно должно выполняться последним
     Time.update()
+end
+
+function game.drawSprite(object, x, y, sprite)
+    if object.x == nil or object.y == nil then
+        error('drawing an illegal object: ' .. tostring(object))
+    end
+
+    if object.sprite == nil then
+    end
 end

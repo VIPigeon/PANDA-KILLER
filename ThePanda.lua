@@ -135,7 +135,6 @@ end
 
 function Panda:update_target()
     self.target = check_player_location()
-    trace('panda targeted: '..self.target.x..' '..self.target.y)
 end
 
 function Panda:update_velocity()
@@ -153,16 +152,13 @@ function Panda:update_velocity()
 end
 
 function Panda:update()
-    trace('haah')
     self:update_target()
     self:update_velocity()
-    trace(self.velocity.x)
     self:move(self.velocity.x * self.speed * Time.dt(), self.velocity.y * self.speed * Time.dt())
 end
 
 function Panda:harm(damage)
     self.health = math.clamp(self.health - damage, 0, self.health)
-    trace('woooooooooooooooo!')
 end
 
 

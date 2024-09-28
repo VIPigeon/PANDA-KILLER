@@ -77,9 +77,10 @@ function Body:set_position(x, y)
 end
 
 --OOPSie there's no GAME MASTER in this game
+-- Теперь есть GAME MASTER, и это Я 😈
 function Body:draw()
-    --self.sprite:draw(self.x - gm.x*8 + gm.sx, self.y - gm.y*8 + gm.sy, self.flip, self.rotate)
-    self.sprite:draw(self.x, self.y, self.flip, self.rotate)
+    local tx, ty = game.camera_window:transform_coordinates(self.x, self.y)
+    self.sprite:draw(tx, ty, self.flip, self.rotate)
 end
 
 function Body:born_update()

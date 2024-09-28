@@ -1,4 +1,6 @@
 require 'Localization'
+require 'Rect'
+require 'CameraWindow'
 require 'DialogWindow'
 require 'Game'
 require 'Table'
