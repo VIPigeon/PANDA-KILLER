@@ -17,9 +17,6 @@ function game.init()
     end
 end
 
-local replic = 'СЪЕШЬ ЕЩЁ ЭТИХ МЯГКИХ ФРАНЦУЗСКИХ\nБУЛОК ДА ВЫПЕЙ ЧАЯ'
-local translation = russian_to_translit(replic)
-
 function game.update()
     local player = game.player
     local dialog_window = game.dialog_window
@@ -39,8 +36,6 @@ function game.update()
     dialog_window:draw()
     draw_blood(80,80,-1)
     draw_psystems()
-
-    local width = font(translation, 0, 40, 0, 4, 7, false, 1)
 
     -- Обязательно должно выполняться последним
     Time.update()

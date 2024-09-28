@@ -82,7 +82,6 @@ function CameraWindow:update()
     local dx, dy = self:getDirectionToTarget()
 
     if self.area:isObjectInside(self.target, self.targetWidth, self.targetHeight) then
-        self:centerOnTarget()
         -- 2023 😊:
         -- Ура, я использовал goto!!!
         -- 2024 💀:
