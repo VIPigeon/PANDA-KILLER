@@ -13,6 +13,10 @@ function Sprite:new(animation, size)
     self.__index = self; return obj
 end
 
+function Sprite:current(x, y, flip, rotate)
+    return self.animation[self.frame]
+end
+
 function Sprite:getFrame()
     return self.frame
 end

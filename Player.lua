@@ -3,7 +3,7 @@
 Добро пожаловать в джунгли! 🌴🐒
 
 Ниже находится полотно кода, которое тиранически управляет игроком. Практически
-вся логика лежит в player.update(). А что? Думаете это не круто, что у меня большая
+вся логика лежит в player.update(). А что? Думаете это не круто(вообще-то да << Nerd), что у меня большая
 функция, которая будет расти ещё больше в будущем? Вот что Джон Кармак (🤯) сказал
 бы вам: https://cbarrete.com/carmack.html
 
@@ -53,6 +53,8 @@ PLAYER_WALL_JUMP_VERTICAL_STRENGTH = 120.0
 PLAYER_REMOVE_SPEED_LIMIT_AFTER_WALL_JUMP_TIME = 0.26
 PLAYER_DELAY_AFTER_JUMP_BEFORE_STICKING_TO_WALL = 0.2
 
+PLAYER_ATTACK_DURATION = 1.0
+
 PLAYER_COYOTE_TIME = 0.23
 PLAYER_JUMP_BUFFER_TIME = 0.18
 
@@ -62,6 +64,12 @@ PLAYER_TIME_TO_APEX = 0.33 -- Время, чтобы достичь высшей
 PLAYER_GRAVITY = (2 * PLAYER_JUMP_HEIGHT) / (PLAYER_TIME_TO_APEX * PLAYER_TIME_TO_APEX)
 PLAYER_GRAVITY_AFTER_WALL_JUMP = 0.75 * PLAYER_GRAVITY
 PLAYER_JUMP_STRENGTH = math.sqrt(2 * PLAYER_GRAVITY * PLAYER_JUMP_HEIGHT)
+
+PLAYER_SPRITE_IDLE = Sprite:new({257})
+PLAYER_SPRITE_RUNNING = Sprite:new({258, 258, 258, 258, 259, 259, 259, 259})
+PLAYER_SPRITE_ATTACK = Sprite:new({276, 277})
+PLAYER_SPRITE_JUMP = Sprite:new({273})
+PLAYER_SPRITE_DEAD = Sprite:new({274})
 
 
 player = {
@@ -87,6 +95,8 @@ player = {
     coyote_time = 0.0,
     jump_buffer_time = 0.0,
     remove_horizontal_speed_limit_time = 0.0,
+
+    sprite = PLAYER_SPRITE_IDLE,
 }
 
 
@@ -232,16 +242,6 @@ local function check_collision_hitbox_tilemap(hitbox)
 end
 
 
-local function clamp(x, lo, hi)
-    if x < lo then
-        return lo
-    elseif x > hi then
-        return hi
-    else
-        return x
-    end
-end
-
 local function trace_hitbox(hitbox)
     trace('x = ' .. hitbox.x .. ' y = ' .. hitbox.y .. ' w = ' .. hitbox.w .. ' h = ' .. hitbox.h)
 end
@@ -291,11 +291,16 @@ function player.update(self)
     end
 
     -- 2. Считываем ввод, работаем только с self.velocity
+    local attacking = btnp(BUTTON_X)
     local walking_right = btn(BUTTON_RIGHT)
     local walking_left = btn(BUTTON_LEFT)
-    local jump_inputted = btnp(BUTTON_UP) or btnp(BUTTON_A)
+    local jump_inputted = btnp(BUTTON_UP) or btnp(BUTTON_Z)
     if jump_inputted then
       self.jump_buffer_time = PLAYER_JUMP_BUFFER_TIME
+    end
+
+    if attacking then
+        self.attacked_at = Time.total_time_passed_ms
     end
 
     if is_on_ground then
@@ -317,7 +322,7 @@ function player.update(self)
                 self.velocity.x = self.velocity.x - PLAYER_HORIZONTAL_ACCELERATION * Time.dt()
             end
         end
-        self.velocity.x = clamp(self.velocity.x, -PLAYER_MAX_HORIZONTAL_SPEED, PLAYER_MAX_HORIZONTAL_SPEED)
+        self.velocity.x = math.clamp(self.velocity.x, -PLAYER_MAX_HORIZONTAL_SPEED, PLAYER_MAX_HORIZONTAL_SPEED)
     end
 
     if not is_on_ground then
@@ -373,7 +378,7 @@ function player.update(self)
     end
 
 
-    EPSILON = 0.4
+    EPSILON = 2.0
     if math.abs(self.velocity.x) < EPSILON then
         self.velocity.x = 0
     end
@@ -381,7 +386,7 @@ function player.update(self)
         self.velocity.y = 0
     end
 
-    self.velocity.y = clamp(self.velocity.y, -PLAYER_MAX_FALL_SPEED,       PLAYER_MAX_FALL_SPEED)
+    self.velocity.y = math.clamp(self.velocity.y, -PLAYER_MAX_FALL_SPEED, PLAYER_MAX_FALL_SPEED)
 
     local moving_right = self.velocity.x > 0
     local moving_left  = self.velocity.x < 0
@@ -426,6 +431,14 @@ function player.update(self)
         self.velocity.y = 0
     end
 
+    if self.velocity.y ~= 0 then
+        self.sprite = PLAYER_SPRITE_JUMP
+    elseif self.velocity.x ~= 0 then
+        self.sprite = PLAYER_SPRITE_RUNNING
+    else
+        self.sprite = PLAYER_SPRITE_IDLE
+    end
+
     self.x = desired_x
     self.y = desired_y
 
@@ -441,7 +454,10 @@ function player.draw(self)
     local flip = self.looking_left and 1 or 0
 
     local tx, ty = game.camera_window:transform_coordinates(self.x, self.y)
-    spr(257, tx, ty, colorkey, scale, flip)
+
+    self.sprite:nextFrame()
+    spr(self.sprite:current(), tx, ty, colorkey, scale, flip)
+
     -- Дебаг 🐜
     if false then
         for i, r in ipairs(debug_rects) do

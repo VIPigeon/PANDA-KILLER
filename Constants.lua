@@ -29,10 +29,10 @@ KEY_D = 04
 
 ]]--
 
-BUTTON_A = 4
-BUTTON_B = 5
-BUTTON_X = 6
-BUTTON_Y = 7
+BUTTON_Z = 4
+BUTTON_X = 5
+BUTTON_A = 6
+BUTTON_S = 7
 
 -----------------------------
 

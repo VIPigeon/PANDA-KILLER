@@ -33,7 +33,6 @@ function game.update()
     map(camera_window.gm.x, camera_window.gm.y, 31, 18, camera_window.gm.sx, camera_window.gm.sy)
     entities:draw(pandas)
     player:draw()
-    dialog_window:draw()
     draw_blood(80,80,-1)
     draw_psystems()
 
