@@ -24,7 +24,8 @@ local zoneminy = 100
 local zonemaxy = 127
 
 function draw_blood(x,y,orientation) -- orientation (1 вправо) (-1 влево)
-    if btn(5) then --Использовать на кнопку X
+    -- ДАНЯ 🤬!! Используй константы.
+    if btn(BUTTON_A) then --Использовать на кнопку X
         local ps =  make_psystem(minlife, maxlife, minstartsize, maxstartsize, minendsize, maxendsize)
         
         table.insert(ps.emittimers,

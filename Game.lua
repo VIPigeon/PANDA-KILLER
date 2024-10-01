@@ -6,7 +6,7 @@ end
 
 function game.init()
     game.player = player
-    game.pandas = {Panda:new(20,20), Panda:new(10,10), Panda:new(20,10)}
+    game.pandas = {Panda:new(130,95)}
     game.dialog_window = DialogWindow:new(100,50,"dhslj\naio")
 
     local camera_rect = Rect:new(player.x - 16, player.y - 8, CAMERA_WINDOW_WIDTH, CAMERA_WINDOW_HEIGHT)
@@ -33,7 +33,8 @@ function game.update()
     map(camera_window.gm.x, camera_window.gm.y, 31, 18, camera_window.gm.sx, camera_window.gm.sy)
     entities:draw(pandas)
     player:draw()
-    draw_blood(80,80,-1)
+    local bx, by = camera_window:transform_coordinates(player.x, player.y)
+    draw_blood(bx,by,-1)
     draw_psystems()
 
     -- Обязательно должно выполняться последним

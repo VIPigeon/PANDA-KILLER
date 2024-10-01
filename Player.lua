@@ -53,7 +53,7 @@ PLAYER_WALL_JUMP_VERTICAL_STRENGTH = 120.0
 PLAYER_REMOVE_SPEED_LIMIT_AFTER_WALL_JUMP_TIME = 0.26
 PLAYER_DELAY_AFTER_JUMP_BEFORE_STICKING_TO_WALL = 0.2
 
-PLAYER_ATTACK_DURATION = 1.0
+PLAYER_ATTACK_DURATION = 0.2
 
 PLAYER_COYOTE_TIME = 0.23
 PLAYER_JUMP_BUFFER_TIME = 0.18
@@ -67,7 +67,8 @@ PLAYER_JUMP_STRENGTH = math.sqrt(2 * PLAYER_GRAVITY * PLAYER_JUMP_HEIGHT)
 
 PLAYER_SPRITE_IDLE = Sprite:new({257})
 PLAYER_SPRITE_RUNNING = Sprite:new({258, 258, 258, 258, 259, 259, 259, 259})
-PLAYER_SPRITE_ATTACK = Sprite:new({276, 277})
+-- А что? 😳
+PLAYER_SPRITE_ATTACK = Sprite:new({276, 276, 276, 276, 276, 276, 277, 277, 277, 277, 277, 277})
 PLAYER_SPRITE_JUMP = Sprite:new({273})
 PLAYER_SPRITE_DEAD = Sprite:new({274})
 
@@ -93,6 +94,7 @@ player = {
 
     time_before_we_can_stick_to_wall = 0.0,
     coyote_time = 0.0,
+    attack_timer = 0.0,
     jump_buffer_time = 0.0,
     remove_horizontal_speed_limit_time = 0.0,
 
@@ -291,16 +293,74 @@ function player.update(self)
     end
 
     -- 2. Считываем ввод, работаем только с self.velocity
-    local attacking = btnp(BUTTON_X)
     local walking_right = btn(BUTTON_RIGHT)
     local walking_left = btn(BUTTON_LEFT)
-    local jump_inputted = btnp(BUTTON_UP) or btnp(BUTTON_Z)
-    if jump_inputted then
+    local looking_down = btn(BUTTON_DOWN)
+    local looking_up = btn(BUTTON_UP)
+    local jump_pressed = btnp(BUTTON_Z)
+    local attack_pressed = btnp(BUTTON_X)
+    if jump_pressed then
       self.jump_buffer_time = PLAYER_JUMP_BUFFER_TIME
     end
 
-    if attacking then
-        self.attacked_at = Time.total_time_passed_ms
+    if attack_pressed then
+        if self.attack_timer == 0 then
+            self.attack_timer = PLAYER_ATTACK_DURATION
+        else
+            -- Может быть сделать буфер для атаки? 🤔
+        end
+    end
+
+    if self.attack_timer == 0 then
+        self.attack_hitbox = nil
+    else
+        local attack_x = self.x
+        local attack_y = self.y
+
+        -- Это сделано для испольнения Clean Code принципа (c)
+        -- Don't Repeat Yourself (DRY). Я, как хороший программист,
+        -- стремлюсь всегда следовать best practices и использовать
+        -- design patterns. Мой код проверяется на S.O.L.I.D, YAGNI,
+        -- G.R.A.S.P, и т.д. и т.п. Люблю TDD, DDD и OOP.
+        --
+        -- Опыт работы: нету, но стремлюсь улучшиться в этом аспекте
+        -- Пет проекты: я все пытался сделать, но потом сразу понимал,
+        --              насколько плоха architecture проекта, поэтому
+        --              я их начинал с нуля, используя более современные
+        --              best practices
+        --
+        -- Буду рад работать у вас 😻! -- kawaii-Год
+        local diagonal_movement = 0
+        if walking_left then
+            diagonal_movement = 0 - 8
+        elseif walking_right then
+            -- Я хотел написать +8, но lua не смог откомпилировать, поэтому...
+            diagonal_movement = 0 + 8
+        end
+
+        if looking_down then
+            attack_y = attack_y + 8
+            attack_x = attack_x + diagonal_movement
+        elseif looking_up then
+            attack_y = attack_y - 8
+            attack_x = attack_x + diagonal_movement
+        else
+            if self.looking_left then
+                attack_x = attack_x - 8
+            else
+                attack_x = attack_x + 8
+            end
+        end
+
+        self.attack_hitbox = Rect:new(attack_x, attack_y, 8, 8)
+        local collision = check_collision_hitbox_tilemap(self.attack_hitbox)
+        if collision ~= nil then
+            self.attack_timer = 0
+        end
+
+        for _, panda in ipairs(game.pandas) do
+            if check_collision_rect_rect(self.attack_hitbox, panda.hitbox)
+        end
     end
 
     if is_on_ground then
@@ -378,7 +438,7 @@ function player.update(self)
     end
 
 
-    EPSILON = 2.0
+    EPSILON = 4.0
     if math.abs(self.velocity.x) < EPSILON then
         self.velocity.x = 0
     end
@@ -431,7 +491,9 @@ function player.update(self)
         self.velocity.y = 0
     end
 
-    if self.velocity.y ~= 0 then
+    if self.attack_timer > 0 then
+        self.sprite = PLAYER_SPRITE_ATTACK
+    elseif self.velocity.y ~= 0 then
         self.sprite = PLAYER_SPRITE_JUMP
     elseif self.velocity.x ~= 0 then
         self.sprite = PLAYER_SPRITE_RUNNING
@@ -446,6 +508,7 @@ function player.update(self)
     self.jump_buffer_time = math.max(self.jump_buffer_time - Time.dt(), 0.0)
     self.coyote_time = math.max(self.coyote_time - Time.dt(), 0.0)
     self.remove_horizontal_speed_limit_time = math.max(self.remove_horizontal_speed_limit_time - Time.dt(), 0.0)
+    self.attack_timer = math.max(self.attack_timer - Time.dt(), 0.0)
 end
 
 function player.draw(self)
@@ -465,4 +528,8 @@ function player.draw(self)
         end
     end
     debug_rects = {}
+
+    if self.attack_hitbox then
+        self.attack_hitbox:drawDebug()
+    end
 end
