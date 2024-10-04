@@ -21,11 +21,7 @@
 ЛИЦЕНЗИЯ: Использовать этот код в коммерческих целях ЗАПРЕЩЕНО.
 Если очень хочется, то нужно заплатить мне $10. (c) кавайный-код
 
---]]
 
--- ⏰
-
---[[
 
 Итак, объясняю как работает прыжок от стены 🤓
 
@@ -54,6 +50,7 @@ PLAYER_REMOVE_SPEED_LIMIT_AFTER_WALL_JUMP_TIME = 0.26
 PLAYER_DELAY_AFTER_JUMP_BEFORE_STICKING_TO_WALL = 0.2
 
 PLAYER_ATTACK_DURATION = 0.2
+PLAYER_DAMAGE = 10
 
 PLAYER_COYOTE_TIME = 0.23
 PLAYER_JUMP_BUFFER_TIME = 0.18
@@ -120,7 +117,6 @@ end
 
 local debug_rects = {}
 
-
 function player.update(self)
     -- Краткое описание update() 📰
     --
@@ -182,11 +178,8 @@ function player.update(self)
     end
 
     if self.attack_timer == 0 then
-        self.attack_hitbox = nil
+        self.attack_rect = nil
     else
-        local attack_x = self.x
-        local attack_y = self.y
-
         -- Это сделано для испольнения Clean Code принципа (c)
         -- Don't Repeat Yourself (DRY). Я, как хороший программист,
         -- стремлюсь всегда следовать best practices и использовать
@@ -200,36 +193,61 @@ function player.update(self)
         --              best practices
         --
         -- Буду рад работать у вас 😻! -- kawaii-Год
-        local diagonal_movement = 0
+        --
+        -- side note:
+        -- Точно ли атаки по диагонали - хорошая идея?
+        local diagonal_direction = 0
         if walking_left then
-            diagonal_movement = 0 - 8
+            diagonal_direction = 0 - 1
         elseif walking_right then
-            -- Я хотел написать +8, но lua не смог откомпилировать, поэтому...
-            diagonal_movement = 0 + 8
+            -- Я хотел написать просто +1, но lua не смог откомпилировать, поэтому...
+            diagonal_direction = 0 + 1
         end
 
+        local attack_direction_x = 0
+        local attack_direction_y = 0
         if looking_down then
-            attack_y = attack_y + 8
-            attack_x = attack_x + diagonal_movement
+            attack_direction_y = attack_direction_y + 1
+            attack_direction_x = attack_direction_x + diagonal_direction
         elseif looking_up then
-            attack_y = attack_y - 8
-            attack_x = attack_x + diagonal_movement
+            attack_direction_y = attack_direction_y - 1
+            attack_direction_x = attack_direction_x + diagonal_direction
         else
             if self.looking_left then
-                attack_x = attack_x - 8
+                attack_direction_x = attack_direction_x - 1
             else
-                attack_x = attack_x + 8
+                attack_direction_x = attack_direction_x + 1
             end
         end
 
-        self.attack_rect = Rect:new(attack_x, attack_y, 8, 8)
-        local collision = Physics.check_collision_rect_tilemap(self.attack_rect)
-        if collision ~= nil then
+        local attack_width = 6
+        local attack_height = 6
+        local attack_x = self.x + 4 - attack_width / 2 + attack_direction_x * 8
+        local attack_y = self.y + 4 - attack_height / 2 + attack_direction_y * 8
+        self.attack_rect = Rect:new(attack_x, attack_y, attack_width, attack_height)
+
+        local attack_tilemap_collision = Physics.check_collision_rect_tilemap(self.attack_rect)
+        if attack_tilemap_collision ~= nil then
             self.attack_timer = 0
         end
 
-        --for _, panda in ipairs(game.pandas) do
-        --end
+        hit_pandas = {}
+        for _, panda in ipairs(game.pandas) do
+            if Physics.check_collision_rect_rect(self.attack_rect, Hitbox.rect_of(panda)) then
+                table.insert(hit_pandas, panda)
+            end
+        end
+        if #hit_pandas > 0 then
+            if looking_down then
+                self.velocity.y = PLAYER_JUMP_STRENGTH
+            end
+
+            for _, panda in ipairs(hit_pandas) do
+                panda:harm(PLAYER_DAMAGE)
+                panda:stun(attack_direction_x, attack_direction_y)
+            end
+            self.attack_timer = 0
+        end
     end
 
     if is_on_ground then
@@ -328,10 +346,10 @@ function player.update(self)
 
     -- 3. Проверка коллизий
     local next_x = self.x + self.velocity.x * Time.dt()
-    --local rect_after_x_move = Rect.combine(
-    --    Hitbox.rect_of(self),
-    --)
-    local rect_after_x_move = Hitbox.to_rect(self.hitbox, next_x, self.y)
+    local rect_after_x_move = Rect.combine(
+        Hitbox.rect_of(self),
+        Hitbox.to_rect(self.hitbox, next_x, self.y)
+    )
     local horizontal_collision = Physics.check_collision_rect_tilemap(rect_after_x_move)
     if horizontal_collision ~= nil then
         if moving_right then
@@ -401,7 +419,7 @@ function player.draw(self)
     end
     debug_rects = {}
 
-    if self.attack_hitbox then
-        self.attack_hitbox:drawDebug()
+    if self.attack_rect then
+        self.attack_rect:draw()
     end
 end

@@ -26,6 +26,8 @@ function Panda:new(x, y)
     local ahahahahha = {
         sprite = data.panda.sprite.stay_boring,
         hitbox = Hitbox:new(2, 0, 4, 8),
+        status = 'normal',
+        stunned_time = 0.0,
         --flip = 0,
         --rotate = 0,
         x = x, y = y,
@@ -136,7 +138,29 @@ function Panda:update()
 
     self:update_target()
 
-    self:special_panda_moving()
+    if self.status == 'normal' then
+        self:special_panda_moving()
+    elseif self.status == 'stunned' then
+        self.stunned_time = self.stunned_time + Time.dt()
+        if self.stunned_time > 1.0 then
+            self.status = 'normal'
+        end
+    else
+        assert(false) -- ✂
+    end
+end
+
+function Panda:stun(hit_x, hit_y)
+    if hit_x < 0 then
+        create_blood(self.x, self.y, -1)
+    elseif hit_x > 0 then
+        create_blood(self.x, self.y, 1)
+    else
+        create_blood(self.x, self.y, -1)
+        create_blood(self.x, self.y, 1)
+    end
+    self.status = 'stunned'
+    self.stunned_time = 0.0
 end
 
 function Panda:harm(damage)
