@@ -181,7 +181,6 @@ function Panda:special_panda_moving()
     local hugging_right_wall = collision_to_the_right ~= nil
     local will_hug_right_wall_soon = check_collision_hitbox_tilemap(hitbox_as_if_it_was_at(self.hitbox, self.x + READY_TO_JUMP_DISTANCE_CONSTANT, self.y)) ~= nil
 
-    trace(tostring(is_on_ground)..' - '..tostring(hugging_left_wall)..' - '..tostring(hugging_right_wall)..' - '..self.current_jump_strenth)
 
     -- 💩💩 DIRT NEED REFACTORING 💩💩
     if not is_on_ground and self.velocity.y == UPPING_CONSTANT then

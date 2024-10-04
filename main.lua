@@ -1,5 +1,7 @@
 require 'Localization'
+require 'Hitbox'
 require 'Rect'
+require 'Physics'
 require 'CameraWindow'
 require 'DialogWindow'
 require 'Game'
@@ -10,12 +12,11 @@ require 'Constants'
 require 'Sprite'
 require 'AnimeParticlesBackup'
 require 'Blood'
-require 'Player'
-require 'Hitbox'
 require 'Body'
 require 'Data'
 require 'ThePanda'
 require 'Entities'
+require 'Player'
 
 game.init()
 

@@ -80,13 +80,7 @@ player = {
         x = 0,
         y = 0,
     },
-    hitbox = {
-        offset_x = 2,
-        offset_y = 0,
-        width = 4,
-        height = 8,
-    },
-
+    hitbox = Hitbox:new(2, 0, 4, 8), -- 2048 🤓
     stuck_to_left_wall = false,
     stuck_to_right_wall = false,
     looking_left = false,
@@ -97,69 +91,10 @@ player = {
     attack_timer = 0.0,
     jump_buffer_time = 0.0,
     remove_horizontal_speed_limit_time = 0.0,
+    time_we_have_been_running = 0.0,
 
     sprite = PLAYER_SPRITE_IDLE,
 }
-
-
--- TODO: Все эти функции с хитбоксами нужно куда-то убрать
---
--- Одной из проблем в бумеранге было то, что координаты
--- объекта (x, y) нужно было постоянно копировать в hitbox,
--- потому что он тоже требовал глобальные координаты.
--- Может вот такое решение будет лучше.
-local function hitbox_top(something_with_hitbox)
-    return something_with_hitbox.y + something_with_hitbox.hitbox.offset_y
-end
-
-local function hitbox_bottom(something_with_hitbox)
-    return hitbox_top(something_with_hitbox) + something_with_hitbox.hitbox.height
-end
-
-local function hitbox_left(something_with_hitbox)
-    return something_with_hitbox.x + something_with_hitbox.hitbox.offset_x
-end
-
-local function hitbox_right(something_with_hitbox)
-    return hitbox_left(something_with_hitbox) + something_with_hitbox.hitbox.width
-end
-
---[[
-
-+---+     +-+      +---+
-|   |  +  | |   =  |   |
-+---+     | |      |   |
-          +-+      +---+
-
---]]
-local function combine_hitboxes(h1, h2)
-    local x1 = math.min(h1.x, h2.x)
-    local y1 = math.min(h1.y, h2.y)
-    local x2 = math.max(h1.x + h1.w, h2.x + h2.w)
-    local y2 = math.max(h1.y + h1.h, h2.y + h2.h)
-    return {
-        x = x1,
-        y = y1,
-        w = x2 - x1,
-        h = y2 - y1,
-    }
-end
-
--- Дуальность хитбоксов с оффсетом и без меня подбешивает 🤬
--- Есть хитбокс с offset_x, offset_y, который нужно прицеплять к другому
--- игровому объекту, а есть самостоятельный хитбокс (просто прямоугольник)
--- у которого есть x, y -- мировые координаты. И с ними
--- немного путаница. Вот бы строго типизированный язык 😋
---
--- Эта функция переводит из оффсетного в самостоятельный прямоугольник
-local function hitbox_as_if_it_was_at(hitbox, x, y)
-    return {
-        x = x + hitbox.offset_x,
-        y = y + hitbox.offset_y,
-        w = hitbox.width,
-        h = hitbox.height,
-    }
-end
 
 
 -- TODO: Эту документацию нужно куда-то выделить
@@ -183,71 +118,6 @@ local function tile_to_world(x, y)
     return world_x, world_y
 end
 
-local function is_tile_solid(tile_id)
-    -- XD Это кому-то исправлять 😆😂😂
-    return tile_id == 1
-end
-
--- TODO: Уверен, в будущем нужно будет возвращать не только самое первое
--- столкновение, но вообще все столкновения, которые случились.
-local function check_collision_hitbox_tilemap(hitbox)
-    assert(hitbox.w ~= 0)
-    assert(hitbox.h ~= 0)
-
-    local x = hitbox.x
-    local y = hitbox.y
-    local x2 = hitbox.x + hitbox.w - 1
-    local y2 = hitbox.y + hitbox.h - 1
-
-    local tile_x = x // 8
-    local tile_y = y // 8
-
-    local tile_x1 = x // 8
-    local tile_y1 = y // 8
-    local tile_x2 = x2 // 8
-    local tile_y2 = y2 // 8
-
-    while y <= y2 do
-        while x <= x2 do
-            local tile_id = mget(tile_x, tile_y)
-
-            if is_tile_solid(tile_id) then
-                return {
-                    x = 8 * tile_x,
-                    y = 8 * tile_y,
-                }
-            end
-
-            tile_x = tile_x + 1
-            x = x + 8
-        end
-
-        y = y + 8
-        tile_y = tile_y + 1
-        x = hitbox.x
-        tile_x = x // 8
-    end
-
-    if is_tile_solid(mget(tile_x2, tile_y1)) then
-        return { x = 8 * tile_x2, y = 8 * tile_y1 }
-    end
-
-    if is_tile_solid(mget(tile_x1, tile_y2)) then
-        return { x = 8 * tile_x1, y = 8 * tile_y2 }
-    end
-
-    if is_tile_solid(mget(tile_x2, tile_y2)) then
-        return { x = 8 * tile_x2, y = 8 * tile_y2 }
-    end
-
-    return nil
-end
-
-
-local function trace_hitbox(hitbox)
-    trace('x = ' .. hitbox.x .. ' y = ' .. hitbox.y .. ' w = ' .. hitbox.w .. ' h = ' .. hitbox.h)
-end
-
 local debug_rects = {}
 
 
@@ -262,7 +132,7 @@ function player.update(self)
     --    подействует ускорение(!) направленное направо. Фактически здесь мы
     --    определяем player.velocity
     --
-    -- 3. Пытаемся применить изменения в позиции (desired_x, desired_y). Однако
+    -- 3. Пытаемся применить изменения в позиции (next_x, next_y). Однако
     --    реальный мир забирает нашу свободу 🗽❌! Нужно проверить, что мы не
     --    столкнулись ни с чем. А если столкнулись, то нужно поставить игрока
     --    настолько близко к месту к столкновению, насколько возможно. Другими
@@ -272,13 +142,13 @@ function player.update(self)
 
 
     -- 1. Запросы. Ничего интересного
-    local ground_collision = check_collision_hitbox_tilemap(hitbox_as_if_it_was_at(self.hitbox, self.x, self.y + 1))
+    local ground_collision = Physics.check_collision_rect_tilemap(self.hitbox:to_rect(self.x, self.y + 1))
     local is_on_ground = ground_collision ~= nil
 
-    local collision_to_the_left = check_collision_hitbox_tilemap(hitbox_as_if_it_was_at(self.hitbox, self.x - 1, self.y))
+    local collision_to_the_left = Physics.check_collision_rect_tilemap(self.hitbox:to_rect(self.x - 1, self.y))
     local hugging_left_wall = collision_to_the_left ~= nil
 
-    local collision_to_the_right = check_collision_hitbox_tilemap(hitbox_as_if_it_was_at(self.hitbox, self.x + 1, self.y))
+    local collision_to_the_right = Physics.check_collision_rect_tilemap(self.hitbox:to_rect(self.x + 1, self.y))
     local hugging_right_wall = collision_to_the_right ~= nil
 
     -- Для дебага
@@ -352,15 +222,14 @@ function player.update(self)
             end
         end
 
-        self.attack_hitbox = Rect:new(attack_x, attack_y, 8, 8)
-        local collision = check_collision_hitbox_tilemap(self.attack_hitbox)
+        self.attack_rect = Rect:new(attack_x, attack_y, 8, 8)
+        local collision = Physics.check_collision_rect_tilemap(self.attack_rect)
         if collision ~= nil then
             self.attack_timer = 0
         end
 
-        for _, panda in ipairs(game.pandas) do
-            if check_collision_rect_rect(self.attack_hitbox, panda.hitbox)
-        end
+        --for _, panda in ipairs(game.pandas) do
+        --end
     end
 
     if is_on_ground then
@@ -458,35 +327,33 @@ function player.update(self)
 
 
     -- 3. Проверка коллизий
-    local desired_x = self.x + self.velocity.x * Time.dt()
-    local hitbox_after_x_move = combine_hitboxes(
-        hitbox_as_if_it_was_at(self.hitbox, self.x, self.y),
-        hitbox_as_if_it_was_at(self.hitbox, desired_x, self.y)
-    )
-    local horizontal_collision = check_collision_hitbox_tilemap(hitbox_after_x_move)
+    local next_x = self.x + self.velocity.x * Time.dt()
+    --local rect_after_x_move = Rect.combine(
+    --    Hitbox.rect_of(self),
+    --)
+    local rect_after_x_move = Hitbox.to_rect(self.hitbox, next_x, self.y)
+    local horizontal_collision = Physics.check_collision_rect_tilemap(rect_after_x_move)
     if horizontal_collision ~= nil then
-        -- desired_x is busted 💣
         if moving_right then
-            desired_x = horizontal_collision.x - self.hitbox.width - self.hitbox.offset_x
+            next_x = horizontal_collision.x - self.hitbox.width - self.hitbox.offset_x
         else
-            desired_x = horizontal_collision.x + self.hitbox.width + self.hitbox.offset_x
+            next_x = horizontal_collision.x + self.hitbox.width + self.hitbox.offset_x
         end
         self.velocity.x = 0
     end
 
-    local desired_y = self.y - self.velocity.y * Time.dt()
-    local hitbox_after_y_move = combine_hitboxes(
-        hitbox_as_if_it_was_at(self.hitbox, self.x, self.y),
-        hitbox_as_if_it_was_at(self.hitbox, self.x, desired_y)
+    local next_y = self.y - self.velocity.y * Time.dt()
+    local rect_after_y_move = Rect.combine(
+        Hitbox.rect_of(self),
+        Hitbox.to_rect(self.hitbox, self.x, next_y)
     )
-    local vertical_collision = check_collision_hitbox_tilemap(hitbox_after_y_move)
+    local vertical_collision = Physics.check_collision_rect_tilemap(rect_after_y_move)
     if vertical_collision ~= nil then
-        -- desired_y is busted 💣
         local flying_down = self.velocity.y < 0
         if flying_down then
-            desired_y = vertical_collision.y - self.hitbox.height
+            next_y = vertical_collision.y - self.hitbox.height - self.hitbox.offset_y
         else
-            desired_y = vertical_collision.y + self.hitbox.height
+            next_y = vertical_collision.y + self.hitbox.height + self.hitbox.offset_y
         end
         self.velocity.y = 0
     end
@@ -495,20 +362,25 @@ function player.update(self)
         self.sprite = PLAYER_SPRITE_ATTACK
     elseif self.velocity.y ~= 0 then
         self.sprite = PLAYER_SPRITE_JUMP
-    elseif self.velocity.x ~= 0 then
+    elseif self.time_we_have_been_running > 0.1 and self.velocity.x ~= 0 then
         self.sprite = PLAYER_SPRITE_RUNNING
     else
         self.sprite = PLAYER_SPRITE_IDLE
     end
 
-    self.x = desired_x
-    self.y = desired_y
+    self.x = next_x
+    self.y = next_y
 
     self.time_before_we_can_stick_to_wall = math.max(self.time_before_we_can_stick_to_wall - Time.dt(), 0.0)
     self.jump_buffer_time = math.max(self.jump_buffer_time - Time.dt(), 0.0)
     self.coyote_time = math.max(self.coyote_time - Time.dt(), 0.0)
     self.remove_horizontal_speed_limit_time = math.max(self.remove_horizontal_speed_limit_time - Time.dt(), 0.0)
     self.attack_timer = math.max(self.attack_timer - Time.dt(), 0.0)
+    if self.velocity.x ~= 0 then
+        self.time_we_have_been_running = self.time_we_have_been_running + Time.dt()
+    else
+        self.time_we_have_been_running = 0
+    end
 end
 
 function player.draw(self)
