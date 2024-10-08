@@ -14,7 +14,7 @@ data.bad_tile = {}
 data.panda = {}
 
 data.bad_tile = {
-	bad_tile1 = 53
+	bad_tile1 = 32
 }
 
 data.panda.sprite = {
