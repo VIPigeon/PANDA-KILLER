@@ -25,9 +25,9 @@ local zonemaxy = 127
 
 function draw_blood(x,y,orientation) -- orientation (1 вправо) (-1 влево)
     -- ДАНЯ 🤬!! Используй константы.
-    if btn(BUTTON_A) then --Использовать на кнопку X
-        create_blood(x, y, orientation)
-    end
+    --if btn(BUTTON_A) then --Использовать на кнопку X
+    --    create_blood(x, y, orientation)
+    --end
 end
 
 function create_blood(x, y, orientation)

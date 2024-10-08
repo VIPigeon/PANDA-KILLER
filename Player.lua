@@ -159,11 +159,11 @@ function player.update(self)
     end
 
     -- 2. Считываем ввод, работаем только с self.velocity
-    local walking_right = btn(BUTTON_RIGHT)
-    local walking_left = btn(BUTTON_LEFT)
-    local looking_down = btn(BUTTON_DOWN)
-    local looking_up = btn(BUTTON_UP)
-    local jump_pressed = btnp(BUTTON_Z)
+    local walking_right = btn(BUTTON_RIGHT) or key(KEY_D)
+    local walking_left = btn(BUTTON_LEFT) or key(KEY_A)
+    local looking_down = btn(BUTTON_DOWN) or key(KEY_S)
+    local looking_up = btn(BUTTON_UP) or key(KEY_W)
+    local jump_pressed = btnp(BUTTON_Z) or keyp(KEY_W)
     local attack_pressed = btnp(BUTTON_X)
     if jump_pressed then
       self.jump_buffer_time = PLAYER_JUMP_BUFFER_TIME
