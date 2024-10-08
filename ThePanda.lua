@@ -14,10 +14,10 @@ local CONSTANT_CONSTANT = 0
 
 local DEFAULT_HORIZONTAL_MOVEMENT_SPEED = 10
 local READY_TO_JUMP_DISTANCE_CONSTANT = 10
-local VERTICAL_JUMP_SPEED_CONSTANT = 20
+local VERTICAL_JUMP_SPEED_CONSTANT = 25
 local HORIZONTAL_JUMP_SPEED_CONSTANT = 10
-local VERTICAL_AFTERJUMP_SPEED_CONSTANT = 1 -- so called anti_jump_speed
-local HORIZONTAL_AFTERJUMP_SPEED_CONSTANT = 4
+local VERTICAL_AFTERJUMP_SPEED_CONSTANT = 5 -- so called anti_jump_speed
+local HORIZONTAL_AFTERJUMP_SPEED_CONSTANT = 5
 local DEFAULT_JUMP_STRENTH = 1
 local JUMP_STRENTH_FADING = 1
 
@@ -181,7 +181,7 @@ function Panda:special_panda_moving()
     local hugging_right_wall = collision_to_the_right ~= nil
     local will_hug_right_wall_soon = check_collision_hitbox_tilemap(hitbox_as_if_it_was_at(self.hitbox, self.x + READY_TO_JUMP_DISTANCE_CONSTANT, self.y)) ~= nil
 
-    trace(tostring(is_on_ground)..' - '..tostring(hugging_left_wall)..' - '..tostring(hugging_right_wall)..' - '..self.current_jump_strenth)
+    --trace(tostring(is_on_ground)..' - '..tostring(hugging_left_wall)..' - '..tostring(hugging_right_wall)..' - '..self.current_jump_strenth)
 
     -- 💩💩 DIRT NEED REFACTORING 💩💩
     if not is_on_ground and self.velocity.y == UPPING_CONSTANT then
@@ -209,7 +209,7 @@ function Panda:special_panda_moving()
 
     if self.target.x >= self.x then
         self.velocity.x = RIGHTING_CONSTANT
-        if will_hug_right_wall and is_on_ground then
+        if will_hug_right_wall_soon and is_on_ground then
             self.velocity.y = UPPING_CONSTANT
             self.current_horizontal_speed = HORIZONTAL_JUMP_SPEED_CONSTANT
             self.current_vertical_speed = VERTICAL_JUMP_SPEED_CONSTANT

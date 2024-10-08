@@ -6,8 +6,9 @@ end
 
 function game.init()
     game.player = player
-    game.pandas = {Panda:new(20,20), Panda:new(10,10), Panda:new(20,10)}
-    game.dialog_window = DialogWindow:new(100,50,"dhslj\naio")
+    game.pandas = {Panda:new(156,104), Panda:new(10,10), Panda:new(20,10)}
+    game.triggers = {TriggerTile:new(20,90,20,20)}
+    game.dialog_window = DialogWindow:new(100,50,"defeat\nato😲")
 
     local camera_rect = Rect:new(player.x - 16, player.y - 8, CAMERA_WINDOW_WIDTH, CAMERA_WINDOW_HEIGHT)
     game.camera_window = CameraWindow:new(camera_rect, player, 8, 8)

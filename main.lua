@@ -16,6 +16,7 @@ require 'Body'
 require 'Data'
 require 'ThePanda'
 require 'Entities'
+require 'TheTrigger'
 
 game.init()
 
