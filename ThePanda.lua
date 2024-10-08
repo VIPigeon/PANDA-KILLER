@@ -25,12 +25,9 @@ function Panda:new(x, y)
     trace('Im spawned SENPAI!😍')
     local ahahahahha = {
         sprite = data.panda.sprite.stay_boring,
-        hitbox = { -- это надо будет менять на хороший код, но пока сделаю как у нас повелось среди убийц панд
-            offset_x = 2,
-            offset_y = 0,
-            width = 4,
-            height = 8,
-        },
+        hitbox = Hitbox:new(2, 0, 4, 8),
+        status = 'normal',
+        stunned_time = 0.0,
         --flip = 0,
         --rotate = 0,
         x = x, y = y,
@@ -49,7 +46,7 @@ function Panda:new(x, y)
     }
 
     setmetatable(ahahahahha, self)
-    self.__index = self; return ahahahahha
+    return ahahahahha
 end
 
 local function check_player_location()
@@ -58,111 +55,13 @@ local function check_player_location()
     return {x = goto_x, y = goto_y}
 end
 
--- ⚠⚠💀⚡💀⚠⚠ DANGER COPYPASTINGS AND BAD CODE ALERT ⚠⚠💀⚡💀⚠⚠
--- Я просто скопирую код Вани сюда, потому что он делает платформер, значит сделать хорошую архитектуру платформера это его забота
-
-local function hitbox_top(something_with_hitbox)
-    return something_with_hitbox.y + something_with_hitbox.hitbox.offset_y
-end
-local function hitbox_bottom(something_with_hitbox)
-    return hitbox_top(something_with_hitbox) + something_with_hitbox.hitbox.height
-end
-local function hitbox_left(something_with_hitbox)
-    return something_with_hitbox.x + something_with_hitbox.hitbox.offset_x
-end
-local function hitbox_right(something_with_hitbox)
-    return hitbox_left(something_with_hitbox) + something_with_hitbox.hitbox.width
-end
-
-local function hitbox_as_if_it_was_at(hitbox, x, y)
-    return {
-        x = x + hitbox.offset_x,
-        y = y + hitbox.offset_y,
-        w = hitbox.width,
-        h = hitbox.height,
-    }
-end
-
-local function world_to_tile(x, y)
-    local tile_x = x // 8
-    local tile_y = y // 8
-    return tile_x, tile_y
-end
-
-local function tile_to_world(x, y)
-    local world_x = x * 8
-    local world_y = y * 8
-    return world_x, world_y
-end
-
-local function is_tile_solid(tile_id)
-    -- XD Это кому-то исправлять 😆😂😂
-    return tile_id == 1
-end
-
--- TODO: Уверен, в будущем нужно будет возвращать не только самое первое
--- столкновение, но вообще все столкновения, которые случились.
-local function check_collision_hitbox_tilemap(hitbox)
-    assert(hitbox.w ~= 0)
-    assert(hitbox.h ~= 0)
-
-    local x = hitbox.x
-    local y = hitbox.y
-    local x2 = hitbox.x + hitbox.w - 1
-    local y2 = hitbox.y + hitbox.h - 1
-
-    local tile_x = x // 8
-    local tile_y = y // 8
-
-    local tile_x1 = x // 8
-    local tile_y1 = y // 8
-    local tile_x2 = x2 // 8
-    local tile_y2 = y2 // 8
-
-    while y <= y2 do
-        while x <= x2 do
-            local tile_id = mget(tile_x, tile_y)
-
-            if is_tile_solid(tile_id) then
-                return {
-                    x = 8 * tile_x,
-                    y = 8 * tile_y,
-                }
-            end
-
-            tile_x = tile_x + 1
-            x = x + 8
-        end
-
-        y = y + 8
-        tile_y = tile_y + 1
-        x = hitbox.x
-        tile_x = x // 8
-    end
-
-    if is_tile_solid(mget(tile_x2, tile_y1)) then
-        return { x = 8 * tile_x2, y = 8 * tile_y1 }
-    end
-
-    if is_tile_solid(mget(tile_x1, tile_y2)) then
-        return { x = 8 * tile_x1, y = 8 * tile_y2 }
-    end
-
-    if is_tile_solid(mget(tile_x2, tile_y2)) then
-        return { x = 8 * tile_x2, y = 8 * tile_y2 }
-    end
-
-    return nil
-end
-
--- 😌😌😌 BAD CODE ENDED. BAD CODE ENDED. BAD CODE ENDED 😌😌😌
-
 function Panda:update_target()
     -- todo optimization
     self.target = check_player_location()
     --trace('panda targeted: '..self.target.x..' '..self.target.y)
 end
 
+-- no, because otherwise ничего у тебя не получится 🤗
 -- double collision checking is shit
 function Panda:safe_move_directly_with_collision_check()
 
@@ -170,16 +69,16 @@ end
 
 function Panda:special_panda_moving()
     -- копипаста никуда не пропала
-    local ground_collision = check_collision_hitbox_tilemap(hitbox_as_if_it_was_at(self.hitbox, self.x, self.y + 1))
+    local ground_collision = Physics.check_collision_rect_tilemap(self.hitbox:to_rect(self.x, self.y + 1))
     local is_on_ground = ground_collision ~= nil
 
-    local collision_to_the_left = check_collision_hitbox_tilemap(hitbox_as_if_it_was_at(self.hitbox, self.x - 1, self.y))
+    local collision_to_the_left = Physics.check_collision_rect_tilemap(self.hitbox:to_rect(self.x - 1, self.y))
     local hugging_left_wall = collision_to_the_left ~= nil
-    local will_hug_left_wall_soon = check_collision_hitbox_tilemap(hitbox_as_if_it_was_at(self.hitbox, self.x - READY_TO_JUMP_DISTANCE_CONSTANT, self.y)) ~= nil
+    local will_hug_left_wall_soon = Physics.check_collision_rect_tilemap(self.hitbox:to_rect(self.x - READY_TO_JUMP_DISTANCE_CONSTANT, self.y)) ~= nil
 
-    local collision_to_the_right = check_collision_hitbox_tilemap(hitbox_as_if_it_was_at(self.hitbox, self.x + 1, self.y))
+    local collision_to_the_right = Physics.check_collision_rect_tilemap(self.hitbox:to_rect(self.x + 1, self.y))
     local hugging_right_wall = collision_to_the_right ~= nil
-    local will_hug_right_wall_soon = check_collision_hitbox_tilemap(hitbox_as_if_it_was_at(self.hitbox, self.x + READY_TO_JUMP_DISTANCE_CONSTANT, self.y)) ~= nil
+    local will_hug_right_wall_soon = Physics.check_collision_rect_tilemap(self.hitbox:to_rect(self.x + READY_TO_JUMP_DISTANCE_CONSTANT, self.y)) ~= nil
 
     --trace(tostring(is_on_ground)..' - '..tostring(hugging_left_wall)..' - '..tostring(hugging_right_wall)..' - '..self.current_jump_strenth)
 
@@ -240,7 +139,29 @@ function Panda:update()
 
     self:update_target()
 
-    self:special_panda_moving()
+    if self.status == 'normal' then
+        self:special_panda_moving()
+    elseif self.status == 'stunned' then
+        self.stunned_time = self.stunned_time + Time.dt()
+        if self.stunned_time > 1.0 then
+            self.status = 'normal'
+        end
+    else
+        assert(false) -- ✂
+    end
+end
+
+function Panda:stun(hit_x, hit_y)
+    if hit_x < 0 then
+        create_blood(self.x, self.y, -1)
+    elseif hit_x > 0 then
+        create_blood(self.x, self.y, 1)
+    else
+        create_blood(self.x, self.y, -1)
+        create_blood(self.x, self.y, 1)
+    end
+    self.status = 'stunned'
+    self.stunned_time = 0.0
 end
 
 function Panda:harm(damage)
@@ -248,6 +169,4 @@ function Panda:harm(damage)
     trace('woooooooooooooooo!')
 end
 
-
-
-return Panda
+Panda.__index = Panda
