@@ -69,6 +69,8 @@ PLAYER_SPRITE_ATTACK = Sprite:new({276, 276, 276, 276, 276, 276, 277, 277, 277, 
 PLAYER_SPRITE_JUMP = Sprite:new({273})
 PLAYER_SPRITE_DEAD = Sprite:new({274})
 
+PLAYER_START_X = 0
+PLAYER_START_Y = 40
 
 player = {
     x = 0,
@@ -82,6 +84,8 @@ player = {
     stuck_to_right_wall = false,
     looking_left = false,
     was_on_ground_last_frame = false,
+    is_dead = false,
+
 
     time_before_we_can_stick_to_wall = 0.0,
     coyote_time = 0.0,
@@ -399,6 +403,21 @@ function player.update(self)
     else
         self.time_we_have_been_running = 0
     end
+
+    -- проверка на колизию плохого тайла и изменение is_dead
+    local table = Physics.tile_ids_that_intersect_with_rect(self.hitbox:to_rect(self.x,self.y))
+    for _, collision in ipairs(table) do
+        for _, bad_tile in pairs(data.bad_tile) do
+        if collision.id == bad_tile then
+            self.is_dead = true
+            game.dialog_window.is_closed = false
+            game.status = false
+            self.x = PLAYER_START_X
+            self.y = PLAYER_START_Y
+        end
+        end
+    end
+
 end
 
 function player.draw(self)
