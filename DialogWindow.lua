@@ -74,13 +74,13 @@ function DialogWindow:draw_dialog_death()
 end 
 
 function DialogWindow:draw_monologue(trigger)
-    trace('hellp')
+    --trace('hellp')
     self.text = russian_to_translit(trigger.dialog_text)
     self.x = trigger.x + trigger.dialog_offset.x
     self.y = trigger.y + trigger.dialog_offset.y
     rect(self.x,self.y,MAX_WIDTH_SCREEN,MAX_HEIGHT_SCREEN,0)
     self:draw_dialog()
-    trace(self.text)
+    --trace(self.text)
 end
 
 function DialogWindow:close()
