@@ -1,5 +1,21 @@
 Panda = table.copy(Body)
 
+-- Стаггер - небольшое время стана после одного удара от игрока
+-- Если игрок бъет панду много раз и быстро, то она входит в стан
+
+-- Короче ну вас, не могу придумать название 🤬
+-- Если непонятно что это, то спросите. Не хочу
+-- даже в этом комментарии объяснять, что это такое!
+PANDA_TIME_INTERVAL_BETWEEN_HITS_FROM_PLAYER = 0.5
+PANDA_HITS_NEEDED_TO_GET_STUNNED = 3
+PANDA_STAGGER_TIME = 1.0
+PANDA_STUNNED_TIME = 3.5
+PANDA_FLY_AWAY_SPEED = 55.0
+PANDA_FLY_UP_SPEED = 30.0
+
+PANDA_GRAVITY = 139.7
+PANDA_FRICTION = 3.5
+
 -- vertical velocity constants
 local UPPING_CONSTANT = -1
 local FALLING_CONSTANT = 1
@@ -22,12 +38,11 @@ local DEFAULT_JUMP_STRENTH = 1
 local JUMP_STRENTH_FADING = 1
 
 function Panda:new(x, y)
-    trace('Im spawned SENPAI!😍')
     local ahahahahha = {
         sprite = data.panda.sprite.stay_boring,
         hitbox = Hitbox:new(2, 0, 4, 8),
         status = 'normal',
-        stunned_time = 0.0,
+        staggered_time = 0.0,
         --flip = 0,
         --rotate = 0,
         x = x, y = y,
@@ -43,6 +58,8 @@ function Panda:new(x, y)
         },
         current_jump_strenth = DEFAULT_JUMP_STRENTH, -- в кадрах наверное, хотя это в корне не верно
         health = 100,
+        time_of_most_recent_hit = 0,
+        count_of_recent_hits = 0,
     }
 
     setmetatable(ahahahahha, self)
@@ -133,24 +150,95 @@ function Panda:special_panda_moving()
 end
 
 function Panda:update()
-    
     local hugging_right_wall = collision_to_the_right ~= nil
 
     self:update_target()
 
     if self.status == 'normal' then
         self:special_panda_moving()
-    elseif self.status == 'stunned' then
-        self.stunned_time = self.stunned_time + Time.dt()
-        if self.stunned_time > 1.0 then
+    elseif self.status == 'staggered' then
+        self.staggered_time = self.staggered_time + Time.dt()
+        if self.staggered_time > PANDA_STAGGER_TIME then
             self.status = 'normal'
         end
+    elseif self.status == 'stunned' then
+        local next_x = self.x + self.velocity.x * Time.dt()
+        local next_y = self.y - self.velocity.y * Time.dt()
+
+        -- Здесь дубляж кода из `special_panda_moving()`, потому что другой
+        -- **сотрудник** решил сделать такую функцию. Если бы всё было свалено в
+        -- update-е, не пришлось бы копипастить. Вот так!
+        --
+        -- Нет, ну конечно, можно и без копипаста, но это будет изменение
+        -- больше, чем просто добавление ветки в if, а я не хочу сильно уродовать
+        -- код Myanmar-а 😍
+        local vertical_collision = Physics.check_collision_rect_tilemap(self.hitbox:to_rect(self.x, next_y))
+        local horizontal_collision = Physics.check_collision_rect_tilemap(self.hitbox:to_rect(self.x - 1, self.y))
+
+        self.velocity.x = self.velocity.x - (self.velocity.x * PANDA_FRICTION * Time.dt())
+
+        -- Хм, этот дубляж кода с игрока похоже можно вынести в какой-нибудь Rigidbody...
+        if vertical_collision ~= nil then
+            local flying_down = self.velocity.y < 0
+            if flying_down then
+                next_y = vertical_collision.y - self.hitbox.height - self.hitbox.offset_y
+            else
+                next_y = vertical_collision.y + self.hitbox.height + self.hitbox.offset_y
+            end
+            self.velocity.y = 0
+        else
+            self.velocity.y = self.velocity.y - PANDA_GRAVITY * Time.dt()
+        end
+
+        if horizontal_collision ~= nil then
+            local moving_right = self.velocity.x > 0
+            if moving_right then
+                next_x = horizontal_collision.x - self.hitbox.width - self.hitbox.offset_x
+            else
+                next_x = horizontal_collision.x + self.hitbox.width + self.hitbox.offset_x
+            end
+            self.velocity.x = -1 * self.velocity.x
+        end
+
+        self.stunned_time = self.stunned_time + Time.dt()
+        if self.stunned_time > PANDA_STUNNED_TIME then
+            self.status = 'normal'
+        end
+
+        -- 1.0 -- magic constant 🧙
+        if math.abs(self.velocity.x) < 1.0 then
+            self.velocity.x = 0
+        end
+
+        self.x = next_x
+        self.y = next_y
     else
         assert(false) -- ✂
+    end
+
+    if Time.now() - self.time_of_most_recent_hit > PANDA_TIME_INTERVAL_BETWEEN_HITS_FROM_PLAYER then
+        self.count_of_recent_hits = 0
     end
 end
 
 function Panda:stun(hit_x, hit_y)
+    if hit_x < 0 then
+        self.velocity.x = -PANDA_FLY_AWAY_SPEED
+    elseif hit_x > 0 then
+        self.velocity.x = PANDA_FLY_AWAY_SPEED
+    end
+    self.velocity.y = PANDA_FLY_UP_SPEED
+
+    self.status = 'stunned'
+    self.stunned_time = 0.0
+end
+
+function Panda:get_hit(hit_x, hit_y)
+    if self.status == 'stunned' then
+        table.removeElement(game.pandas, self)
+        return
+    end
+
     if hit_x < 0 then
         create_blood(self.x, self.y, -1)
     elseif hit_x > 0 then
@@ -159,13 +247,19 @@ function Panda:stun(hit_x, hit_y)
         create_blood(self.x, self.y, -1)
         create_blood(self.x, self.y, 1)
     end
-    self.status = 'stunned'
-    self.stunned_time = 0.0
+    self.status = 'staggered'
+    self.staggered_time = 0.0
+    self.count_of_recent_hits = self.count_of_recent_hits + 1
+    self.time_of_most_recent_hit = Time.now()
+    if self.count_of_recent_hits >= PANDA_HITS_NEEDED_TO_GET_STUNNED then
+        -- Не знаю можно ли
+        self:stun(hit_x, hit_y)
+        self.count_of_recent_hits = 0
+    end
 end
 
 function Panda:harm(damage)
     self.health = math.clamp(self.health - damage, 0, self.health)
-    trace('woooooooooooooooo!')
 end
 
 Panda.__index = Panda
