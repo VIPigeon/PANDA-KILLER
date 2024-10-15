@@ -1,4 +1,6 @@
-game = {}
+game = {
+    status = true
+}
 
 function game.debug_features_init()
 
@@ -19,6 +21,11 @@ function game.init()
 end
 
 function game.update()
+    if not game.status then
+        game.dialog_window:update()
+        game.dialog_window:draw()
+        return
+    end
     local player = game.player
     local dialog_window = game.dialog_window
     local camera_window = game.camera_window
@@ -37,7 +44,9 @@ function game.update()
     entities:draw(pandas)
     entities:draw(triggers)
     player:draw()
-    draw_blood(80,80,-1)
+    dialog_window:draw()
+    local bx, by = camera_window:transform_coordinates(player.x, player.y)
+    draw_blood(bx,by,-1)
     draw_psystems()
 
     -- Обязательно должно выполняться последним

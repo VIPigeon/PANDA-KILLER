@@ -40,7 +40,7 @@
 
 PLAYER_MAX_HORIZONTAL_SPEED = 67.0
 PLAYER_HORIZONTAL_ACCELERATION = 900.0
-PLAYER_FRICTION = 0.2
+PLAYER_FRICTION = 12.0
 PLAYER_AIR_FRICTION = 0.5 * PLAYER_FRICTION
 
 PLAYER_WALL_SLIDE_SPEED = 30.0
@@ -69,6 +69,8 @@ PLAYER_SPRITE_ATTACK = Sprite:new({276, 276, 276, 276, 276, 276, 277, 277, 277, 
 PLAYER_SPRITE_JUMP = Sprite:new({273})
 PLAYER_SPRITE_DEAD = Sprite:new({274})
 
+PLAYER_START_X = 0
+PLAYER_START_Y = 40
 
 player = {
     x = 0,
@@ -82,6 +84,8 @@ player = {
     stuck_to_right_wall = false,
     looking_left = false,
     was_on_ground_last_frame = false,
+    is_dead = false,
+
 
     time_before_we_can_stick_to_wall = 0.0,
     coyote_time = 0.0,
@@ -159,11 +163,11 @@ function player.update(self)
     end
 
     -- 2. Считываем ввод, работаем только с self.velocity
-    local walking_right = btn(BUTTON_RIGHT)
-    local walking_left = btn(BUTTON_LEFT)
-    local looking_down = btn(BUTTON_DOWN)
-    local looking_up = btn(BUTTON_UP)
-    local jump_pressed = btnp(BUTTON_Z)
+    local walking_right = btn(BUTTON_RIGHT) or key(KEY_D)
+    local walking_left = btn(BUTTON_LEFT) or key(KEY_A)
+    local looking_down = btn(BUTTON_DOWN) or key(KEY_S)
+    local looking_up = btn(BUTTON_UP) or key(KEY_W)
+    local jump_pressed = btnp(BUTTON_Z) or keyp(KEY_W)
     local attack_pressed = btnp(BUTTON_X)
     if jump_pressed then
       self.jump_buffer_time = PLAYER_JUMP_BUFFER_TIME
@@ -244,18 +248,18 @@ function player.update(self)
 
             for _, panda in ipairs(hit_pandas) do
                 panda:harm(PLAYER_DAMAGE)
-                panda:stun(attack_direction_x, attack_direction_y)
+                panda:get_hit(attack_direction_x, attack_direction_y)
             end
             self.attack_timer = 0
         end
     end
 
-    if is_on_ground then
-        self.velocity.x = self.velocity.x - self.velocity.x * PLAYER_FRICTION
+    if not moving_right and not moving_left and is_on_ground then
+        self.velocity.x = self.velocity.x - self.velocity.x * PLAYER_FRICTION * Time.dt()
     else
         -- Типа в воздухе другое сопротивление 💨
         -- Не знаю, на сколько это нужно 😅
-        self.velocity.x = self.velocity.x - self.velocity.x * PLAYER_AIR_FRICTION
+        self.velocity.x = self.velocity.x - self.velocity.x * PLAYER_AIR_FRICTION * Time.dt()
     end
     local not_at_speed_limit = math.abs(self.velocity.x) < PLAYER_MAX_HORIZONTAL_SPEED
     if not_at_speed_limit then
@@ -399,6 +403,21 @@ function player.update(self)
     else
         self.time_we_have_been_running = 0
     end
+
+    -- проверка на колизию плохого тайла и изменение is_dead
+    local table = Physics.tile_ids_that_intersect_with_rect(self.hitbox:to_rect(self.x,self.y))
+    for _, collision in ipairs(table) do
+        for _, bad_tile in pairs(data.bad_tile) do
+        if collision.id == bad_tile then
+            self.is_dead = true
+            game.dialog_window.is_closed = false
+            game.status = false
+            self.x = PLAYER_START_X
+            self.y = PLAYER_START_Y
+        end
+        end
+    end
+
 end
 
 function player.draw(self)

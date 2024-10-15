@@ -6,6 +6,7 @@ function DialogWindow:new(x, y, text)
         x = x,
         y = y,
         text = text,
+        is_closed = false,
     }
     
     setmetatable(obj,self)  -- чистая магия!
@@ -15,11 +16,22 @@ end
 
 function DialogWindow:update()
     -- здесь будет анимация
+    
     self:close()
 end
 
 
 function DialogWindow:draw()
+    if self.is_closed then
+        return
+    end
+    if game.player.is_dead then
+        DialogWindow:draw_dialog_death()
+        self.is_closed = false
+    end
+end 
+
+function DialogWindow:draw_dialog()
     if self.text == "" then
         return
     end
@@ -42,13 +54,24 @@ function DialogWindow:draw()
         max_width = count_width   
     end
 
-    rect(self.x-5,self.y-5,max_width*6+10,count_line*6+9,0)
-    print(self.text,self.x,self.y,15,true)
+    rect(self.x-5,self.y-5,max_width*9+10,count_line*9+9,0)
+    font(self.text,self.x,self.y,15,true)
+end
+
+function DialogWindow:draw_dialog_death()
+    self.text = russian_to_translit('\n\n\n\n\n\n  ДЛЯ ВОЗРОЖДЕНИЯ НАЖМИТЕ\n   НА ОДНУ ЛЮБУЮ КНОПКУ')
+    self.x = 0
+    self.y = 0
+    rect(self.x,self.y,MAX_WIDTH_SCREEN,MAX_HEIGHT_SCREEN,0)
+    self:draw_dialog()
 end 
 
 function DialogWindow:close()
-    if btn(4) or btn(5) or btn(6) or btn(7) then
+    if btn(BUTTON_A) or btn(BUTTON_S) or btn(BUTTON_X) or btn(BUTTON_Z) then
+        self.is_closed = true
         self.text = ""
+        self:draw_dialog()
+        game.status = true
     end
 end
 
