@@ -29,6 +29,13 @@ function DialogWindow:draw()
         DialogWindow:draw_dialog_death()
         self.is_closed = false
     end
+    -- Кто поменяет, тот бед не оберётся
+
+    if not (game.triggers.__is_active__ == nil) and game.triggers.__is_active__.status then
+        trace('haha')
+        DialogWindow:draw_monologue(game.triggers.__is_active__.trigger)
+        self.is_closed = false
+    end
 end 
 
 function DialogWindow:draw_dialog()
@@ -65,6 +72,16 @@ function DialogWindow:draw_dialog_death()
     rect(self.x,self.y,MAX_WIDTH_SCREEN,MAX_HEIGHT_SCREEN,0)
     self:draw_dialog()
 end 
+
+function DialogWindow:draw_monologue(trigger)
+    trace('hellp')
+    self.text = russian_to_translit(trigger.dialog_text)
+    self.x = trigger.x + trigger.dialog_offset.x
+    self.y = trigger.y + trigger.dialog_offset.y
+    rect(self.x,self.y,MAX_WIDTH_SCREEN,MAX_HEIGHT_SCREEN,0)
+    self:draw_dialog()
+    trace(self.text)
+end
 
 function DialogWindow:close()
     if btn(BUTTON_A) or btn(BUTTON_S) or btn(BUTTON_X) or btn(BUTTON_Z) then
