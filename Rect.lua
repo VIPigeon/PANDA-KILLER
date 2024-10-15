@@ -121,7 +121,7 @@ end
 
 function Rect:draw()
     local x, y = game.camera_window:transform_coordinates(self.x, self.y)
-    rect(x, y, self.w, self.h, 1)
+    rect(x, y, self.w, self.h, 11)
 end
 
 Rect.__index = Rect

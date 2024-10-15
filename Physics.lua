@@ -6,6 +6,10 @@ function Physics.is_tile_solid(tile_id)
     return tile_id == 1
 end
 
+function Physics.check_collision_obj_obj(o1, o2)
+    return Physics.check_collision_rect_rect(o1.hitbox.rect_of(o1), o2.hitbox.rect_of(o2))
+end
+
 function Physics.check_collision_rect_rect(r1, r2)
     if r1:left() > r2:right() or
        r2:left() > r1:right() or

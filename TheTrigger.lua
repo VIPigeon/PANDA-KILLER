@@ -6,12 +6,7 @@ function TriggerTile:new(x, y, width, height)
     height = height or 8
     local TilerDerden = {
         sprite = data.panda.sprite.stay_boring,
-        hitbox = { -- Чтобы взаимодействовать с миром тел нужно самому иметь тело << Tiler Derden 83 a.c. (C)
-            offset_x = 0,
-            offset_y = 0,
-            width = width,
-            height = height,
-        },
+        hitbox = Hitbox:new(0,0,width, height),
         x = x, y = y,
     }
 
@@ -23,18 +18,22 @@ function TriggerTile:trigger()
 	trace('AAAAAAAAAAAAAAAAAAAAAHh💦💦💦')
 end
 
-local function is_colliding(collideable)
-	if math.floor(collideable.x) > math.floor(self.x + self.hitbox.width) or
-        math.floor(self.x) > math.floor(collideable.x + collideable.hitbox.width) or
-        math.floor(collideable.y) > math.floor(self.y + self.hitbox.height) or
-        math.floor(self.y) > math.floor(collideable.y + collideable.hitbox.height) then
-        return false
-    end
-    return true
+function TriggerTile:monitor_player()
+    trace(game.player.x..' -- '..game.player.y)
+end
+
+function TriggerTile:is_colliding(collideable)
+	return Physics.check_collision_obj_obj(self, collideable)
+end
+
+function TriggerTile:draw()
+    Hitbox.rect_of(self):draw()
 end
 
 function TriggerTile:update()
-	if is_colliding(game.player) then
+	if self:is_colliding(game.player) then
 		self:trigger()
 	end
+    
+    --self:monitor_player()
 end
