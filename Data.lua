@@ -28,30 +28,34 @@ data.idle = {}
 
 -- Это тайлы для анимаций
 
+-- 1 - тайл 8X8
+-- 2 - тайл 16X16
+-- Второе значение Scale
+
 data.idle = {
-    --idle_title1 = 409
+    --idle_title1 = {382,1}
     -- Мы добавим еще😎
 }
 
 data.jump = {
-    --jump_tile1 = {396,397}
-    --jump_tile2 = {398}
-    --jump_tile3 = {399}
-    --jump_tile4 = {383}
-    --jump_tile5 = {412,413,428,429}
-    --jump_tile6 = {414,415,430,431}
-    --jump_tile7 = {444,445,460,461}
-    --jump_tile8 = {446,447,462,463}
-    --jump_tile9 = {426,427,442,443}
+    --jump_tile1 = {380,2}
+    --jump_tile2 = {398,1}
+    --jump_tile3 = {399,1}
+    --jump_tile4 = {383,1}
+    --jump_tile5 = {412,2}
+    --jump_tile6 = {414,2}
+    --jump_tile7 = {444,2}
+    --jump_tile8 = {446,2}
+    --jump_tile9 = {426,2}
 }
 
 data.run = {
-    --run_tile1 = {384,385}
-    --run_tile2 = {386,387}
-    --run_tile3 = {388,389,404,405}
-    --run_tile4 = {390,391}
-    --run_tile5 = {392,393}
-    --run_tile6 = {394,395,410,411}
+    --run_tile1 = {384,2}
+    --run_tile2 = {386,2}
+    --run_tile3 = {388,2}
+    --run_tile4 = {390,2}
+    --run_tile5 = {392,2}
+    --run_tile6 = {394,2}
 }
 
 data.bad_tile = {
