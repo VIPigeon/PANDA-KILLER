@@ -23,6 +23,7 @@ function game.update()
     if not game.status then
         game.dialog_window:update()
         game.dialog_window:draw()
+        Time.update()
         return
     end
     local player = game.player

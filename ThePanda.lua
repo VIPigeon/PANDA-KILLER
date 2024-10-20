@@ -9,12 +9,14 @@ Panda = table.copy(Body)
 PANDA_TIME_INTERVAL_BETWEEN_HITS_FROM_PLAYER = 0.5
 PANDA_HITS_NEEDED_TO_GET_STUNNED = 3
 PANDA_STAGGER_TIME = 1.0
-PANDA_STUNNED_TIME = 3.5
-PANDA_FLY_AWAY_SPEED = 55.0
-PANDA_FLY_UP_SPEED = 30.0
+PANDA_STUNNED_TIME = 2.5
 
-PANDA_GRAVITY = 139.7
+-- Пока что используются для отлета панды (когда её застанило)
+PANDA_FLY_AWAY_SPEED = 75.0
+PANDA_FLY_UP_SPEED = 40.0
+PANDA_GRAVITY = 149.7
 PANDA_FRICTION = 3.5
+PANDA_MIN_HORIZONTAL_VELOCITY = 4.0
 
 -- vertical velocity constants
 local UPPING_CONSTANT = -1
@@ -86,8 +88,7 @@ end
 
 function Panda:special_panda_moving()
     -- копипаста никуда не пропала
-    local ground_collision = Physics.check_collision_rect_tilemap(self.hitbox:to_rect(self.x, self.y + 1))
-    local is_on_ground = ground_collision ~= nil
+    local is_on_ground = Physics.is_on_ground(self)
 
     local collision_to_the_left = Physics.check_collision_rect_tilemap(self.hitbox:to_rect(self.x - 1, self.y))
     local hugging_left_wall = collision_to_the_left ~= nil
@@ -162,9 +163,6 @@ function Panda:update()
             self.status = 'normal'
         end
     elseif self.status == 'stunned' then
-        local next_x = self.x + self.velocity.x * Time.dt()
-        local next_y = self.y - self.velocity.y * Time.dt()
-
         -- Здесь дубляж кода из `special_panda_moving()`, потому что другой
         -- **сотрудник** решил сделать такую функцию. Если бы всё было свалено в
         -- update-е, не пришлось бы копипастить. Вот так!
@@ -172,32 +170,20 @@ function Panda:update()
         -- Нет, ну конечно, можно и без копипаста, но это будет изменение
         -- больше, чем просто добавление ветки в if, а я не хочу сильно уродовать
         -- код Myanmar-а 😍
-        local vertical_collision = Physics.check_collision_rect_tilemap(self.hitbox:to_rect(self.x, next_y))
-        local horizontal_collision = Physics.check_collision_rect_tilemap(self.hitbox:to_rect(self.x - 1, self.y))
-
-        self.velocity.x = self.velocity.x - (self.velocity.x * PANDA_FRICTION * Time.dt())
-
-        -- Хм, этот дубляж кода с игрока похоже можно вынести в какой-нибудь Rigidbody...
-        if vertical_collision ~= nil then
-            local flying_down = self.velocity.y < 0
-            if flying_down then
-                next_y = vertical_collision.y - self.hitbox.height - self.hitbox.offset_y
-            else
-                next_y = vertical_collision.y + self.hitbox.height + self.hitbox.offset_y
-            end
-            self.velocity.y = 0
-        else
-            self.velocity.y = self.velocity.y - PANDA_GRAVITY * Time.dt()
+        --
+        --
+        -- Это я из будущего 👽 (каваи-грот). Копипасты получилось не так много,
+        -- поэтому игнорируйте верхний пассивно-агрессивный комментарий.
+        --
+        local is_on_ground = Physics.is_on_ground(self)
+        local horizontal_collision = Physics.move_x(self)
+        if horizontal_collision ~= nil then
+            self.velocity.x = 0
         end
 
-        if horizontal_collision ~= nil then
-            local moving_right = self.velocity.x > 0
-            if moving_right then
-                next_x = horizontal_collision.x - self.hitbox.width - self.hitbox.offset_x
-            else
-                next_x = horizontal_collision.x + self.hitbox.width + self.hitbox.offset_x
-            end
-            self.velocity.x = -1 * self.velocity.x
+        local vertical_collision = Physics.move_y(self)
+        if vertical_collision ~= nil then
+            self.velocity.y = 0
         end
 
         self.stunned_time = self.stunned_time + Time.dt()
@@ -205,13 +191,14 @@ function Panda:update()
             self.status = 'normal'
         end
 
-        -- 1.0 -- magic constant 🧙
-        if math.abs(self.velocity.x) < 1.0 then
-            self.velocity.x = 0
+        if not is_on_ground then
+            self.velocity.y = self.velocity.y - PANDA_GRAVITY * Time.dt()
         end
 
-        self.x = next_x
-        self.y = next_y
+        self.velocity.x = self.velocity.x - (self.velocity.x * PANDA_FRICTION * Time.dt())
+        if math.abs(self.velocity.x) < PANDA_MIN_HORIZONTAL_VELOCITY then
+            self.velocity.x = 0
+        end
     else
         assert(false) -- ✂
     end

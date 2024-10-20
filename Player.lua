@@ -69,23 +69,22 @@ PLAYER_SPRITE_ATTACK = Sprite:new({276, 276, 276, 276, 276, 276, 277, 277, 277, 
 PLAYER_SPRITE_JUMP = Sprite:new({273})
 PLAYER_SPRITE_DEAD = Sprite:new({274})
 
-PLAYER_START_X = 0
-PLAYER_START_Y = 40
-
 player = {
-    x = 0,
-    y = 40,
+    x = PLAYER_START_X,
+    y = PLAYER_START_Y,
     velocity = {
         x = 0,
         y = 0,
     },
     hitbox = Hitbox:new(2, 0, 4, 8), -- 2048 🤓
+
+    sprite = PLAYER_SPRITE_IDLE,
+
     stuck_to_left_wall = false,
     stuck_to_right_wall = false,
     looking_left = false,
     was_on_ground_last_frame = false,
     is_dead = false,
-
 
     time_before_we_can_stick_to_wall = 0.0,
     coyote_time = 0.0,
@@ -93,35 +92,17 @@ player = {
     jump_buffer_time = 0.0,
     remove_horizontal_speed_limit_time = 0.0,
     time_we_have_been_running = 0.0,
-
-    sprite = PLAYER_SPRITE_IDLE,
 }
 
-
--- TODO: Эту документацию нужно куда-то выделить
---
--- В игре есть 3 разные координатные системы, о которых нужно помнить.
--- 1. Мировая -- измеряется в пикселях, x от 0 до 1920, y от 0 до 1088
--- 2. Тайловая -- каждый тайл 8x8 пикселей, соответственно перевод из
---    мировой в тайловую и обратно - это умножение / деление на 8.
---    В тайловой координатной системе x от 0 до 240, y от 0 до 136
--- 3. Локальная -- её ещё нету, но она связана с камерой и положением
---    игровых объектов относительно неё.
-local function world_to_tile(x, y)
-    local tile_x = x // 8
-    local tile_y = y // 8
-    return tile_x, tile_y
+local function tick_timer(timer)
+    return math.max(timer - Time.dt(), 0.0)
 end
-
-local function tile_to_world(x, y)
-    local world_x = x * 8
-    local world_y = y * 8
-    return world_x, world_y
-end
-
-local debug_rects = {}
 
 function player.update(self)
+    if self.is_dead then
+        return
+    end
+
     -- Краткое описание update() 📰
     --
     -- 1. На начале кадра делаем несколько "запросов" к физике, чтобы определить
@@ -142,8 +123,7 @@ function player.update(self)
 
 
     -- 1. Запросы. Ничего интересного
-    local ground_collision = Physics.check_collision_rect_tilemap(self.hitbox:to_rect(self.x, self.y + 1))
-    local is_on_ground = ground_collision ~= nil
+    local is_on_ground = Physics.is_on_ground(self)
 
     local collision_to_the_left = Physics.check_collision_rect_tilemap(self.hitbox:to_rect(self.x - 1, self.y))
     local hugging_left_wall = collision_to_the_left ~= nil
@@ -151,15 +131,25 @@ function player.update(self)
     local collision_to_the_right = Physics.check_collision_rect_tilemap(self.hitbox:to_rect(self.x + 1, self.y))
     local hugging_right_wall = collision_to_the_right ~= nil
 
-    -- Для дебага
-    if is_on_ground then
-        table.insert(debug_rects, { x = ground_collision.x, y = ground_collision.y, w = 8, h = 8 })
-    end
-    if hugging_left_wall then
-        table.insert(debug_rects, { x = collision_to_the_left.x, y = collision_to_the_left.y, w = 8, h = 8 })
-    end
-    if hugging_right_wall then
-        table.insert(debug_rects, { x = collision_to_the_right.x, y = collision_to_the_right.y, w = 8, h = 8 })
+    -- проверка на колизию плохого тайла и изменение is_dead
+    --
+    -- ⚠  Внимание ⚠
+    -- Этот код с плохими тайлами не мой. Так что не жалуйтесь на него! 😠
+    --
+    local tiles_that_we_collide_with = Physics.tile_ids_that_intersect_with_rect(self.hitbox:to_rect(self.x,self.y))
+    for _, collision in ipairs(tiles_that_we_collide_with) do
+        for _, bad_tile in pairs(data.bad_tile) do
+            if collision.id == bad_tile then
+                self.is_dead = true
+                game.dialog_window.is_closed = false
+                game.status = false
+                self.x = PLAYER_START_X
+                self.y = PLAYER_START_Y
+                self.velocity.x = 0
+                self.velocity.y = 0
+                return
+            end
+        end
     end
 
     -- 2. Считываем ввод, работаем только с self.velocity
@@ -284,8 +274,8 @@ function player.update(self)
         end
     end
 
-    local should_jump = self.jump_buffer_time > 0.0
     local has_jumped = false
+    local should_jump = self.jump_buffer_time > 0.0
     if should_jump then
         if is_on_ground and self.velocity.y <= 0 then
             self.velocity.y = PLAYER_JUMP_STRENGTH
@@ -348,35 +338,14 @@ function player.update(self)
     end
 
 
-    -- 3. Проверка коллизий
-    local next_x = self.x + self.velocity.x * Time.dt()
-    local rect_after_x_move = Rect.combine(
-        Hitbox.rect_of(self),
-        Hitbox.to_rect(self.hitbox, next_x, self.y)
-    )
-    local horizontal_collision = Physics.check_collision_rect_tilemap(rect_after_x_move)
+    -- 3. Проверка коллизий. Уже не так впечатляюще, потому что я вынес код в Physics
+    local horizontal_collision = Physics.move_x(self)
     if horizontal_collision ~= nil then
-        if moving_right then
-            next_x = horizontal_collision.x - self.hitbox.width - self.hitbox.offset_x
-        else
-            next_x = horizontal_collision.x + self.hitbox.width + self.hitbox.offset_x
-        end
         self.velocity.x = 0
     end
 
-    local next_y = self.y - self.velocity.y * Time.dt()
-    local rect_after_y_move = Rect.combine(
-        Hitbox.rect_of(self),
-        Hitbox.to_rect(self.hitbox, self.x, next_y)
-    )
-    local vertical_collision = Physics.check_collision_rect_tilemap(rect_after_y_move)
+    local vertical_collision = Physics.move_y(self)
     if vertical_collision ~= nil then
-        local flying_down = self.velocity.y < 0
-        if flying_down then
-            next_y = vertical_collision.y - self.hitbox.height - self.hitbox.offset_y
-        else
-            next_y = vertical_collision.y + self.hitbox.height + self.hitbox.offset_y
-        end
         self.velocity.y = 0
     end
 
@@ -390,34 +359,24 @@ function player.update(self)
         self.sprite = PLAYER_SPRITE_IDLE
     end
 
-    self.x = next_x
-    self.y = next_y
-
-    self.time_before_we_can_stick_to_wall = math.max(self.time_before_we_can_stick_to_wall - Time.dt(), 0.0)
-    self.jump_buffer_time = math.max(self.jump_buffer_time - Time.dt(), 0.0)
-    self.coyote_time = math.max(self.coyote_time - Time.dt(), 0.0)
-    self.remove_horizontal_speed_limit_time = math.max(self.remove_horizontal_speed_limit_time - Time.dt(), 0.0)
-    self.attack_timer = math.max(self.attack_timer - Time.dt(), 0.0)
+    -- У игрока есть много вещей, зависящих от времени (таймеров).
+    -- Они обновляются тут, в самом конце.
+    --
+    -- Раз уж я начал писать коммент, поясню за таймеры ⌛
+    -- Таймер - это просто число с плавающей точкой (обозначим его t). Если t =
+    -- 0, значит таймер остановился. Если же t > 0, то таймер идет, и осталось
+    -- t секунд до конца. Делать с этим можно что угодно, примеры можно
+    -- посмотреть здесь, в игроке.
+    self.time_before_we_can_stick_to_wall = tick_timer(self.time_before_we_can_stick_to_wall)
+    self.jump_buffer_time = tick_timer(self.jump_buffer_time)
+    self.coyote_time = tick_timer(self.coyote_time)
+    self.remove_horizontal_speed_limit_time = tick_timer(self.remove_horizontal_speed_limit_time)
+    self.attack_timer = tick_timer(self.attack_timer)
     if self.velocity.x ~= 0 then
         self.time_we_have_been_running = self.time_we_have_been_running + Time.dt()
     else
         self.time_we_have_been_running = 0
     end
-
-    -- проверка на колизию плохого тайла и изменение is_dead
-    local table = Physics.tile_ids_that_intersect_with_rect(self.hitbox:to_rect(self.x,self.y))
-    for _, collision in ipairs(table) do
-        for _, bad_tile in pairs(data.bad_tile) do
-        if collision.id == bad_tile then
-            self.is_dead = true
-            game.dialog_window.is_closed = false
-            game.status = false
-            self.x = PLAYER_START_X
-            self.y = PLAYER_START_Y
-        end
-        end
-    end
-
 end
 
 function player.draw(self)
@@ -429,14 +388,6 @@ function player.draw(self)
 
     self.sprite:nextFrame()
     spr(self.sprite:current(), tx, ty, colorkey, scale, flip)
-
-    -- Дебаг 🐜
-    if false then
-        for i, r in ipairs(debug_rects) do
-            rect(r.x, r.y, r.w, r.h, 5 + i)
-        end
-    end
-    debug_rects = {}
 
     if self.attack_rect then
         self.attack_rect:draw()

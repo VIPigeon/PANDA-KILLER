@@ -1,4 +1,3 @@
-
 function math.isObtuse(x1,y1,x2,y2,x3,y3)
     return (x1-x2)*(x3-x2)+(y1-y2)*(y3-y2)>0
 end
@@ -71,10 +70,3 @@ end
 function math.inRangeIncl(num, leftBoarder, rightBoarder)
     return num >= leftBoarder and num <= rightBoarder
 end
-
--- function math.sq_distance( ... )
---     -- body
--- end
-
-
-return math
