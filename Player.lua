@@ -41,7 +41,7 @@
 PLAYER_MAX_HORIZONTAL_SPEED = 67.0
 PLAYER_HORIZONTAL_ACCELERATION = 900.0
 PLAYER_FRICTION = 12.0
-PLAYER_AIR_FRICTION = 0.5 * PLAYER_FRICTION
+PLAYER_AIR_FRICTION = 0.52 * PLAYER_FRICTION
 
 PLAYER_WALL_SLIDE_SPEED = 30.0
 PLAYER_WALL_JUMP_HORIZONTAL_STRENGTH = 140.0
@@ -244,12 +244,14 @@ function player.update(self)
         end
     end
 
-    if not moving_right and not moving_left and is_on_ground then
-        self.velocity.x = self.velocity.x - self.velocity.x * PLAYER_FRICTION * Time.dt()
-    else
-        -- Типа в воздухе другое сопротивление 💨
-        -- Не знаю, на сколько это нужно 😅
-        self.velocity.x = self.velocity.x - self.velocity.x * PLAYER_AIR_FRICTION * Time.dt()
+    if not moving_right and not moving_left then
+        if is_on_ground then
+            self.velocity.x = self.velocity.x - self.velocity.x * PLAYER_FRICTION * Time.dt()
+        else
+            -- Типа в воздухе другое сопротивление 💨
+            -- Не знаю, на сколько это нужно 😅
+            self.velocity.x = self.velocity.x - self.velocity.x * PLAYER_AIR_FRICTION * Time.dt()
+        end
     end
     local not_at_speed_limit = math.abs(self.velocity.x) < PLAYER_MAX_HORIZONTAL_SPEED
     if not_at_speed_limit then
