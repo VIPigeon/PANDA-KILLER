@@ -25,6 +25,8 @@ data.panda = {}
 data.run = {}
 data.jump = {}
 data.idle = {}
+data.attack1 = {}
+data.attack2 = {}
 
 -- Это тайлы для анимаций
 
@@ -35,6 +37,21 @@ data.idle = {}
 data.idle = {
     --idle_title1 = {382,1}
     -- Мы добавим еще😎
+}
+
+data.attack1 = {
+    --attack1_tile1 = {416,2}
+    --attack1_tile2 = {418,2}
+    --attack1_tile3 = {420,2}
+    --attack1_tile4 = {422,2}
+    --attack1_tile5 = {278,2}
+}
+
+data.attack2 = {
+    --attack2_tile1 = {416,2}
+    --attack2_tile2 = {458,2}
+    --attack2_tile3 = {476,2}
+    --attack2_tile4 = {478,2}
 }
 
 data.jump = {
