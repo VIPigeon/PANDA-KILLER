@@ -27,6 +27,7 @@ data.jump = {}
 data.idle = {}
 data.attack1 = {}
 data.attack2 = {}
+data.slide = {}
 
 -- Это тайлы для анимаций
 
@@ -37,6 +38,13 @@ data.attack2 = {}
 data.idle = {
     --idle_title1 = {382,1}
     -- Мы добавим еще😎
+}
+
+data.slide = {
+    --slide_tile1 = {448,2}
+    --slide_tile2 = {450,2}
+    --slide_tile3 = {452,2}
+    --slide_tile4 = {454,2}
 }
 
 data.attack1 = {
