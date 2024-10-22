@@ -1,12 +1,41 @@
-
 Sprite = {}
 
+function Sprite.generate_animation(t, n)
+    res = {}
+    for _, e in ipairs(t) do
+        for i = 1, n do
+            table.insert(res, e)
+        end
+    end
+    return res
+end
 
-function Sprite:new(animation, size)
+-- Супер легаси 🧟
+function Sprite.gen60(t)
+    -- #t -- делитель 60
+    res = {}
+    for _, pict in ipairs(t) do
+        for i=1, 60 // (#t) do
+            table.insert(res, pict)
+        end
+    end
+    return res
+end
+
+function Sprite:new(animation, width, height, donotloop)
+    local w = width or 1
+    local h = height or w
+    local dontloop = false
+    if donotloop ~= nil then
+        dontloop = donotloop
+    end
+
     local obj = {
         animation = animation,
         frame = 1,  -- номер кадра
-        size = size  -- размер спрайта
+        w = w,
+        h = h,
+        dontloop = dontloop,
     }
 
     setmetatable(obj, self)
@@ -26,11 +55,16 @@ function Sprite:setFrame(frame)
 end
 
 function Sprite:nextFrame()
+    if self.dontloop then
+        if self.frame == #self.animation then
+            return
+        end
+    end
     self.frame = self.frame % #self.animation + 1
 end
 
 function Sprite:draw(x, y, flip, rotate)
-    spr(self.animation[self.frame], x, y, C0, 1, flip, rotate, self.size, self.size)
+    spr(self.animation[self.frame], x, y, C0, 1, flip, rotate, self.w, self.h)
 end
 
 function Sprite:animationEnd()

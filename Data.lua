@@ -52,7 +52,7 @@ data.attack1 = {
     --attack1_tile2 = {418,2}
     --attack1_tile3 = {420,2}
     --attack1_tile4 = {422,2}
-    --attack1_tile5 = {278,2}
+    --attack1_tile4 = {478,2} -- 😎
 }
 
 data.attack2 = {

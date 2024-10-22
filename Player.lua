@@ -49,7 +49,7 @@ PLAYER_WALL_JUMP_VERTICAL_STRENGTH = 120.0
 PLAYER_REMOVE_SPEED_LIMIT_AFTER_WALL_JUMP_TIME = 0.26
 PLAYER_DELAY_AFTER_JUMP_BEFORE_STICKING_TO_WALL = 0.2
 
-PLAYER_ATTACK_DURATION = 0.2
+PLAYER_ATTACK_DURATION = 0.6
 PLAYER_DAMAGE = 10
 
 PLAYER_COYOTE_TIME = 0.23
@@ -62,11 +62,13 @@ PLAYER_GRAVITY = (2 * PLAYER_JUMP_HEIGHT) / (PLAYER_TIME_TO_APEX * PLAYER_TIME_T
 PLAYER_GRAVITY_AFTER_WALL_JUMP = 0.75 * PLAYER_GRAVITY
 PLAYER_JUMP_STRENGTH = math.sqrt(2 * PLAYER_GRAVITY * PLAYER_JUMP_HEIGHT)
 
-PLAYER_SPRITE_IDLE = Sprite:new({257})
-PLAYER_SPRITE_RUNNING = Sprite:new({258, 258, 258, 258, 259, 259, 259, 259})
--- А что? 😳
-PLAYER_SPRITE_ATTACK = Sprite:new({276, 276, 276, 276, 276, 276, 277, 277, 277, 277, 277, 277})
-PLAYER_SPRITE_JUMP = Sprite:new({273})
+PLAYER_SPRITE_IDLE = Sprite:new({380}, 2, 2)
+
+PLAYER_SPRITE_RUNNING = Sprite:new(Sprite.generate_animation({384, 386, 388, 390, 392, 394}, 6), 2, 2)
+PLAYER_SPRITE_ATTACK_2 = Sprite:new(Sprite.generate_animation({416, 418, 478}, 8), 2, 2, true)
+PLAYER_SPRITE_ATTACK = Sprite:new(Sprite.generate_animation({416, 458, 476, 478}, 8), 2, 2, true)
+PLAYER_SPRITE_JUMP = Sprite:new(Sprite.generate_animation({380, 412, 414, 444, 446, 426}, 4), 2, 2, true)
+PLAYER_SPRITE_SLIDE = Sprite:new(Sprite.generate_animation({448, 450, 452, 454}, 6), 2, 2)
 PLAYER_SPRITE_DEAD = Sprite:new({274})
 
 player = {
@@ -76,7 +78,8 @@ player = {
         x = 0,
         y = 0,
     },
-    hitbox = Hitbox:new(2, 0, 4, 8), -- 2048 🤓
+    hitbox = Hitbox:new(6, 0, 4, 8), -- 2048 🤓
+                                     -- 6048 💀
 
     sprite = PLAYER_SPRITE_IDLE,
 
@@ -311,11 +314,11 @@ function player.update(self)
     self.was_on_ground_last_frame = is_on_ground
 
     local can_stick_to_wall = self.time_before_we_can_stick_to_wall == 0.0
+    local sliding_on_wall = false
     if not is_on_ground and can_stick_to_wall then
-        if hugging_left_wall and self.velocity.x < 0 then
-            self.velocity.y = -1 * PLAYER_WALL_SLIDE_SPEED
-        end
-        if hugging_right_wall and self.velocity.x > 0 then
+        if hugging_left_wall and self.velocity.x < 0 or
+           hugging_right_wall and self.velocity.x > 0 then
+            sliding_on_wall = true
             self.velocity.y = -1 * PLAYER_WALL_SLIDE_SPEED
         end
     end
@@ -351,14 +354,21 @@ function player.update(self)
         self.velocity.y = 0
     end
 
+    local previous_sprite = self.sprite
     if self.attack_timer > 0 then
         self.sprite = PLAYER_SPRITE_ATTACK
-    elseif self.velocity.y ~= 0 then
+    elseif sliding_on_wall then
+        self.sprite = PLAYER_SPRITE_SLIDE
+    elseif self.velocity.y ~= 0 or not is_on_ground then
         self.sprite = PLAYER_SPRITE_JUMP
     elseif self.time_we_have_been_running > 0.1 and self.velocity.x ~= 0 then
         self.sprite = PLAYER_SPRITE_RUNNING
     else
         self.sprite = PLAYER_SPRITE_IDLE
+    end
+    if self.sprite ~= previous_sprite then
+        -- 🤔
+        self.sprite.frame = 1
     end
 
     -- У игрока есть много вещей, зависящих от времени (таймеров).
@@ -384,14 +394,15 @@ end
 function player.draw(self)
     local colorkey = 0
     local scale = 1
+
     local flip = self.looking_left and 1 or 0
 
     local tx, ty = game.camera_window:transform_coordinates(self.x, self.y)
-
+    ty = ty - 8 * (self.sprite.h - 1)
+    self.sprite:draw(tx, ty, flip)
     self.sprite:nextFrame()
-    spr(self.sprite:current(), tx, ty, colorkey, scale, flip)
 
-    if self.attack_rect then
-        self.attack_rect:draw()
-    end
+    --if self.attack_rect then
+    --    self.attack_rect:draw()
+    --end
 end
