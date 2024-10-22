@@ -22,6 +22,66 @@ WORLD_HEIGHT = 1088 -- пикселей (= 136 * 8)
 
 data.bad_tile = {}
 data.panda = {}
+data.run = {}
+data.jump = {}
+data.idle = {}
+data.attack1 = {}
+data.attack2 = {}
+data.slide = {}
+
+-- Это тайлы для анимаций
+
+-- 1 - тайл 8X8
+-- 2 - тайл 16X16
+-- Второе значение Scale
+
+data.idle = {
+    --idle_title1 = {382,1}
+    -- Мы добавим еще😎
+}
+
+data.slide = {
+    --slide_tile1 = {448,2}
+    --slide_tile2 = {450,2}
+    --slide_tile3 = {452,2}
+    --slide_tile4 = {454,2}
+}
+
+data.attack1 = {
+    --attack1_tile1 = {416,2}
+    --attack1_tile2 = {418,2}
+    --attack1_tile3 = {420,2}
+    --attack1_tile4 = {422,2}
+    --attack1_tile5 = {278,2}
+}
+
+data.attack2 = {
+    --attack2_tile1 = {416,2}
+    --attack2_tile2 = {458,2}
+    --attack2_tile3 = {476,2}
+    --attack2_tile4 = {478,2}
+}
+
+data.jump = {
+    --jump_tile1 = {380,2}
+    --jump_tile2 = {398,1}
+    --jump_tile3 = {399,1}
+    --jump_tile4 = {383,1}
+    --jump_tile5 = {412,2}
+    --jump_tile6 = {414,2}
+    --jump_tile7 = {444,2}
+    --jump_tile8 = {446,2}
+    --jump_tile9 = {426,2}
+}
+
+data.run = {
+    --run_tile1 = {384,2}
+    --run_tile2 = {386,2}
+    --run_tile3 = {388,2}
+    --run_tile4 = {390,2}
+    --run_tile5 = {392,2}
+    --run_tile6 = {394,2}
+}
 
 data.bad_tile = {
 	bad_tile1 = 32
