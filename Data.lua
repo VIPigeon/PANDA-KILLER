@@ -20,6 +20,8 @@ SCREEN_HEIGHT = 136 -- пикселей
 WORLD_WIDTH  = 1920 -- пикселей (= 240 * 8)
 WORLD_HEIGHT = 1088 -- пикселей (= 136 * 8)
 
+TRANSPARENT_SPRITE = Sprite:new({0})
+
 data.bad_tile = {}
 data.panda = {}
 data.run = {}
@@ -89,7 +91,7 @@ data.bad_tile = {
 
 data.panda.sprite = {
 
-	stay_boring = Sprite:new({267}, 1),
+	stay_boring = Animation:new({267}, 1):to_sprite(),
 
 }
 

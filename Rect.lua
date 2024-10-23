@@ -41,11 +41,11 @@ function Rect:bottom()
     return self.y + self.h
 end
 
-function Rect:centerX()
+function Rect:center_x()
     return self.x + self.w / 2
 end
 
-function Rect:centerY()
+function Rect:center_y()
     return self.y + self.h / 2
 end
 

@@ -39,6 +39,7 @@ function game.update()
     update_psystems()
 
     map(camera_window.gm.x, camera_window.gm.y, 31, 18, camera_window.gm.sx, camera_window.gm.sy)
+    Effects.draw()
     entities:draw(pandas)
     player:draw()
     dialog_window:draw()

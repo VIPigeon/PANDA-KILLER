@@ -6,7 +6,7 @@ Panda = table.copy(Body)
 -- Короче ну вас, не могу придумать название 🤬
 -- Если непонятно что это, то спросите. Не хочу
 -- даже в этом комментарии объяснять, что это такое!
-PANDA_TIME_INTERVAL_BETWEEN_HITS_FROM_PLAYER = 0.5
+PANDA_TIME_INTERVAL_BETWEEN_HITS_FROM_PLAYER = 1.0
 PANDA_HITS_NEEDED_TO_GET_STUNNED = 3
 PANDA_STAGGER_TIME = 1.0
 PANDA_STUNNED_TIME = 2.5
