@@ -62,7 +62,7 @@ function Physics.move_x(rigidbody)
         end
     end
 
-    next_x = math.clamp(next_x, 0, WORLD_WIDTH)
+    next_x = math.clamp(next_x, -rigidbody.hitbox.offset_x, WORLD_WIDTH + rigidbody.hitbox.width)
 
     -- Допустимое передвижение за один кадр: меньше 8 пикселей
     -- assert(math.abs(next_x - rigidbody.x) < 8.0)
@@ -114,6 +114,15 @@ function Physics.check_collision_rect_rect(r1, r2)
         return false
     end
     return true
+end
+
+function Physics.check_collision_shape_rect(shape, rect)
+    for _, shape_rect in ipairs(shape.rects) do
+        if Physics.check_collision_rect_rect(shape_rect, rect) then
+            return true
+        end
+    end
+    return false
 end
 
 -- TODO: Уверен, в будущем нужно будет возвращать не только самое первое

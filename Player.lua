@@ -74,8 +74,9 @@ PLAYER_SPRITE_SLIDE = Sprite:new_complex({
     Animation:new({448, 450}, 8):with_size(2, 2),
     Animation:new({452, 454}, 12):with_size(2, 2):at_end_goto_animation(2),
 })
-PLAYER_SPRITE_JUMP_PARTICLE_EFFECT = Animation:new({496, 498, 500, 502}, 6):with_size(2, 1):at_end_goto_last_frame():to_sprite()
 PLAYER_SPRITE_DEAD = Sprite:new({274})
+PLAYER_SPRITE_JUMP_PARTICLE_EFFECT = Animation:new({496, 498, 500, 502}, 6):with_size(2, 1):at_end_goto_last_frame():to_sprite()
+PLAYER_SPRITE_LAND_PARTICLE_EFFECT = Animation:new({500, 502}, 8):with_size(2, 1):at_end_goto_last_frame():to_sprite()
 
 player = {
     x = PLAYER_START_X,
@@ -104,10 +105,6 @@ player = {
     attack_buffer_time = 0.0,
     time_we_have_been_running = 0.0,
 }
-
-local function tick_timer(timer)
-    return math.max(timer - Time.dt(), 0.0)
-end
 
 function player.update(self)
     if self.is_dead then
@@ -328,6 +325,10 @@ function player.update(self)
         self.jump_buffer_time = 0.0
     end
 
+    if is_on_ground and not self.was_on_ground_last_frame then
+        Effects.add(self.x, self.y, PLAYER_SPRITE_LAND_PARTICLE_EFFECT)
+    end
+
     if not is_on_ground and self.was_on_ground_last_frame and self.velocity.y <= 0 then
        self.coyote_time = PLAYER_COYOTE_TIME
     end
@@ -418,12 +419,6 @@ function player.update(self)
 
     -- У игрока есть много вещей, зависящих от времени (таймеров).
     -- Они обновляются тут, в самом конце.
-    --
-    -- Раз уж я начал писать коммент, поясню за таймеры ⌛
-    -- Таймер - это просто число с плавающей точкой (обозначим его t). Если t =
-    -- 0, значит таймер остановился. Если же t > 0, то таймер идет, и осталось
-    -- t секунд до конца. Делать с этим можно что угодно, примеры можно
-    -- посмотреть здесь, в игроке.
     self.time_before_we_can_stick_to_wall = tick_timer(self.time_before_we_can_stick_to_wall)
     self.jump_buffer_time = tick_timer(self.jump_buffer_time)
     self.coyote_time = tick_timer(self.coyote_time)

@@ -2,6 +2,10 @@ function math.isObtuse(x1,y1,x2,y2,x3,y3)
     return (x1-x2)*(x3-x2)+(y1-y2)*(y3-y2)>0
 end
 
+function math.coin_flip()
+    return math.random(2) == 2
+end
+
 --old fence collapsed
 function math.clamp(x, left, right)
     if x < left then
