@@ -95,6 +95,7 @@ player = {
     stuck_to_right_wall = false,
     looking_left = false,
     was_on_ground_last_frame = false,
+    was_sliding_on_wall_last_frame = false,
     is_dead = false,
 
     time_before_we_can_stick_to_wall = 0.0,
@@ -184,6 +185,7 @@ function player.update(self)
             self.sprite:reset()
             self.attack_timer = PLAYER_ATTACK_DURATION
             self.attack_buffer_time = 0.0
+            sfx(5, 'C-6', 10, 2)
         end
     elseif self.sprite.frame_index >= PLAYER_ATTACK_FRAME_WHEN_TO_APPLY_ATTACK then
         -- Это сделано для испольнения Clean Code принципа (c)
@@ -323,6 +325,7 @@ function player.update(self)
     if has_jumped then
         self.coyote_time = 0.0
         self.jump_buffer_time = 0.0
+        sfx(4, -1, -1)
     end
 
     if is_on_ground and not self.was_on_ground_last_frame then
@@ -339,10 +342,16 @@ function player.update(self)
     if not is_on_ground and can_stick_to_wall then
         if hugging_left_wall and self.velocity.x < 0 or
            hugging_right_wall and self.velocity.x > 0 then
-            sliding_on_wall = true
             self.velocity.y = -1 * PLAYER_WALL_SLIDE_SPEED
+            sliding_on_wall = true
         end
     end
+    if self.was_sliding_on_wall_last_frame and not sliding_on_wall then
+        sfx(-1, -1, -1, 1)
+    elseif not self.was_sliding_on_wall_last_frame and sliding_on_wall then
+        sfx(8, 'D-1', -1, 1)
+    end
+    self.was_sliding_on_wall_last_frame = sliding_on_wall
 
 
     EPSILON = 4.0

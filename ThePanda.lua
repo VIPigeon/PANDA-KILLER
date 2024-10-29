@@ -33,6 +33,7 @@ PANDA_LOOK_DIRECTION_RIGHT = 1
 PANDA_REST_TIME_BEFORE_DIRECTION_CHANGE = function()
     return 1 + 1.0 * math.random()
 end
+
 PANDA_VIEW_CONE_WIDTH = 64
 PANDA_VIEW_CONE_HEIGHT = 32
 PANDA_PATROL_SPEED = 8
@@ -462,10 +463,7 @@ function Panda:stun(hit_x, hit_y)
 end
 
 function Panda:get_hit(hit_x, hit_y)
-    if self.status == 'attacked/stunned' then
-        table.removeElement(game.pandas, self)
-        return
-    end
+    sfx(11, 'G-5', 20, 2)
 
     if hit_x < 0 then
         create_blood(self.x, self.y, -1)
@@ -475,6 +473,13 @@ function Panda:get_hit(hit_x, hit_y)
         create_blood(self.x, self.y, -1)
         create_blood(self.x, self.y, 1)
     end
+
+    if self.status == 'attacked/stunned' then
+        sfx(11, 'G-6', 60, 2)
+        table.removeElement(game.pandas, self)
+        return
+    end
+
     self.status = 'attacked/staggered'
     self.staggered_time = 0.0
     self.count_of_recent_hits = self.count_of_recent_hits + 1
