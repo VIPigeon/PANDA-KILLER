@@ -30,6 +30,11 @@ data.idle = {}
 data.attack1 = {}
 data.attack2 = {}
 data.slide = {}
+data.coffee_bush = {}
+data.bush = {}
+data.stump = {}
+data.cactus = {}
+
 
 -- Это тайлы для анимаций
 
@@ -40,6 +45,38 @@ data.slide = {}
 data.idle = {
     --idle_title1 = {382,1}
     -- Мы добавим еще😎
+}
+
+data.cactus = {
+    --cactus_tile1 ={116,2}
+    --cactus_tile1 ={118,2}
+    --cactus_tile1 ={120,2}
+    --cactus_tile1 ={122,1}
+    --cactus_tile1 ={123,1}
+    --cactus_tile1 ={138,1}
+    --cactus_tile1 ={107,1}
+    --cactus_tile1 ={108,1}
+    --cactus_tile1 ={91,1}
+}
+
+data.stump = {
+    --stump_tile = {114,2}
+}
+
+data.bush = {
+    --bush_tile1 = {156,2}
+    --bush_tile2 = {158,2}
+
+    --bush_tile1 = {112,2} --сухой куст
+}
+
+data.coffee_bush = {
+    --coffe_bush_tile1 = {144,2}
+    --coffe_bush_tile2 = {146,2}
+    --coffe_bush_tile3 = {148,2}
+    --coffe_bush_tile4 = {150,2}
+    --coffe_bush_tile5 = {152,2}
+    --coffe_bush_tile6 = {154,2}
 }
 
 data.slide = {
