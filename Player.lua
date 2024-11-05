@@ -325,7 +325,7 @@ function player.update(self)
     if has_jumped then
         self.coyote_time = 0.0
         self.jump_buffer_time = 0.0
-        sfx(4, -1, -1)
+        sfx(4, 'A#4', -1, 0, 3, 2)
     end
 
     if is_on_ground and not self.was_on_ground_last_frame then
