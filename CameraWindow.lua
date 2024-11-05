@@ -24,17 +24,17 @@ function CameraWindow:new(deadZoneRect, target, targetWidth, targetHeight)
     return obj
 end
 
-function CameraWindow:moveCamera()
-    local centerX = math.floor(self.area:centerX())
-    local centerY = math.floor(self.area:centerY())
-    local tileX = math.floor(self.area:centerX() / 8)
-    local tileY = math.floor(self.area:centerY() / 8)
+function CameraWindow:move_camera()
+    local center_x = math.floor(self.area:center_x())
+    local center_y = math.floor(self.area:center_y())
+    local tile_x = math.floor(self.area:center_x() / 8)
+    local tile_y = math.floor(self.area:center_y() / 8)
 
-    self.gm.x = tileX - math.floor(120 / 8)
-    self.gm.sx = 8 * (tileX) - centerX
+    self.gm.x = tile_x - math.floor(120 / 8)
+    self.gm.sx = 8 * (tile_x) - center_x
 
-    self.gm.y = tileY - math.floor(68 / 8)
-    self.gm.sy = 8 * (tileY) - centerY
+    self.gm.y = tile_y - math.floor(68 / 8)
+    self.gm.sy = 8 * (tile_y) - center_y
 end
 
 function CameraWindow:transform_coordinates(x, y)
@@ -103,7 +103,7 @@ function CameraWindow:update()
 
     ::move::
 
-    self:moveCamera()
+    self:move_camera()
 end
 
 CameraWindow.__index = CameraWindow

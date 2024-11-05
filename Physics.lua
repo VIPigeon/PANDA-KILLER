@@ -1,9 +1,109 @@
+--[[
+
+Давайте поясню за физику ⚽
+
+У нас есть Hitbox-ы, Rect-ы и Rigidbody.
+
+Отдельно никакого класса Rigidbody нету, это скорее "интерфейс".
+Rigidbody - это таблица, в которой есть поля x, y, velocity и hitbox.
+Например, игрок это Rigidbody:
+
+player = {
+    x = 0,
+    y = 0,
+    velocity = { x = 0, y = 0 },
+    hitbox = Hitbox:new(0, 0, 8, 8)
+
+    -- Ещё какие-то поля...
+    -- ...
+}
+
+Про хитбоксы и прямоугольники можно почитать в `Hitbox.lua`
+
+Основные функции: `move_x`, `move_y` Они двигают rigidbody в соответствие с
+его velocity, а также следят за тем, чтобы у нас не было коллизий. Если же
+коллизия была, то `move_x` и `move_y` вернут её (rigidbody все равно будет
+корректно отпозиционирован (какое крутое слово)).
+
+Для более низкоуровневых штук можно использовать другие функции. Основной
+пример использования физики в игроке - заходите туда и копипастите код! 😁
+
+Внимание: обрабатываются коллизии только с тайлами. Если мы хотим, например,
+проверить столкновение двух панд между собой (то есть два динамических объекта),
+то тут уж разбирайтесь сами. Низкоуровневые `check_collision_rect_rect` вам в
+помощь.
+
+--]]
+
 Physics = {}
 
--- Наверное эта функция должна быть не здесь
-function Physics.is_tile_solid(tile_id)
-    -- XD Это кому-то исправлять 😆😂😂
-    return tile_id == 1
+-- Проверяет, что прямо под хитбоксом что-то есть
+function Physics.is_on_ground(rigidbody)
+    local collision = Physics.check_collision_rect_tilemap(
+        rigidbody.hitbox:to_rect(rigidbody.x, rigidbody.y + 1)
+    )
+    return collision ~= nil
+end
+
+function Physics.move_x(rigidbody)
+    local next_x = rigidbody.x + rigidbody.velocity.x * Time.dt()
+
+    local rect_after_x_move = Rect.combine(
+        Hitbox.to_rect(rigidbody.hitbox, rigidbody.x, rigidbody.y),
+        Hitbox.to_rect(rigidbody.hitbox, next_x, rigidbody.y)
+    )
+    local tilemap_collision = Physics.check_collision_rect_tilemap(rect_after_x_move)
+    if tilemap_collision ~= nil then
+        local moving_right = rigidbody.velocity.x > 0
+        if moving_right then
+            next_x = tilemap_collision.x - rigidbody.hitbox.width - rigidbody.hitbox.offset_x
+        else
+            next_x = tilemap_collision.x + 8 - rigidbody.hitbox.offset_x
+        end
+    end
+
+    next_x = math.clamp(next_x, -rigidbody.hitbox.offset_x, WORLD_WIDTH + rigidbody.hitbox.width)
+
+    -- Допустимое передвижение за один кадр: меньше 8 пикселей
+    -- assert(math.abs(next_x - rigidbody.x) < 8.0)
+    rigidbody.x = next_x
+    return tilemap_collision
+end
+
+function Physics.move_y(rigidbody)
+    -- Обращаю внимание 🤓, что отрицательная velocity - полет вниз, в то время
+    -- как ось y в TIC-80 перевернута, т.е. если мы хотим сдвинуть что-то
+    -- **вниз** на 5, то мы делаем y = y + 5.
+    --
+    -- Отсюда минус в этой формуле (В move_x такого нет)
+    local next_y = rigidbody.y - rigidbody.velocity.y * Time.dt()
+
+    local rect_after_y_move = Rect.combine(
+        Hitbox.to_rect(rigidbody.hitbox, rigidbody.x, rigidbody.y),
+        Hitbox.to_rect(rigidbody.hitbox, rigidbody.x, next_y)
+    )
+    local tilemap_collision = Physics.check_collision_rect_tilemap(rect_after_y_move)
+    if tilemap_collision ~= nil then
+        local flying_down = rigidbody.velocity.y < 0
+        if flying_down then
+            next_y = tilemap_collision.y - rigidbody.hitbox.height - rigidbody.hitbox.offset_y
+        else
+            next_y = tilemap_collision.y + rigidbody.hitbox.height + rigidbody.hitbox.offset_y
+        end
+    end
+
+    next_y = math.clamp(next_y, 0, WORLD_HEIGHT)
+
+    -- Допустимое передвижение за один кадр: меньше 8 пикселей
+    if math.abs(next_y - rigidbody.y) >= 8.0 then
+        trace(Time.dt())
+        trace(rigidbody.y)
+        trace(rigidbody.velocity.y)
+        trace(next_y)
+    end
+    --assert(math.abs(next_y - rigidbody.y) < 8.0)
+    rigidbody.y = next_y
+    return tilemap_collision
 end
 
 function Physics.check_collision_obj_obj(o1, o2)
@@ -18,6 +118,15 @@ function Physics.check_collision_rect_rect(r1, r2)
         return false
     end
     return true
+end
+
+function Physics.check_collision_shape_rect(shape, rect)
+    for _, shape_rect in ipairs(shape.rects) do
+        if Physics.check_collision_rect_rect(shape_rect, rect) then
+            return true
+        end
+    end
+    return false
 end
 
 -- TODO: Уверен, в будущем нужно будет возвращать не только самое первое
@@ -43,7 +152,7 @@ function Physics.check_collision_rect_tilemap(rect)
         while x <= x2 do
             local tile_id = mget(tile_x, tile_y)
 
-            if Physics.is_tile_solid(tile_id) then
+            if is_tile_solid(tile_id) then
                 return {
                     x = 8 * tile_x,
                     y = 8 * tile_y,
@@ -60,15 +169,15 @@ function Physics.check_collision_rect_tilemap(rect)
         tile_x = x // 8
     end
 
-    if Physics.is_tile_solid(mget(tile_x2, tile_y1)) then
+    if is_tile_solid(mget(tile_x2, tile_y1)) then
         return { x = 8 * tile_x2, y = 8 * tile_y1 }
     end
 
-    if Physics.is_tile_solid(mget(tile_x1, tile_y2)) then
+    if is_tile_solid(mget(tile_x1, tile_y2)) then
         return { x = 8 * tile_x1, y = 8 * tile_y2 }
     end
 
-    if Physics.is_tile_solid(mget(tile_x2, tile_y2)) then
+    if is_tile_solid(mget(tile_x2, tile_y2)) then
         return { x = 8 * tile_x2, y = 8 * tile_y2 }
     end
 

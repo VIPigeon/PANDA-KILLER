@@ -89,5 +89,3 @@ function table.chooseRandomElement(t)
     end
     return choosen
 end
-
-return table

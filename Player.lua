@@ -41,7 +41,7 @@
 PLAYER_MAX_HORIZONTAL_SPEED = 67.0
 PLAYER_HORIZONTAL_ACCELERATION = 900.0
 PLAYER_FRICTION = 12.0
-PLAYER_AIR_FRICTION = 0.5 * PLAYER_FRICTION
+PLAYER_AIR_FRICTION = 0.52 * PLAYER_FRICTION
 
 PLAYER_WALL_SLIDE_SPEED = 30.0
 PLAYER_WALL_JUMP_HORIZONTAL_STRENGTH = 140.0
@@ -49,7 +49,8 @@ PLAYER_WALL_JUMP_VERTICAL_STRENGTH = 120.0
 PLAYER_REMOVE_SPEED_LIMIT_AFTER_WALL_JUMP_TIME = 0.26
 PLAYER_DELAY_AFTER_JUMP_BEFORE_STICKING_TO_WALL = 0.2
 
-PLAYER_ATTACK_DURATION = 0.2
+PLAYER_ATTACK_DURATION = 0.4
+PLAYER_ATTACK_BUFFER_TIME = 0.2
 PLAYER_DAMAGE = 10
 
 PLAYER_COYOTE_TIME = 0.23
@@ -62,66 +63,55 @@ PLAYER_GRAVITY = (2 * PLAYER_JUMP_HEIGHT) / (PLAYER_TIME_TO_APEX * PLAYER_TIME_T
 PLAYER_GRAVITY_AFTER_WALL_JUMP = 0.75 * PLAYER_GRAVITY
 PLAYER_JUMP_STRENGTH = math.sqrt(2 * PLAYER_GRAVITY * PLAYER_JUMP_HEIGHT)
 
-PLAYER_SPRITE_IDLE = Sprite:new({257})
-PLAYER_SPRITE_RUNNING = Sprite:new({258, 258, 258, 258, 259, 259, 259, 259})
--- А что? 😳
-PLAYER_SPRITE_ATTACK = Sprite:new({276, 276, 276, 276, 276, 276, 277, 277, 277, 277, 277, 277})
-PLAYER_SPRITE_JUMP = Sprite:new({273})
+PLAYER_SPRITE_IDLE = Sprite:new({380}, 1, 2, 2)
+PLAYER_SPRITE_RUNNING = Sprite:new({384, 386, 388, 390, 392, 394}, 6, 2, 2)
+PLAYER_SPRITE_ATTACK = Animation:new({416, 418, 420, 422, 478}, 4):with_size(2, 2):at_end_goto_last_frame():to_sprite()
+PLAYER_SPRITE_ATTACK_2 = Animation:new({416, 458, 476, 478}, 8):with_size(2, 2):to_sprite()
+PLAYER_ATTACK_FRAME_WHEN_TO_APPLY_ATTACK = 5 -- да ну его...
+PLAYER_SPRITE_JUMP = Animation:new({412, 414, 444, 446, 426}, 3):with_size(2, 2):at_end_goto_last_frame():to_sprite()
+PLAYER_SPRITE_FALLING = Animation:new({426}, 1):with_size(2, 2):to_sprite()
+PLAYER_SPRITE_SLIDE = Sprite:new_complex({
+    Animation:new({448, 450}, 8):with_size(2, 2),
+    Animation:new({452, 454}, 12):with_size(2, 2):at_end_goto_animation(2),
+})
 PLAYER_SPRITE_DEAD = Sprite:new({274})
-
-PLAYER_START_X = 0
-PLAYER_START_Y = 40
+PLAYER_SPRITE_JUMP_PARTICLE_EFFECT = Animation:new({496, 498, 500, 502}, 6):with_size(2, 1):at_end_goto_last_frame():to_sprite()
+PLAYER_SPRITE_LAND_PARTICLE_EFFECT = Animation:new({500, 502}, 8):with_size(2, 1):at_end_goto_last_frame():to_sprite()
 
 player = {
-    x = 0,
-    y = 40,
+    x = PLAYER_START_X,
+    y = PLAYER_START_Y,
     velocity = {
         x = 0,
         y = 0,
     },
-    hitbox = Hitbox:new(2, 0, 4, 8), -- 2048 🤓
+    hitbox = Hitbox:new(6, 0, 4, 8),
+
+    sprite = PLAYER_SPRITE_IDLE,
+
+    attack_rects = {},
+
     stuck_to_left_wall = false,
     stuck_to_right_wall = false,
     looking_left = false,
     was_on_ground_last_frame = false,
+    was_sliding_on_wall_last_frame = false,
     is_dead = false,
-
 
     time_before_we_can_stick_to_wall = 0.0,
     coyote_time = 0.0,
     attack_timer = 0.0,
     jump_buffer_time = 0.0,
     remove_horizontal_speed_limit_time = 0.0,
+    attack_buffer_time = 0.0,
     time_we_have_been_running = 0.0,
-
-    sprite = PLAYER_SPRITE_IDLE,
 }
 
-
--- TODO: Эту документацию нужно куда-то выделить
---
--- В игре есть 3 разные координатные системы, о которых нужно помнить.
--- 1. Мировая -- измеряется в пикселях, x от 0 до 1920, y от 0 до 1088
--- 2. Тайловая -- каждый тайл 8x8 пикселей, соответственно перевод из
---    мировой в тайловую и обратно - это умножение / деление на 8.
---    В тайловой координатной системе x от 0 до 240, y от 0 до 136
--- 3. Локальная -- её ещё нету, но она связана с камерой и положением
---    игровых объектов относительно неё.
-local function world_to_tile(x, y)
-    local tile_x = x // 8
-    local tile_y = y // 8
-    return tile_x, tile_y
-end
-
-local function tile_to_world(x, y)
-    local world_x = x * 8
-    local world_y = y * 8
-    return world_x, world_y
-end
-
-local debug_rects = {}
-
 function player.update(self)
+    if self.is_dead then
+        return
+    end
+
     -- Краткое описание update() 📰
     --
     -- 1. На начале кадра делаем несколько "запросов" к физике, чтобы определить
@@ -142,8 +132,7 @@ function player.update(self)
 
 
     -- 1. Запросы. Ничего интересного
-    local ground_collision = Physics.check_collision_rect_tilemap(self.hitbox:to_rect(self.x, self.y + 1))
-    local is_on_ground = ground_collision ~= nil
+    local is_on_ground = Physics.is_on_ground(self)
 
     local collision_to_the_left = Physics.check_collision_rect_tilemap(self.hitbox:to_rect(self.x - 1, self.y))
     local hugging_left_wall = collision_to_the_left ~= nil
@@ -151,15 +140,27 @@ function player.update(self)
     local collision_to_the_right = Physics.check_collision_rect_tilemap(self.hitbox:to_rect(self.x + 1, self.y))
     local hugging_right_wall = collision_to_the_right ~= nil
 
-    -- Для дебага
-    if is_on_ground then
-        table.insert(debug_rects, { x = ground_collision.x, y = ground_collision.y, w = 8, h = 8 })
-    end
-    if hugging_left_wall then
-        table.insert(debug_rects, { x = collision_to_the_left.x, y = collision_to_the_left.y, w = 8, h = 8 })
-    end
-    if hugging_right_wall then
-        table.insert(debug_rects, { x = collision_to_the_right.x, y = collision_to_the_right.y, w = 8, h = 8 })
+    local player_rect = Hitbox.rect_of(self)
+
+    -- проверка на колизию плохого тайла и изменение is_dead
+    --
+    -- ⚠  Внимание ⚠
+    -- Этот код с плохими тайлами не мой. Так что не жалуйтесь на него! 😠
+    --
+    local tiles_that_we_collide_with = Physics.tile_ids_that_intersect_with_rect(self.hitbox:to_rect(self.x,self.y))
+    for _, collision in ipairs(tiles_that_we_collide_with) do
+        for _, bad_tile in pairs(data.bad_tile) do
+            if collision.id == bad_tile then
+                self.is_dead = true
+                game.dialog_window.is_closed = false
+                game.status = false
+                self.x = PLAYER_START_X
+                self.y = PLAYER_START_Y
+                self.velocity.x = 0
+                self.velocity.y = 0
+                return
+            end
+        end
     end
 
     -- 2. Считываем ввод, работаем только с self.velocity
@@ -169,6 +170,7 @@ function player.update(self)
     local looking_up = btn(BUTTON_UP)
     local jump_pressed = btnp(BUTTON_Z)
     local attack_pressed = btnp(BUTTON_X)
+    
     if GAMEMODE == GAMEMODE_DEBUG then
         walking_right = walking_right or key(KEY_D)
         walking_left = walking_left or key(KEY_A)
@@ -182,16 +184,18 @@ function player.update(self)
     end
 
     if attack_pressed then
-        if self.attack_timer == 0 then
-            self.attack_timer = PLAYER_ATTACK_DURATION
-        else
-            -- Может быть сделать буфер для атаки? 🤔
-        end
+        self.attack_buffer_time = PLAYER_ATTACK_BUFFER_TIME
     end
 
     if self.attack_timer == 0 then
-        self.attack_rect = nil
-    else
+        self.attack_rects = {}
+        if self.attack_buffer_time > 0.0 then
+            self.sprite:reset()
+            self.attack_timer = PLAYER_ATTACK_DURATION
+            self.attack_buffer_time = 0.0
+            sfx(5, 'C-6', 10, 2)
+        end
+    elseif self.sprite.frame_index >= PLAYER_ATTACK_FRAME_WHEN_TO_APPLY_ATTACK then
         -- Это сделано для испольнения Clean Code принципа (c)
         -- Don't Repeat Yourself (DRY). Я, как хороший программист,
         -- стремлюсь всегда следовать best practices и использовать
@@ -232,21 +236,26 @@ function player.update(self)
             end
         end
 
-        local attack_width = 6
-        local attack_height = 6
-        local attack_x = self.x + 4 - attack_width / 2 + attack_direction_x * 8
-        local attack_y = self.y + 4 - attack_height / 2 + attack_direction_y * 8
-        self.attack_rect = Rect:new(attack_x, attack_y, attack_width, attack_height)
+        -- Из-за вот такой штуки атаки по диагонали довольно имбовые. А что делать?
+        local attack_width = 8 + 2 * math.abs(attack_direction_x)
+        local attack_height = 8 + 2 * math.abs(attack_direction_y)
+        local attack_x = player_rect:center_x() - attack_width / 2 + attack_direction_x * 8
+        local attack_y = player_rect:center_y() - attack_height / 2 + attack_direction_y * 8
+        local attack_rect = Rect:new(attack_x, attack_y, attack_width, attack_height)
 
-        local attack_tilemap_collision = Physics.check_collision_rect_tilemap(self.attack_rect)
-        if attack_tilemap_collision ~= nil then
-            self.attack_timer = 0
-        end
+        local attack_tilemap_collision = Physics.check_collision_rect_tilemap(attack_rect)
+
+        -- Выделение памяти 🤮
+        self.attack_rects = {attack_rect, player_rect}
 
         hit_pandas = {}
         for _, panda in ipairs(game.pandas) do
-            if Physics.check_collision_rect_rect(self.attack_rect, Hitbox.rect_of(panda)) then
-                table.insert(hit_pandas, panda)
+            local panda_rect = Hitbox.rect_of(panda)
+            for _, attack_rect in ipairs(self.attack_rects) do
+                if Physics.check_collision_rect_rect(attack_rect, panda_rect) then
+                    table.insert(hit_pandas, panda)
+                    break
+                end
             end
         end
         if #hit_pandas > 0 then
@@ -262,12 +271,14 @@ function player.update(self)
         end
     end
 
-    if not moving_right and not moving_left and is_on_ground then
-        self.velocity.x = self.velocity.x - self.velocity.x * PLAYER_FRICTION * Time.dt()
-    else
-        -- Типа в воздухе другое сопротивление 💨
-        -- Не знаю, на сколько это нужно 😅
-        self.velocity.x = self.velocity.x - self.velocity.x * PLAYER_AIR_FRICTION * Time.dt()
+    if not moving_right and not moving_left then
+        if is_on_ground then
+            self.velocity.x = self.velocity.x - self.velocity.x * PLAYER_FRICTION * Time.dt()
+        else
+            -- Типа в воздухе другое сопротивление 💨
+            -- Не знаю, на сколько это нужно 😅
+            self.velocity.x = self.velocity.x - self.velocity.x * PLAYER_AIR_FRICTION * Time.dt()
+        end
     end
     local not_at_speed_limit = math.abs(self.velocity.x) < PLAYER_MAX_HORIZONTAL_SPEED
     if not_at_speed_limit then
@@ -292,8 +303,9 @@ function player.update(self)
         end
     end
 
-    local should_jump = self.jump_buffer_time > 0.0
     local has_jumped = false
+    local has_walljumped = false
+    local should_jump = self.jump_buffer_time > 0.0
     if should_jump then
         if is_on_ground and self.velocity.y <= 0 then
             self.velocity.y = PLAYER_JUMP_STRENGTH
@@ -304,14 +316,16 @@ function player.update(self)
             self.velocity.x = PLAYER_WALL_JUMP_HORIZONTAL_STRENGTH
             self.remove_horizontal_speed_limit_time = PLAYER_REMOVE_SPEED_LIMIT_AFTER_WALL_JUMP_TIME
             has_jumped = true
+            has_walljumped = true
         elseif hugging_right_wall and not is_on_ground then
             self.velocity.y = PLAYER_WALL_JUMP_VERTICAL_STRENGTH
             self.velocity.x = -1 * PLAYER_WALL_JUMP_HORIZONTAL_STRENGTH
             self.remove_horizontal_speed_limit_time = PLAYER_REMOVE_SPEED_LIMIT_AFTER_WALL_JUMP_TIME
             has_jumped = true
+            has_walljumped = true
         end
     end
-    if jump_inputted and self.coyote_time > 0.0 and self.velocity.y <= 0.0 then
+    if jump_pressed and self.coyote_time > 0.0 and self.velocity.y <= 0.0 then
         self.velocity.y = PLAYER_JUMP_STRENGTH
         self.time_before_we_can_stick_to_wall = PLAYER_DELAY_AFTER_JUMP_BEFORE_STICKING_TO_WALL
         has_jumped = true
@@ -319,6 +333,11 @@ function player.update(self)
     if has_jumped then
         self.coyote_time = 0.0
         self.jump_buffer_time = 0.0
+        sfx(4, 'A#4', -1, 0, 3, 2)
+    end
+
+    if is_on_ground and not self.was_on_ground_last_frame then
+        Effects.add(self.x, self.y, PLAYER_SPRITE_LAND_PARTICLE_EFFECT)
     end
 
     if not is_on_ground and self.was_on_ground_last_frame and self.velocity.y <= 0 then
@@ -327,14 +346,20 @@ function player.update(self)
     self.was_on_ground_last_frame = is_on_ground
 
     local can_stick_to_wall = self.time_before_we_can_stick_to_wall == 0.0
+    local sliding_on_wall = false
     if not is_on_ground and can_stick_to_wall then
-        if hugging_left_wall and self.velocity.x < 0 then
+        if hugging_left_wall and self.velocity.x < 0 or
+           hugging_right_wall and self.velocity.x > 0 then
             self.velocity.y = -1 * PLAYER_WALL_SLIDE_SPEED
-        end
-        if hugging_right_wall and self.velocity.x > 0 then
-            self.velocity.y = -1 * PLAYER_WALL_SLIDE_SPEED
+            sliding_on_wall = true
         end
     end
+    if self.was_sliding_on_wall_last_frame and not sliding_on_wall then
+        sfx(-1, -1, -1, 1)
+    elseif not self.was_sliding_on_wall_last_frame and sliding_on_wall then
+        sfx(8, 'D-1', -1, 1)
+    end
+    self.was_sliding_on_wall_last_frame = sliding_on_wall
 
 
     EPSILON = 4.0
@@ -356,41 +381,46 @@ function player.update(self)
     end
 
 
-    -- 3. Проверка коллизий
-    local next_x = self.x + self.velocity.x * Time.dt()
-    local rect_after_x_move = Rect.combine(
-        Hitbox.rect_of(self),
-        Hitbox.to_rect(self.hitbox, next_x, self.y)
-    )
-    local horizontal_collision = Physics.check_collision_rect_tilemap(rect_after_x_move)
+    -- 3. Проверка коллизий. Уже не так впечатляюще, потому что я вынес код в Physics
+    local horizontal_collision = Physics.move_x(self)
     if horizontal_collision ~= nil then
-        if moving_right then
-            next_x = horizontal_collision.x - self.hitbox.width - self.hitbox.offset_x
-        else
-            next_x = horizontal_collision.x + self.hitbox.width + self.hitbox.offset_x
-        end
         self.velocity.x = 0
     end
 
-    local next_y = self.y - self.velocity.y * Time.dt()
-    local rect_after_y_move = Rect.combine(
-        Hitbox.rect_of(self),
-        Hitbox.to_rect(self.hitbox, self.x, next_y)
-    )
-    local vertical_collision = Physics.check_collision_rect_tilemap(rect_after_y_move)
+    local vertical_collision = Physics.move_y(self)
     if vertical_collision ~= nil then
-        local flying_down = self.velocity.y < 0
-        if flying_down then
-            next_y = vertical_collision.y - self.hitbox.height - self.hitbox.offset_y
-        else
-            next_y = vertical_collision.y + self.hitbox.height + self.hitbox.offset_y
-        end
         self.velocity.y = 0
+    end
+
+    -- Анимациями занимаются здесь 🏭
+    if has_jumped then
+        if has_walljumped then
+            -- Наверное в будущем здесь вообще будут кастомные эффекты. Пока
+            -- что же тут магические константы 🪄
+            if self.looking_left then
+                Effects.add(self.x + 2, self.y, PLAYER_SPRITE_JUMP_PARTICLE_EFFECT)
+            else
+                Effects.add(self.x + 1, self.y, PLAYER_SPRITE_JUMP_PARTICLE_EFFECT)
+            end
+        else
+            Effects.add(self.x, self.y, PLAYER_SPRITE_JUMP_PARTICLE_EFFECT)
+        end
+    end
+
+    local previous_sprite = self.sprite
+
+    if self.sprite == PLAYER_SPRITE_ATTACK and not self.sprite:animation_ended() then
+        -- goto использован 😎
+        goto no_sprite_change
     end
 
     if self.attack_timer > 0 then
         self.sprite = PLAYER_SPRITE_ATTACK
-    elseif self.velocity.y ~= 0 then
+    elseif sliding_on_wall then
+        self.sprite = PLAYER_SPRITE_SLIDE
+    elseif self.velocity.y < 0 and not is_on_ground then
+        self.sprite = PLAYER_SPRITE_FALLING
+    elseif self.velocity.y ~= 0 or not is_on_ground then
         self.sprite = PLAYER_SPRITE_JUMP
     elseif self.time_we_have_been_running > 0.1 and self.velocity.x ~= 0 then
         self.sprite = PLAYER_SPRITE_RUNNING
@@ -398,55 +428,47 @@ function player.update(self)
         self.sprite = PLAYER_SPRITE_IDLE
     end
 
-    self.x = next_x
-    self.y = next_y
+    if self.sprite ~= previous_sprite then
+        self.sprite:reset()
+    end
 
-    self.time_before_we_can_stick_to_wall = math.max(self.time_before_we_can_stick_to_wall - Time.dt(), 0.0)
-    self.jump_buffer_time = math.max(self.jump_buffer_time - Time.dt(), 0.0)
-    self.coyote_time = math.max(self.coyote_time - Time.dt(), 0.0)
-    self.remove_horizontal_speed_limit_time = math.max(self.remove_horizontal_speed_limit_time - Time.dt(), 0.0)
-    self.attack_timer = math.max(self.attack_timer - Time.dt(), 0.0)
+    ::no_sprite_change::
+
+    -- У игрока есть много вещей, зависящих от времени (таймеров).
+    -- Они обновляются тут, в самом конце.
+    self.time_before_we_can_stick_to_wall = tick_timer(self.time_before_we_can_stick_to_wall)
+    self.jump_buffer_time = tick_timer(self.jump_buffer_time)
+    self.coyote_time = tick_timer(self.coyote_time)
+    self.remove_horizontal_speed_limit_time = tick_timer(self.remove_horizontal_speed_limit_time)
+    self.attack_timer = tick_timer(self.attack_timer)
+    self.attack_buffer_time = tick_timer(self.attack_buffer_time)
     if self.velocity.x ~= 0 then
         self.time_we_have_been_running = self.time_we_have_been_running + Time.dt()
     else
         self.time_we_have_been_running = 0
     end
-
-    -- проверка на колизию плохого тайла и изменение is_dead
-    local table = Physics.tile_ids_that_intersect_with_rect(self.hitbox:to_rect(self.x,self.y))
-    for _, collision in ipairs(table) do
-        for _, bad_tile in pairs(data.bad_tile) do
-        if collision.id == bad_tile then
-            self.is_dead = true
-            game.dialog_window.is_closed = false
-            game.status = false
-            self.x = PLAYER_START_X
-            self.y = PLAYER_START_Y
-        end
-        end
-    end
-
 end
 
 function player.draw(self)
     local colorkey = 0
     local scale = 1
+
     local flip = self.looking_left and 1 or 0
 
     local tx, ty = game.camera_window:transform_coordinates(self.x, self.y)
+    ty = ty - 8 * (self.sprite:current_animation().height - 1)
 
-    self.sprite:nextFrame()
-    spr(self.sprite:current(), tx, ty, colorkey, scale, flip)
-
-    -- Дебаг 🐜
-    if false then
-        for i, r in ipairs(debug_rects) do
-            rect(r.x, r.y, r.w, r.h, 5 + i)
-        end
+    for _, attack_rect in ipairs(self.attack_rects) do
+        -- Этот код не работает. Почему?
+        --if attack_rect.y < Hitbox.rect_of(self).y - 2 then
+        --    flip = flip + 2
+        --end
     end
-    debug_rects = {}
 
-    if self.attack_rect then
-        self.attack_rect:draw()
-    end
+    self.sprite:draw(tx, ty, flip)
+    self.sprite:next_frame()
+
+    --for _, attack_rect in ipairs(self.attack_rects) do
+    --    attack_rect:draw()
+    --end
 end

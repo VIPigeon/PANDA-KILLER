@@ -14,15 +14,15 @@ Rect = {}
 -- x, y -- координаты левого верхнего угла
 -- x + w, y + h не включительно
 function Rect:new(x, y, w, h)
-    local obj = {
+    local object = {
         x = x,
         y = y,
         w = w,
         h = h,
     }
 
-    setmetatable(obj, self)
-    return obj
+    setmetatable(object, self)
+    return object
 end
 
 function Rect:left()
@@ -41,11 +41,11 @@ function Rect:bottom()
     return self.y + self.h
 end
 
-function Rect:centerX()
+function Rect:center_x()
     return self.x + self.w / 2
 end
 
-function Rect:centerY()
+function Rect:center_y()
     return self.y + self.h / 2
 end
 
@@ -119,9 +119,10 @@ function Rect:combine(other)
     }
 end
 
-function Rect:draw()
+function Rect:draw(color)
+    color = color or 1
     local x, y = game.camera_window:transform_coordinates(self.x, self.y)
-    rect(x, y, self.w, self.h, 11)
+    rect(x, y, self.w, self.h, color)
 end
 
 Rect.__index = Rect

@@ -1,82 +1,91 @@
+--[[
+
+Спрайт состоит из нескольких анимаций 🎞️
+Анимация -- набор кадров, у которых одинаковый размер и длительность.
+Кадр -- это айдишник спрайта из тика, типа 380.
+
+Анимация также может указывать куда переходить после того как она закончится:
+На какой-то из своих кадров или на какую-то другую анимацию. Примеры можно
+посмотреть, как всегда, в игроке.
+
+Сама анимация сделано с помощью паттерна Builder 🤮. Простите, как главный
+хейтер ООП, у меня всё же не получилось удержаться. Это ведь так красиво
+выглядит при использовании (посмотрите на эти цепочки методов, ух...).
+Моя вина... Простите...
+
+]]--
+
 
 Sprite = {}
 
+function Sprite:new(frames, single_frame_duration, width, height)
+    single_frame_duration = single_frame_duration or 1
+    width = width or 1
+    height = height or 1
+    local animation_sequence = Animation:new(frames, single_frame_duration):with_size(width, height)
+    return Sprite:new_complex({animation_sequence})
+end
 
-function Sprite:new(animation, size)
-    local obj = {
-        animation = animation,
-        frame = 1,  -- номер кадра
-        size = size  -- размер спрайта
+function Sprite:new_complex(animation_sequence)
+    local object = {
+        animation_sequence = animation_sequence,
+        animation_index = 1,
+        frame_index = 1,
+        current_frame_duration = 1,
     }
-    -- чистая магия!
-    setmetatable(obj, self)
-    self.__index = self; return obj
+
+    setmetatable(object, self)
+    return object
 end
 
-function Sprite:current(x, y, flip, rotate)
-    return self.animation[self.frame]
+function Sprite:current_animation()
+    return self.animation_sequence[self.animation_index]
 end
 
-function Sprite:getFrame()
-    return self.frame
+function Sprite:current_frame()
+    return self:current_animation().frames[self.frame_index]
 end
 
-function Sprite:setFrame(frame)
-    self.frame = math.round(frame)
+function Sprite:animation_ended()
+    return self.animation_index == #self.animation_sequence and
+           self.frame_index == #self:current_animation().frames and
+           self.current_frame_duration == self:current_animation().single_frame_duration
 end
 
-function Sprite:nextFrame()
-    self.frame = self.frame % #self.animation + 1
+function Sprite:reset()
+    self.frame_index = 1
+    self.animation_index = 1
+    self.current_frame_duration = 1
+end
+
+function Sprite:next_frame()
+    local animation = self:current_animation()
+    if self.current_frame_duration >= animation.single_frame_duration then
+        self.current_frame_duration = 1
+        if self.frame_index >= #animation.frames then
+            self.frame_index = 1
+            if animation.next_animation_index ~= nil then
+                self.animation_index = animation.next_animation_index
+            elseif animation.next_frame_index ~= nil then
+                self.frame_index = animation.next_frame_index
+            else
+                self.animation_index = self.animation_index % #self.animation_sequence + 1
+            end
+        else
+            self.frame_index = self.frame_index + 1
+        end
+    else
+        self.current_frame_duration = self.current_frame_duration + 1
+    end
 end
 
 function Sprite:draw(x, y, flip, rotate)
-    spr(self.animation[self.frame], x, y, C0, 1, flip, rotate, self.size, self.size)
+    local animation = self:current_animation()
+    spr(self:current_frame(), x, y, C0, 1, flip, rotate, animation.width, animation.height)
 end
-
-function Sprite:animationEnd()
-    return self.frame == #self.animation
-end
-
 
 function Sprite:copy()
-    return Sprite:new(self.animation, self.size)
+    return Sprite:new_complex(self.animation_sequence)
 end
 
-
-StaticSprite = {}
-function StaticSprite:new(sprite, size)
-    local obj = {
-        sprite = sprite,
-        size = size
-    }
-    setmetatable(obj, self)
-    self.__index = self; return obj
-end
-
-function StaticSprite:copy()
-    return self
-end
-
-function StaticSprite:draw(x, y, flip, rotate)
-    spr(self.sprite, x, y, C0, 1, flip, rotate, self.size, self.size)
-end
-
-function StaticSprite:animationEnd()
-    -- Страница специально оставлена пустой для литературного эффекта. Спасибо ООП!
-end
-function StaticSprite:nextFrame()
-    -- Страница специально оставлена пустой для литературного эффекта. Спасибо 00П!
-end
-function StaticSprite:getFrame()
-    -- Страница специально оставлена пустой для литературного эффекта. Спасибо ООП!
-end
-function StaticSprite:setFrame(frame)
-    -- Страница специально оставлена пустой для литературного аффекта. Спасибо ООП!
-end
-function StaticSprite:nextFrame()
-    -- Страница специально оставлена пустой для литературного эффекта. Спасибо ООП!
-end
-
-
-
-return Sprite
+Sprite.__index = Sprite
