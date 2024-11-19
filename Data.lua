@@ -24,6 +24,7 @@ TRANSPARENT_SPRITE = Sprite:new({0})
 
 data.bad_tile = {}
 data.panda = {}
+data.bike = {}
 data.run = {}
 data.jump = {}
 data.idle = {}
@@ -95,12 +96,20 @@ data.panda.sprite = {
 
 }
 
+data.bike.sprite = {
+    horny = Sprite:new({488}, 1, 2, 2),
+    saddled = Sprite:new({490}, 1, 2, 2),
+}
+
 function is_tile_solid(tile_id)
     -- 2024-09-??
     -- XD Это кому-то исправлять 😆😂😂
     --
     -- 2024-10-20
     -- ... Это пришлось исправлять мне 💀
+    --
+    -- 2032-32-23
+    -- Славный был парень, покойся смело👍
     return
          1 <= tile_id and tile_id <= 4 or
         16 <= tile_id and tile_id <= 19 or

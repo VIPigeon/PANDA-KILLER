@@ -20,6 +20,7 @@ require 'Body'
 require 'ThePanda'
 require 'Entities'
 require 'TheTrigger'
+require 'Bike'
 require 'Player'
 
 game.init()

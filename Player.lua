@@ -105,6 +105,7 @@ player = {
     remove_horizontal_speed_limit_time = 0.0,
     attack_buffer_time = 0.0,
     time_we_have_been_running = 0.0,
+    IS_0xDEADBEAF = false,
 }
 
 function player.update(self)
@@ -450,6 +451,10 @@ function player.update(self)
 end
 
 function player.draw(self)
+    if self.IS_0xDEADBEAF then
+        return
+    end
+
     local colorkey = 0
     local scale = 1
 

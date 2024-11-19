@@ -11,14 +11,16 @@ function game.init()
     -- math.randomseed(69420)
 
     game.player = player
-    game.pandas = {Panda:new(156,104), Panda:new(10,10), Panda:new(20,10)}
-    game.triggers = {TriggerTile:new(20,90,10,10)}
     game.dialog_window = DialogWindow:new(100,50,"defeat\nato😲")
 
+    TriggerTiles.add(TriggerTile:new(24,88,8,8, TriggerActions.dialogue))
+    game.lol = Bike:new(180, 88)
+    TriggerTiles.add(game.lol)
     --Pandas.add(Panda:new(130,95))
-    Pandas.add(Panda:new(60,95))
+    --Pandas.add(Panda:new(60,95))
     --Pandas.add(Panda:new(150,48))
     game.pandas = Pandas.alive_pandas
+    game.triggers = TriggerTiles.Tiles
 
     local camera_rect = Rect:new(player.x - 16, player.y - 8, CAMERA_WINDOW_WIDTH, CAMERA_WINDOW_HEIGHT)
     game.camera_window = CameraWindow:new(camera_rect, player, 8, 8)
@@ -29,27 +31,31 @@ function game.init()
 end
 
 function game.update()
-    if not game.status then
-        game.dialog_window:update()
-        game.dialog_window:draw()
-        Time.update()
-        return
-    end
     local player = game.player
     local dialog_window = game.dialog_window
     local camera_window = game.camera_window
     local pandas = game.pandas
     local triggers = game.triggers
 
+    if not game.status then
+        game.dialog_window:update()
+        map(camera_window.gm.x, camera_window.gm.y, 31, 18, camera_window.gm.sx, camera_window.gm.sy)
+        game.dialog_window:draw()
+        Time.update()
+        return
+    end
+
     dialog_window:update()
     player:update()
     camera_window:update()
     Pandas.update()
+    TriggerTiles.update()
 
     update_psystems()
 
     map(camera_window.gm.x, camera_window.gm.y, 31, 18, camera_window.gm.sx, camera_window.gm.sy)
     Pandas.draw()
+    TriggerTiles.draw()
     Effects.draw()
     --entities:draw(pandas)
     player:draw()

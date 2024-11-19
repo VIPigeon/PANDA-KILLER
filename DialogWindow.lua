@@ -16,12 +16,15 @@ end
 
 function DialogWindow:update()
     -- здесь будет анимация
-    
+
     self:close()
 end
 
 
 function DialogWindow:draw()
+    -- a здесь вылетит птичка
+
+    --trace('im closed')
     if self.is_closed then
         return
     end
@@ -29,11 +32,21 @@ function DialogWindow:draw()
         DialogWindow:draw_dialog_death()
         self.is_closed = false
     end
+    
     -- Кто поменяет, тот бед не оберётся
+    
+    if not (TriggerTiles.__is_active__ == nil) and TriggerTiles.__is_active__.status and TriggerTiles.__is_active__.type == 'MONOLOGUE' then
+        -- Нужен рефакторинг🙄
+        trace('reading dialog of trigger-'..tostring(TriggerTiles.__is_active__.trigger))
+        DialogWindow:draw_monologue(TriggerTiles.__is_active__.trigger)
 
-    if not (game.triggers.__is_active__ == nil) and game.triggers.__is_active__.status then
-        trace('haha')
-        DialogWindow:draw_monologue(game.triggers.__is_active__.trigger)
+        self.is_closed = false
+    end
+
+    if not (TriggerTiles.__is_active__ == nil) and TriggerTiles.__is_active__.status and TriggerTiles.__is_active__.type == 'BIKE' then
+        trace('wrrrrrrrrrrrrrrrr')
+        DialogWindow:draw_bikelogue(TriggerTiles.__is_active__.trigger)
+
         self.is_closed = false
     end
 end 
@@ -78,18 +91,31 @@ function DialogWindow:draw_monologue(trigger)
     self.text = russian_to_translit(trigger.dialog_text)
     self.x = trigger.x + trigger.dialog_offset.x
     self.y = trigger.y + trigger.dialog_offset.y
-    rect(self.x,self.y,MAX_WIDTH_SCREEN,MAX_HEIGHT_SCREEN,0)
+    rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0)
     self:draw_dialog()
     --trace(self.text)
 end
 
+function DialogWindow:draw_bikelogue(trigger)
+    --self.text = russian_to_translit(trigger.dialog_text)
+    --self.x = trigger.x + trigger.dialog_offset.x
+    --self.y = trigger.y + trigger.dialog_offset.y
+    --rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0)
+    --self:draw_dialog()
+    trigger.wrapper:go_away()
+    trigger.wrapper:draw()
+end
+
 function DialogWindow:close()
-    if btn(BUTTON_A) or btn(BUTTON_S) or btn(BUTTON_X) or btn(BUTTON_Z) then
+    -- Я убрал отсюда проверку на BUTTON_A, потому что перестаёт работать диалог по триггеру.
+    --Если это действительно нужно, потом разберёмся
+    if btnp(BUTTON_S) or btnp(BUTTON_X) or btnp(BUTTON_Z) then
         self.is_closed = true
         self.text = ""
         self:draw_dialog()
         game.status = true
         game.player.is_dead = false
+        game.dialog_window = DialogWindow:new(0,0, '')
     end
 end
 
