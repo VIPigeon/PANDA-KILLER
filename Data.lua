@@ -54,9 +54,9 @@ data.cactus = {
     --cactus_tile1 ={122,1}
     --cactus_tile1 ={123,1}
     --cactus_tile1 ={138,1}
-    --cactus_tile1 ={107,1}
-    --cactus_tile1 ={108,1}
-    --cactus_tile1 ={91,1}
+    --cactus_tile1 ={140,1}
+    --cactus_tile1 ={124,1}
+    --cactus_tile1 ={139,1}
 }
 
 data.stump = {
