@@ -27,8 +27,9 @@ data.panda = {}
 data.run = {}
 data.jump = {}
 data.idle = {}
-data.attack1 = {}
-data.attack2 = {}
+data.attack = {}
+data.attack_in_jump_forward = {}
+data.attack_in_jump_down = {}
 data.slide = {}
 data.coffee_bush = {}
 data.bush = {}
@@ -86,19 +87,26 @@ data.slide = {
     --slide_tile4 = {454,2}
 }
 
-data.attack1 = {
-    --attack1_tile1 = {416,2}
-    --attack1_tile2 = {418,2}
-    --attack1_tile3 = {420,2}
-    --attack1_tile4 = {422,2}
-    --attack1_tile4 = {478,2} -- 😎
+data.attack = {
+    --attack_tile1 = {416,2}
+    --attack_tile2 = {418,2}
+    --attack_tile3 = {420,2}
+    --attack_tile4 = {422,2}
+    --dust_tile = {488,2} -- 😎
 }
 
-data.attack2 = {
-    --attack2_tile1 = {416,2}
-    --attack2_tile2 = {458,2}
-    --attack2_tile3 = {476,2}
-    --attack2_tile4 = {478,2}
+data.attack_in_jump_forward = {
+    --tile1 = {424,2}
+    --tile2 = {456,2}
+    --tile3 = {458,2}
+    --dust_tile = {488,2} 
+}
+
+data.attack_in_jump_down = {
+    --tile1 = {490,2}
+    --tile2 = {492,2}
+    --tile3 = {494,2}
+    --dust_tile = {444,2} 
 }
 
 data.jump = {
@@ -108,7 +116,7 @@ data.jump = {
     --jump_tile4 = {383,1}
     --jump_tile5 = {412,2}
     --jump_tile6 = {414,2}
-    --jump_tile7 = {444,2}
+    --jump_tile7 = {412,2}
     --jump_tile8 = {446,2}
     --jump_tile9 = {426,2}
 }
