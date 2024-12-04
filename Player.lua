@@ -65,10 +65,11 @@ PLAYER_JUMP_STRENGTH = math.sqrt(2 * PLAYER_GRAVITY * PLAYER_JUMP_HEIGHT)
 
 PLAYER_SPRITE_IDLE = Sprite:new({380}, 1, 2, 2)
 PLAYER_SPRITE_RUNNING = Sprite:new({384, 386, 388, 390, 392, 394}, 6, 2, 2)
-PLAYER_SPRITE_ATTACK = Animation:new({416, 418, 420, 422, 478}, 4):with_size(2, 2):at_end_goto_last_frame():to_sprite()
-PLAYER_SPRITE_ATTACK_2 = Animation:new({416, 458, 476, 478}, 8):with_size(2, 2):to_sprite()
+PLAYER_SPRITE_ATTACK = Animation:new({416, 418, 420, 422}, 4):with_size(2, 2):at_end_goto_last_frame():to_sprite()
+PLAYER_SPRITE_ATTACK_AIR_FORWARD = Animation:new({424, 456, 458}, 4):with_size(2, 2):at_end_goto_last_frame():to_sprite()
+PLAYER_SPRITE_ATTACK_AIR_DOWNWARD = Animation:new({490, 492, 494}, 6):with_size(2, 2):at_end_goto_last_frame():to_sprite()
 PLAYER_ATTACK_FRAME_WHEN_TO_APPLY_ATTACK = 5 -- да ну его...
-PLAYER_SPRITE_JUMP = Animation:new({412, 414, 444, 446, 426}, 3):with_size(2, 2):at_end_goto_last_frame():to_sprite()
+PLAYER_SPRITE_JUMP = Animation:new({412, 414, 412}, 3):with_size(2, 2):at_end_goto_last_frame():to_sprite()
 PLAYER_SPRITE_FALLING = Animation:new({426}, 1):with_size(2, 2):to_sprite()
 PLAYER_SPRITE_SLIDE = Sprite:new_complex({
     Animation:new({448, 450}, 8):with_size(2, 2),
@@ -77,6 +78,8 @@ PLAYER_SPRITE_SLIDE = Sprite:new_complex({
 PLAYER_SPRITE_DEAD = Sprite:new({274})
 PLAYER_SPRITE_JUMP_PARTICLE_EFFECT = Animation:new({496, 498, 500, 502}, 6):with_size(2, 1):at_end_goto_last_frame():to_sprite()
 PLAYER_SPRITE_LAND_PARTICLE_EFFECT = Animation:new({500, 502}, 8):with_size(2, 1):at_end_goto_last_frame():to_sprite()
+PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_HORIZONTAL = Animation:new({488}, 18):with_size(2, 2):at_end_goto_last_frame():to_sprite();
+PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_DOWNWARD = Animation:new({444}, 18):with_size(2, 1):at_end_goto_last_frame():to_sprite();
 
 player = {
     x = PLAYER_START_X,
@@ -97,6 +100,11 @@ player = {
     was_on_ground_last_frame = false,
     was_sliding_on_wall_last_frame = false,
     is_dead = false,
+
+    -- Это для анимаций. Как по другому, я не придумал 😜
+    has_attacked_in_air = false,
+    has_attacked_downward = false,
+    just_attacked = false,
 
     time_before_we_can_stick_to_wall = 0.0,
     coyote_time = 0.0,
@@ -177,9 +185,21 @@ function player.update(self)
 
     if attack_pressed then
         self.attack_buffer_time = PLAYER_ATTACK_BUFFER_TIME
+
+        if not is_on_ground then
+            self.has_attacked_in_air = true
+        else
+            self.has_attacked_in_air = false
+        end
+        if looking_down then
+            self.has_attacked_downward = true
+        else
+            self.has_attacked_downward = false
+        end
     end
 
     if self.attack_timer == 0 then
+        self.just_attacked = false
         self.attack_rects = {}
         if self.attack_buffer_time > 0.0 then
             self.sprite:reset()
@@ -187,7 +207,9 @@ function player.update(self)
             self.attack_buffer_time = 0.0
             sfx(5, 'C-6', 10, 2)
         end
-    elseif self.sprite.frame_index >= PLAYER_ATTACK_FRAME_WHEN_TO_APPLY_ATTACK then
+    end
+
+    if self.attack_timer > 0 and self.sprite:animation_ended() then
         -- Это сделано для испольнения Clean Code принципа (c)
         -- Don't Repeat Yourself (DRY). Я, как хороший программист,
         -- стремлюсь всегда следовать best practices и использовать
@@ -260,6 +282,16 @@ function player.update(self)
                 panda:get_hit(attack_direction_x, attack_direction_y)
             end
             self.attack_timer = 0
+        end
+
+        if not self.just_attacked then
+            self.just_attacked = true
+            if self.has_attacked_downward and self.has_attacked_in_air then
+                Effects.add(self.x + 8 * attack_direction_x, self.y + 8 * attack_direction_y, PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_DOWNWARD)
+            else
+                local flip = (attack_direction_x < 0) and 1 or 0
+                Effects.add(self.x + 8 * attack_direction_x, self.y - 8 + 8 * attack_direction_y, PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_HORIZONTAL, flip)
+            end
         end
     end
 
@@ -407,7 +439,15 @@ function player.update(self)
     end
 
     if self.attack_timer > 0 then
-        self.sprite = PLAYER_SPRITE_ATTACK
+        if self.has_attacked_in_air then
+            if self.has_attacked_downward then
+                self.sprite = PLAYER_SPRITE_ATTACK_AIR_DOWNWARD
+            else
+                self.sprite = PLAYER_SPRITE_ATTACK_AIR_FORWARD
+            end
+        else
+            self.sprite = PLAYER_SPRITE_ATTACK
+        end
     elseif sliding_on_wall then
         self.sprite = PLAYER_SPRITE_SLIDE
     elseif self.velocity.y < 0 and not is_on_ground then
