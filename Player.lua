@@ -21,65 +21,7 @@
 ЛИЦЕНЗИЯ: Использовать этот код в коммерческих целях ЗАПРЕЩЕНО.
 Если очень хочется, то нужно заплатить мне $10. (c) кавайный-код
 
-
-
-Итак, объясняю как работает прыжок от стены 🤓
-
-1. Если игрок в воздухе врезается в стену, он "прилепляется" к ней.
-2. Если игрок продолжает идти в стену, то он будет скользит с
-   замедленной скоростью PLAYER_WALL_SLIDE_SPEED.
-3. Самое сложное: игрок отпрыгивает от стены. После прыжка на короткое
-   время (PLAYER_REMOVE_SPEED_LIMIT_AFTER_WALL_JUMP_TIME) у игрока
-   уменьшается гравитация, чтобы можно было легче контролировать полёт.
-   Такие дела.
-
-Всё константы измеряются либо в 'пикселях', либо в 'секундах', либо в 'пикселях в секунду'.
-Ещё есть проценты от 0 до 1 ⚖
-
 --]]
-
-PLAYER_MAX_HORIZONTAL_SPEED = 67.0
-PLAYER_HORIZONTAL_ACCELERATION = 900.0
-PLAYER_FRICTION = 12.0
-PLAYER_AIR_FRICTION = 0.52 * PLAYER_FRICTION
-
-PLAYER_WALL_SLIDE_SPEED = 30.0
-PLAYER_WALL_JUMP_HORIZONTAL_STRENGTH = 140.0
-PLAYER_WALL_JUMP_VERTICAL_STRENGTH = 120.0
-PLAYER_REMOVE_SPEED_LIMIT_AFTER_WALL_JUMP_TIME = 0.26
-PLAYER_DELAY_AFTER_JUMP_BEFORE_STICKING_TO_WALL = 0.2
-
-PLAYER_ATTACK_DURATION = 0.4
-PLAYER_ATTACK_BUFFER_TIME = 0.2
-PLAYER_DAMAGE = 10
-
-PLAYER_COYOTE_TIME = 0.23
-PLAYER_JUMP_BUFFER_TIME = 0.18
-
-PLAYER_MAX_FALL_SPEED = 200.0
-PLAYER_JUMP_HEIGHT = 24
-PLAYER_TIME_TO_APEX = 0.33 -- Время, чтобы достичь высшей точки прыжка (apex)
-PLAYER_GRAVITY = (2 * PLAYER_JUMP_HEIGHT) / (PLAYER_TIME_TO_APEX * PLAYER_TIME_TO_APEX)
-PLAYER_GRAVITY_AFTER_WALL_JUMP = 0.75 * PLAYER_GRAVITY
-PLAYER_JUMP_STRENGTH = math.sqrt(2 * PLAYER_GRAVITY * PLAYER_JUMP_HEIGHT)
-
-PLAYER_SPRITE_IDLE = Sprite:new({380}, 1, 2, 2)
-PLAYER_SPRITE_RUNNING = Sprite:new({384, 386, 388, 390, 392, 394}, 6, 2, 2)
-PLAYER_SPRITE_ATTACK = Animation:new({416, 418, 420, 422}, 4):with_size(2, 2):at_end_goto_last_frame():to_sprite()
-PLAYER_SPRITE_ATTACK_AIR_FORWARD = Animation:new({424, 456, 458}, 4):with_size(2, 2):at_end_goto_last_frame():to_sprite()
-PLAYER_SPRITE_ATTACK_AIR_DOWNWARD = Animation:new({490, 492, 494}, 6):with_size(2, 2):at_end_goto_last_frame():to_sprite()
-PLAYER_ATTACK_FRAME_WHEN_TO_APPLY_ATTACK = 5 -- да ну его...
-PLAYER_SPRITE_JUMP = Animation:new({412, 414, 412}, 3):with_size(2, 2):at_end_goto_last_frame():to_sprite()
-PLAYER_SPRITE_FALLING = Animation:new({426}, 1):with_size(2, 2):to_sprite()
-PLAYER_SPRITE_SLIDE = Sprite:new_complex({
-    Animation:new({448, 450}, 8):with_size(2, 2),
-    Animation:new({452, 454}, 12):with_size(2, 2):at_end_goto_animation(2),
-})
-PLAYER_SPRITE_DEAD = Sprite:new({274})
-PLAYER_SPRITE_JUMP_PARTICLE_EFFECT = Animation:new({496, 498, 500, 502}, 6):with_size(2, 1):at_end_goto_last_frame():to_sprite()
-PLAYER_SPRITE_LAND_PARTICLE_EFFECT = Animation:new({500, 502}, 8):with_size(2, 1):at_end_goto_last_frame():to_sprite()
-PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_HORIZONTAL = Animation:new({488}, 18):with_size(2, 2):at_end_goto_last_frame():to_sprite();
-PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_DOWNWARD = Animation:new({444}, 18):with_size(2, 1):at_end_goto_last_frame():to_sprite();
 
 player = {
     x = PLAYER_START_X,
@@ -278,7 +220,6 @@ function player.update(self)
             end
 
             for _, panda in ipairs(hit_pandas) do
-                panda:harm(PLAYER_DAMAGE)
                 panda:get_hit(attack_direction_x, attack_direction_y)
             end
             self.attack_timer = 0

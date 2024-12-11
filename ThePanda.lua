@@ -491,8 +491,4 @@ function Panda:get_hit(hit_x, hit_y)
     end
 end
 
-function Panda:harm(damage)
-    self.health = math.clamp(self.health - damage, 0, self.health)
-end
-
 Panda.__index = Panda
