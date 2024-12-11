@@ -9,54 +9,6 @@
 
 Panda = table.copy(Body)
 
--- Стаггер - небольшое время стана после одного удара от игрока
--- Если игрок бъет панду много раз и быстро, то она входит в стан
-
--- Короче ну вас, не могу придумать название 🤬
--- Если непонятно что это, то спросите. Не хочу
--- даже в этом комментарии объяснять, что это такое!
-PANDA_TIME_INTERVAL_BETWEEN_HITS_FROM_PLAYER = 1.0
-PANDA_HITS_NEEDED_TO_GET_STUNNED = 3
-PANDA_STAGGER_TIME = 1.0
-PANDA_STUNNED_TIME = 2.5
-
--- Пока что используются для отлета панды (когда её застанило)
-PANDA_FLY_AWAY_SPEED = 75.0
-PANDA_FLY_UP_SPEED = 60.0
-PANDA_GRAVITY = 139.7
-PANDA_FRICTION = 3.5
-PANDA_MIN_HORIZONTAL_VELOCITY = 4.0
-
-PANDA_LOOK_DIRECTION_LEFT  = -1
-PANDA_LOOK_DIRECTION_RIGHT = 1
--- константная функция 📛
-PANDA_REST_TIME_BEFORE_DIRECTION_CHANGE = function()
-    return 1 + 1.0 * math.random()
-end
-
-PANDA_VIEW_CONE_WIDTH = 64
-PANDA_VIEW_CONE_HEIGHT = 32
-PANDA_PATROL_SPEED = 8
-PANDA_SLOWDOWN_FOR_REST = 0.5
-PANDA_DECELERATION = 48
-PANDA_PATROL_PIXELS_UNTIL_STOP = 6
-
-PANDA_X_DISTANCE_TO_PLAYER_UNTIL_ATTACK = 16 -- pixels
-PANDA_Y_DISTANCE_TO_PLAYER_UNTIL_ATTACK = 16 -- pixels
-PANDA_CHASE_JUMP_STRENGTH = 80
-PANDA_CHASE_PIXELS_UNTIL_JUMP = 12
-PANDA_CHASE_SPEED = 2.5 * PANDA_PATROL_SPEED
-PANDA_CHASE_TIME = 3.0
-PANDA_ATTACK_TIME = 1.5
-
-PANDA_DEFAULT_SPRITE = Animation:new({267}, 1):to_sprite()
-PANDA_CHASE_SPRITE = Animation:new({265, 266}, 8):to_sprite()
-PANDA_REST_SPRITE = Sprite:new_complex({
-    Animation:new({276}, 8),
-    Animation:new({277}, 8):with_size(2, 1)
-})
-PANDA_PANIC_SPRITE = Animation:new({281}, 8):to_sprite()
-
 -- vertical velocity constants
 local UPPING_CONSTANT = -1
 local FALLING_CONSTANT = 1
