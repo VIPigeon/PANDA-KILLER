@@ -24,8 +24,8 @@
 --]]
 
 player = {
-    x = PLAYER_START_X,
-    y = PLAYER_START_Y,
+    x = PLAYER_SPAWNPOINT_X,
+    y = PLAYER_SPAWNPOINT_Y,
     velocity = {
         x = 0,
         y = 0,
@@ -103,7 +103,7 @@ function player.update(self)
             if collision.id == bad_tile then
                 self.is_dead = true
                 game.dialog_window.is_closed = false
-                game.status = false
+                game.state = GAME_STATE_PAUSED
                 self.x = PLAYER_START_X
                 self.y = PLAYER_START_Y
                 self.velocity.x = 0

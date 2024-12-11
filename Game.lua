@@ -1,10 +1,7 @@
 game = {
-    status = true
+    state = GAME_STATE_LANGUAGE_SELECTION,
+    language = 'en',
 }
-
-function game.debug_features_init()
-
-end
 
 function game.init()
     -- А что использовать как сид 🤔? `os.time()` в тике недоступен
@@ -21,19 +18,31 @@ function game.init()
 
     local camera_rect = Rect:new(player.x - 16, player.y - 8, CAMERA_WINDOW_WIDTH, CAMERA_WINDOW_HEIGHT)
     game.camera_window = CameraWindow:new(camera_rect, player, 8, 8)
-
-    if GAMEMODE == GAMEMODE_DEBUG then
-       game.debug_features_init() 
-    end
 end
 
 function game.update()
-    if not game.status then
+    if game.state == GAME_STATE_LANGUAGE_SELECTION then
+        if btnp(BUTTON_Z) then
+            game.state = GAME_STATE_GAMEPLAY
+        end
+        if btnp(BUTTON_RIGHT) or btnp(BUTTON_LEFT) then
+            if game.language == 'ru' then
+                game.language = 'en'
+            else
+                game.language = 'ru'
+            end
+        end
+        draw_language_selection_boxes()
+        return
+    end
+
+    if game.state == GAME_STATE_PAUSED then
         game.dialog_window:update()
         game.dialog_window:draw()
         Time.update()
         return
     end
+
     local player = game.player
     local dialog_window = game.dialog_window
     local camera_window = game.camera_window
@@ -59,13 +68,4 @@ function game.update()
 
     -- Обязательно должно выполняться последним
     Time.update()
-end
-
-function game.drawSprite(object, x, y, sprite)
-    if object.x == nil or object.y == nil then
-        error('drawing an illegal object: ' .. tostring(object))
-    end
-
-    if object.sprite == nil then
-    end
 end

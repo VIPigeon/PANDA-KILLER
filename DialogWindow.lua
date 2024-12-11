@@ -71,7 +71,7 @@ function DialogWindow:close()
         self.is_closed = true
         self.text = ""
         self:draw_dialog()
-        game.status = true
+        game.state = GAME_STATE_GAMEPLAY
         game.player.is_dead = false
     end
 end

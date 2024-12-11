@@ -1,15 +1,51 @@
 data = {}
 
-GAMEMODE = GAMEMODE_DEBUG -- developer only
+--
+-- Управление
+--
+BUTTON_UP    = 0
+BUTTON_DOWN  = 1
+BUTTON_LEFT  = 2
+BUTTON_RIGHT = 3
 
-PLAYER_START_X = 0
-PLAYER_START_Y = 40
+BUTTON_Z = 4
+BUTTON_X = 5
+BUTTON_A = 6
+BUTTON_S = 7
+
+KEY_W = 23
+KEY_A = 01
+KEY_S = 19
+KEY_D = 04
+
+--[[
+
+Таблица переводов кнопок контроллеров.
+Кто-то же должен это делать 🤓
+
++------+-----------+----------+-----------+
+| XBOX |    PS4    | Keyboard | Direction |
++------+-----------+----------+-----------+
+|  A   |  cross    |    z     |   south   |
+|  B   |  circle   |    x     |   east    |
+|  X   |  square   |    a     |   west    |
+|  Y   |  triangle |    s     |   north   |
++------+-----------+----------+-----------+
+
+]]--
+
+
+
+GAME_STATE_LANGUAGE_SELECTION = 'language-selection'
+GAME_STATE_PAUSED = 'paused'
+GAME_STATE_GAMEPLAY = 'gameplay'
 
 CAMERA_WINDOW_WIDTH  = 60
 CAMERA_WINDOW_HEIGHT = 80
 CAMERA_VERTICAL_OFFSET = 26
 CAMERA_SPEED = 1
 
+-- Это то, что в тике на F3
 WORLD_TILEMAP_WIDTH  = 240 -- тайлов
 WORLD_TILEMAP_HEIGHT = 136 -- тайлов
 
@@ -129,10 +165,13 @@ PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_DOWNWARD = Animation:new({444}, 18):with_si
 
 
 
+      🐼 🐼 🐼 🐼 🐼
 
       И НАЛИВАЙТЕ КОФЕ ☕!
 
-      НАЧИНАЮТСЯ НАСТРОЙКИ ПАНДЫ 🐼
+      НАЧИНАЮТСЯ НАСТРОЙКИ ПАНДЫ
+
+      🐼 🐼 🐼 🐼 🐼
 
 --]]
 
@@ -189,6 +228,33 @@ PANDA_PANIC_SPRITE = Animation:new({281}, 8):to_sprite()
       Настройки панды завершены.
 
       Спасибо за посещение. 🧑💼
+
+--]]
+
+--[[
+
+      💬 💬 💬 💬 💬 💬 💬
+
+      Реплики!
+
+--]]
+
+TEXT__CHOOSE_YOUR_LANGUAGE = {
+    ['ru'] = 'ВЫБЕРИ ЯЗЫК',
+    ['en'] = 'CHOOSE YOUR LANGUAGE',
+}
+TEXT__PRESS_Z_TO_START = {
+    ['ru'] = 'НАЖМИ Z ЧТОБЫ НАЧАТЬ',
+    ['en'] = 'PRESS Z TO START',
+}
+TEXT__PRESS_RIGHTLEFT_TO_SELECT = {
+    ['ru'] = 'НАЖИМАЙ СТРЕЛКИ ЧТОБЫ ПОМЕНЯТЬ ЯЗЫК',
+    ['en'] = 'PRESS RIGHT/LEFT TO SELECT',
+}
+
+--[[
+
+      Реплики кончились 🤐
 
 --]]
 
