@@ -1,5 +1,8 @@
 data = {}
 
+-- 🏮 Перед релизом поставить в false!!! 🏮
+DEV_MODE_ENABLED = true
+
 --
 -- Управление
 --
@@ -89,7 +92,7 @@ PLAYER_COYOTE_TIME = 0.23                                    -- секунды
 -- https://www.reddit.com/r/gamedev/comments/w1dau6/input_buffering_action_canceling_and_also/
 PLAYER_JUMP_BUFFER_TIME = 0.18                               -- секунды
 -- Поменяйте это, чтобы игрок стал прыгать выше
-PLAYER_JUMP_HEIGHT = 24                                      -- пиксели
+PLAYER_JUMP_HEIGHT = 20                                      -- пиксели
 -- Поменяйте это, чтобы изменить время, за которое
 -- игрок достигнет высшей точки прыжка (APEX).
 PLAYER_TIME_TO_APEX = 0.33                                   -- секунды
@@ -124,7 +127,7 @@ PLAYER_REMOVE_SPEED_LIMIT_AFTER_WALL_JUMP_TIME = 0.26        -- секунды
 -- к стене на какое-то время. Иначе если прыгнуть
 -- рядом со стеной, то игрок сразу к ней
 -- приклеится.
-PLAYER_DELAY_AFTER_JUMP_BEFORE_STICKING_TO_WALL = 0.2        -- секунды
+PLAYER_DELAY_AFTER_JUMP_BEFORE_STICKING_TO_WALL = 0.13        -- секунды
 
 --
 -- Боёвка 🤺
@@ -215,13 +218,13 @@ PANDA_CHASE_SPEED = 2.5 * PANDA_PATROL_SPEED
 PANDA_CHASE_TIME = 3.0
 PANDA_ATTACK_TIME = 1.5
 
-PANDA_DEFAULT_SPRITE = Animation:new({267}, 1):to_sprite()
-PANDA_CHASE_SPRITE = Animation:new({265, 266}, 8):to_sprite()
+PANDA_DEFAULT_SPRITE = Animation:new({256, 257}, 1):to_sprite()
+PANDA_CHASE_SPRITE = Animation:new({259, 260}, 10):to_sprite()
 PANDA_REST_SPRITE = Sprite:new_complex({
     Animation:new({276}, 8),
     Animation:new({277}, 8):with_size(2, 1)
 })
-PANDA_PANIC_SPRITE = Animation:new({281}, 8):to_sprite()
+PANDA_PANIC_SPRITE = Animation:new({263, 256}, 7):to_sprite()
 
 --[[
 

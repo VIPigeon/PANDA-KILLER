@@ -3,6 +3,10 @@ game = {
     language = 'en',
 }
 
+if DEV_MODE_ENABLED then
+    game.state = GAME_STATE_GAMEPLAY
+end
+
 function game.init()
     -- А что использовать как сид 🤔? `os.time()` в тике недоступен
     -- math.randomseed(69420)
