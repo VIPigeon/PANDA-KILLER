@@ -44,13 +44,13 @@ function DialogWindow:draw()
     end
 
     if not (TriggerTiles.__is_active__ == nil) and TriggerTiles.__is_active__.status and TriggerTiles.__is_active__.type == 'BIKE' then
-        trace('wrrrrrrrrrrrrrrrr')
+        --trace('wrrrrrrrrrrrrrrrr')
         DialogWindow:draw_bikelogue(TriggerTiles.__is_active__.trigger)
 
         self.is_closed = false
     end
 end 
-
+    
 function DialogWindow:draw_dialog()
     if self.text == "" then
         return
@@ -102,6 +102,7 @@ function DialogWindow:draw_bikelogue(trigger)
     --self.y = trigger.y + trigger.dialog_offset.y
     --rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0)
     --self:draw_dialog()
+    trigger.wrapper:init_go_away()
     trigger.wrapper:go_away()
     trigger.wrapper:draw()
 end

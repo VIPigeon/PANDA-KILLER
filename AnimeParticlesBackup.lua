@@ -656,8 +656,8 @@ function make_explosparks_ps(ex,ey)
 	)
 end
 
-function make_explosion_ps(ex,ey)
-	local ps = make_psystem(100,500, 9,14,1,3)
+function make_explosion_ps(ex,ey, min_time, max_time, min_start_size, max_start_size, min_end_size, max_end_size)
+	local ps = make_psystem(min_time, max_time, min_start_size, max_start_size, min_end_size, max_end_size)
 	
 	table.insert(ps.emittimers,
 		{
@@ -677,10 +677,12 @@ function make_explosion_ps(ex,ey)
 			params = { colors = {15,0,14,9,9,4} }
 		}
 	)
+
+    return ps
 end
 
-function make_smoke_ps(ex,ey)
-	local ps = make_psystem(200,2000, 1,3, 6,9)
+function make_smoke_ps(ex,ey, min_time, max_time, min_start_size, max_start_size, min_end_size, max_end_size)
+	local ps = make_psystem(min_time, max_time, min_start_size, max_start_size, min_end_size, max_end_size)
 	
 	ps.autoremove = false
 
@@ -693,7 +695,8 @@ function make_smoke_ps(ex,ey)
 	table.insert(ps.emitters, 
 		{
 			emitfunc = emitter_box,
-			params = { minx = ex-4, maxx = ex+4, miny = ey, maxy= ey+2, minstartvx = 0, maxstartvx = 0, minstartvy = 0, maxstartvy=0 }
+			--params = { minx = ex-4, maxx = ex+4, miny = ey, maxy= ey+2, minstartvx = 0, maxstartvx s= 0, minstartvy = 0, maxstartvy=0 }
+			params = { minx = ex-2, maxx = ex+2, miny = ey, maxy= ey+2, minstartvx = 0, maxstartvx = 0, minstartvy = 0, maxstartvy=0 }
 		}
 	)
 	table.insert(ps.drawfuncs,
@@ -705,9 +708,11 @@ function make_smoke_ps(ex,ey)
 	table.insert(ps.affectors,
 		{ 
 			affectfunc = affect_force,
-			params = { fx = 0.003, fy = -0.009 }
+			params = { fx = -0.012, fy = -0.018 }
 		}
 	)
+
+    return ps
 end
 
 function make_explosmoke_ps(ex,ey)
