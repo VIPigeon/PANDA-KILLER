@@ -271,6 +271,7 @@ data.idle = {}
 data.attack = {}
 data.attack_in_jump_forward = {}
 data.attack_in_jump_down = {}
+data.attack_up = {}
 data.slide = {}
 data.coffee_bush = {}
 data.bush = {}
@@ -287,6 +288,8 @@ data.cactus = {}
 data.idle = {
     --idle_title1 = {382,1}
     -- Мы добавим еще😎
+    --idle_title2 = {208,2}
+    -- Мы это сделали 😎
 }
 
 data.cactus = {
@@ -348,6 +351,14 @@ data.attack_in_jump_down = {
     --tile2 = {492,2}
     --tile3 = {494,2}
     --dust_tile = {444,2} 
+}
+
+data.attack_up = {
+    --tile1 = {208,2}
+    --tile2 = {210,2}
+    --tile3 = {212,2}
+    --tile4 = {214,2}
+    --dust_tile = {176,2} 
 }
 
 data.jump = {
