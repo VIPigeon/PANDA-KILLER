@@ -48,7 +48,6 @@ player = {
     has_attacked_downward = false,
     just_attacked = false,
 
-    time_before_we_can_stick_to_wall = 0.0,
     coyote_time = 0.0,
     attack_timer = 0.0,
     jump_buffer_time = 0.0,
@@ -275,7 +274,6 @@ function player.update(self)
         if is_on_ground and self.velocity.y <= 0 then
             self.velocity.y = PLAYER_JUMP_STRENGTH
             has_jumped = true
-            self.time_before_we_can_stick_to_wall = PLAYER_DELAY_AFTER_JUMP_BEFORE_STICKING_TO_WALL
         elseif hugging_left_wall and not is_on_ground then
             self.velocity.y = PLAYER_WALL_JUMP_VERTICAL_STRENGTH
             self.velocity.x = PLAYER_WALL_JUMP_HORIZONTAL_STRENGTH
@@ -292,7 +290,6 @@ function player.update(self)
     end
     if jump_pressed and self.coyote_time > 0.0 and self.velocity.y <= 0.0 then
         self.velocity.y = PLAYER_JUMP_STRENGTH
-        self.time_before_we_can_stick_to_wall = PLAYER_DELAY_AFTER_JUMP_BEFORE_STICKING_TO_WALL
         has_jumped = true
     end
     if has_jumped then
@@ -310,7 +307,7 @@ function player.update(self)
     end
     self.was_on_ground_last_frame = is_on_ground
 
-    local can_stick_to_wall = self.time_before_we_can_stick_to_wall == 0.0
+    local can_stick_to_wall = self.velocity.y <= 0
     local sliding_on_wall = false
     if not is_on_ground and can_stick_to_wall then
         if hugging_left_wall and self.velocity.x < 0 or
@@ -409,7 +406,6 @@ function player.update(self)
 
     -- У игрока есть много вещей, зависящих от времени (таймеров).
     -- Они обновляются тут, в самом конце.
-    self.time_before_we_can_stick_to_wall = tick_timer(self.time_before_we_can_stick_to_wall)
     self.jump_buffer_time = tick_timer(self.jump_buffer_time)
     self.coyote_time = tick_timer(self.coyote_time)
     self.remove_horizontal_speed_limit_time = tick_timer(self.remove_horizontal_speed_limit_time)
