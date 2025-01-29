@@ -1,5 +1,3 @@
--- Эффекты - спрайты на какой-то позиции, которые проигрывают один раз свою анимацию и останавливаются
-
 Effects = {
     effects = {},
     insert_index = 1,
@@ -24,7 +22,7 @@ function Effects.draw()
     for _, effect in ipairs(Effects.effects) do
         local sprite = effect.sprite
         if not sprite:animation_ended() then
-            local tx, ty = game.camera_window:transform_coordinates(effect.x, effect.y)
+            local tx, ty = game.camera:transform_coordinates(effect.x, effect.y)
             sprite:draw(tx, ty, effect.flip)
             sprite:next_frame()
         end

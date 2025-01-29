@@ -428,7 +428,7 @@ function Panda:get_hit(hit_x, hit_y)
 
     if self.status == 'attacked/stunned' then
         sfx(11, 'G-6', 60, 2)
-        table.removeElement(game.pandas, self)
+        table.remove_element(game.pandas, self)
         return
     end
 

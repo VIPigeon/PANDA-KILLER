@@ -20,8 +20,8 @@ function game.init()
     --Pandas.add(Panda:new(150,48))
     game.pandas = Pandas.alive_pandas
 
-    local camera_rect = Rect:new(player.x - 16, player.y - 8, CAMERA_WINDOW_WIDTH, CAMERA_WINDOW_HEIGHT)
-    game.camera_window = CameraWindow:new(camera_rect, player, 8, 8)
+    local camera_rect = Rect:new(player.x - 16, player.y - 8, CAMERA_WIDTH, CAMERA_HEIGHT)
+    game.camera = Camera:new(camera_rect, player, 8, 8)
 end
 
 function game.update()
@@ -49,24 +49,22 @@ function game.update()
 
     local player = game.player
     local dialog_window = game.dialog_window
-    local camera_window = game.camera_window
+    local camera = game.camera
     local pandas = game.pandas
 
-    --entities:update(pandas)
     dialog_window:update()
     player:update()
-    camera_window:update()
+    camera:update()
     Pandas.update()
 
     update_psystems()
 
-    map(camera_window.gm.x, camera_window.gm.y, 31, 18, camera_window.gm.sx, camera_window.gm.sy)
+    map(camera.gm.x, camera.gm.y, 31, 18, camera.gm.sx, camera.gm.sy)
     Pandas.draw()
     Effects.draw()
-    --entities:draw(pandas)
     player:draw()
     dialog_window:draw()
-    local bx, by = camera_window:transform_coordinates(player.x, player.y)
+    local bx, by = camera:transform_coordinates(player.x, player.y)
     draw_blood(bx,by,-1)
     draw_psystems()
 

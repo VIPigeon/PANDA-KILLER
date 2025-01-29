@@ -1,13 +1,13 @@
-CameraWindow = {}
+Camera = {}
 
-function CameraWindow:new(deadZoneRect, target, targetWidth, targetHeight)
+function Camera:new(dead_zone_rect, target, target_width, target_height)
     local obj = {
-        area = deadZoneRect,
+        area = dead_zone_rect,
         target = target,
-        targetWidth = targetWidth,
-        targetHeight = targetHeight,
+        target_width = target_width,
+        target_height = target_height,
 
-        shakeMagnitude = {},
+        shake_magnitude = {},
         statuses = {},
         status = 'normal',
 
@@ -24,7 +24,7 @@ function CameraWindow:new(deadZoneRect, target, targetWidth, targetHeight)
     return obj
 end
 
-function CameraWindow:move_camera()
+function Camera:move_camera()
     local center_x = math.floor(self.area:center_x())
     local center_y = math.floor(self.area:center_y())
     local tile_x = math.floor(self.area:center_x() / 8)
@@ -37,15 +37,15 @@ function CameraWindow:move_camera()
     self.gm.sy = 8 * (tile_y) - center_y
 end
 
-function CameraWindow:transform_coordinates(x, y)
+function Camera:transform_coordinates(x, y)
     local tx = x - self.gm.x * 8 + self.gm.sx
     local ty = y - self.gm.y * 8 + self.gm.sy
     return tx, ty
 end
 
-function CameraWindow:centerOnTarget()
-    local dx = self.target.x + self.targetWidth  / 2 - self.area:centerX()
-    local dy = self.target.y - CAMERA_VERTICAL_OFFSET + self.targetHeight / 2 - self.area:centerY()
+function Camera:center_on_target()
+    local dx = self.target.x + self.target_width  / 2 - self.area:center_x()
+    local dy = self.target.y - CAMERA_VERTICAL_OFFSET + self.target_height / 2 - self.area:center_y()
 
     -- Чтобы не камера не дергалась, когда уже достигла игрока
     if math.abs(dx) < 1 and math.abs(dy) < 1 then
@@ -60,28 +60,28 @@ function CameraWindow:centerOnTarget()
     self.area:move(dx * CAMERA_SPEED, dy * CAMERA_SPEED)
 end
 
-function CameraWindow:getDirectionToTarget()
+function Camera:get_direction_to_target()
     local dx, dy = 0, 0
 
-    if self.area:isObjectRight(self.target, self.targetWidth) then
+    if self.area:is_object_right(self.target, self.target_width) then
         dx = 1
-    elseif self.area:isObjectLeft(self.target) then
+    elseif self.area:is_object_left(self.target) then
         dx = -1
     end
 
-    if self.area:isObjectBelow(self.target, self.targetHeight) then
+    if self.area:is_object_below(self.target, self.target_height) then
         dy = 1
-    elseif self.area:isObjectAbove(self.target) then
+    elseif self.area:is_object_above(self.target) then
         dy = -1
     end
 
     return dx, dy
 end
 
-function CameraWindow:update()
-    local dx, dy = self:getDirectionToTarget()
+function Camera:update()
+    local dx, dy = self:get_direction_to_target()
 
-    if self.area:isObjectInside(self.target, self.targetWidth, self.targetHeight) then
+    if self.area:is_object_inside(self.target, self.target_width, self.target_height) then
         -- 2023 😊:
         -- Ура, я использовал goto!!!
         -- 2024 💀:
@@ -90,15 +90,15 @@ function CameraWindow:update()
     end
 
     if dx < 0 then
-        self.area:moveLeftTo(self.target.x)
+        self.area:move_left_to(self.target.x)
     elseif dx > 0 then
-        self.area:moveRightTo(self.target.x + self.targetWidth)
+        self.area:move_right_to(self.target.x + self.target_width)
     end
 
     if dy < 0 then
-        self.area:moveUpTo(self.target.y)
+        self.area:move_up_to(self.target.y)
     elseif dy > 0 then
-        self.area:moveDownTo(self.target.y + self.targetHeight)
+        self.area:move_down_to(self.target.y + self.target_height)
     end
 
     ::move::
@@ -106,4 +106,4 @@ function CameraWindow:update()
     self:move_camera()
 end
 
-CameraWindow.__index = CameraWindow
+Camera.__index = Camera

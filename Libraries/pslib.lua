@@ -324,7 +324,7 @@ end
 function draw_ps_pixel(ps, params)
 	for key,p in pairs(ps.particles) do
 		c = math.floor(p.phase*#params.colors)+1
-        local tx, ty = game.camera_window:transform_coordinates(p.x, p.y)
+        local tx, ty = game.camera:transform_coordinates(p.x, p.y)
 		pix(tx,ty,params.colors[c])
 	end
 end

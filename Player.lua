@@ -424,7 +424,7 @@ function player.draw(self)
 
     local flip = self.looking_left and 1 or 0
 
-    local tx, ty = game.camera_window:transform_coordinates(self.x, self.y)
+    local tx, ty = game.camera:transform_coordinates(self.x, self.y)
     ty = ty - 8 * (self.sprite:current_animation().height - 1)
 
     for _, attack_rect in ipairs(self.attack_rects) do
