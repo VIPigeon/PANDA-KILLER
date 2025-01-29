@@ -35,6 +35,8 @@ player = {
     sprite = PLAYER_SPRITE_IDLE,
 
     attack_rects = {},
+    attack_effect = nil,
+    attack_effect_time = 0,
 
     stuck_to_left_wall = false,
     stuck_to_right_wall = false,
@@ -150,7 +152,10 @@ function player.update(self)
         end
     end
 
-    if self.attack_timer > 0 and self.sprite:animation_ended() then
+    if self.attack_timer > 0 and
+       table.contains(PLAYER_ATTACK_SPRITES, self.sprite) and
+       self.sprite:animation_ended()
+    then
         -- Это сделано для испольнения Clean Code принципа (c)
         -- Don't Repeat Yourself (DRY). Я, как хороший программист,
         -- стремлюсь всегда следовать best practices и использовать
@@ -227,11 +232,12 @@ function player.update(self)
         if not self.just_attacked then
             self.just_attacked = true
             if self.has_attacked_downward and self.has_attacked_in_air then
-                Effects.add(self.x + 8 * attack_direction_x, self.y + 8 * attack_direction_y, PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_DOWNWARD)
+                self.attack_effect = ChildBody:new(self, 8 * attack_direction_x, 8 * attack_direction_y, PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_DOWNWARD)
             else
                 local flip = (attack_direction_x < 0) and 1 or 0
-                Effects.add(self.x + 8 * attack_direction_x, self.y - 8 + 8 * attack_direction_y, PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_HORIZONTAL, flip)
+                self.attack_effect = ChildBody:new(self, 8 * attack_direction_x, -8 + 8 * attack_direction_y, PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_HORIZONTAL, flip)
             end
+            self.attack_effect_time = PLAYER_ATTACK_EFFECT_DURATION
         end
     end
 
@@ -411,6 +417,7 @@ function player.update(self)
     self.remove_horizontal_speed_limit_time = tick_timer(self.remove_horizontal_speed_limit_time)
     self.attack_timer = tick_timer(self.attack_timer)
     self.attack_buffer_time = tick_timer(self.attack_buffer_time)
+    self.attack_effect_time = tick_timer(self.attack_effect_time)
     if self.velocity.x ~= 0 then
         self.time_we_have_been_running = self.time_we_have_been_running + Time.dt()
     else
@@ -436,6 +443,10 @@ function player.draw(self)
 
     self.sprite:draw(tx, ty, flip)
     self.sprite:next_frame()
+
+    if self.attack_effect_time > 0 then
+        self.attack_effect:draw()
+    end
 
     --for _, attack_rect in ipairs(self.attack_rects) do
     --    attack_rect:draw()

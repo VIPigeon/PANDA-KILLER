@@ -1,3 +1,9 @@
+--[[
+
+Эффекты -- спрайты, которые проигрывают один раз свою анимацию и исчезают
+
+--]]
+
 Effects = {
     effects = {},
     insert_index = 1,
@@ -16,6 +22,7 @@ function Effects.add(x, y, sprite, flip)
     effect.sprite = sprite:copy()
     effect.flip = flip
     Effects.insert_index = Effects.insert_index % #Effects.effects + 1
+    return effect
 end
 
 function Effects.draw()

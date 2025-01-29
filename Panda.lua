@@ -95,7 +95,7 @@ function Pandas.update()
         end
 
         if panda.attacking_time > 0.0 and Physics.check_collision_rect_rect(Hitbox.rect_of(panda), Hitbox.rect_of(game.player)) then
-            trace('player is fucking dead')
+            --trace('player is fucking dead')
         end
 
         local status_patrol_rest = panda.rest_time > 0.0
@@ -130,7 +130,7 @@ function Pandas.update()
                         panda.velocity.y = 60 * -1 * math.sign(player.y - panda.y)
                         panda.attacking_time = PANDA_ATTACK_TIME
                     elseif is_on_ground and player.x < panda.x then
-                        trace('shit, I am too low. Jumping')
+                        --trace('shit, I am too low. Jumping')
                         panda.velocity.y = PANDA_CHASE_JUMP_STRENGTH
                     end
                 end
@@ -142,7 +142,7 @@ function Pandas.update()
                 local ground_forward = Physics.check_collision_rect_tilemap(panda.hitbox:to_rect(x_in_the_near_future, panda.y + 1)) ~= nil
 
                 if is_on_ground and wall_to_the_right then
-                    trace('chas jump: ' .. panda.velocity.y)
+                    --trace('chas jump: ' .. panda.velocity.y)
                     panda.velocity.y = PANDA_CHASE_JUMP_STRENGTH
                 end
                 panda.velocity.x = PANDA_CHASE_SPEED * x_direction_to_player

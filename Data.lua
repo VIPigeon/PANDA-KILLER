@@ -130,6 +130,9 @@ PLAYER_REMOVE_SPEED_LIMIT_AFTER_WALL_JUMP_TIME = 0.26        -- секунды
 -- приклеится.
 PLAYER_DELAY_AFTER_JUMP_BEFORE_STICKING_TO_WALL = 0.13        -- секунды
 
+PLAYER_STATE_NORMAL = 0
+PLAYER_STATE_ATTACKING = 1
+
 --
 -- Боёвка 🤺
 --
@@ -139,6 +142,7 @@ PLAYER_DELAY_AFTER_JUMP_BEFORE_STICKING_TO_WALL = 0.13        -- секунды
 PLAYER_ATTACK_DURATION = 0.4                   -- секунды
 -- Это не совсем тоже самое, что и 
 PLAYER_ATTACK_BUFFER_TIME = 0.2                -- секунды
+PLAYER_ATTACK_EFFECT_DURATION = PLAYER_ATTACK_BUFFER_TIME
 
 --
 -- Спрайты и анимации 🎞️
@@ -148,7 +152,6 @@ PLAYER_SPRITE_RUNNING = Sprite:new({384, 386, 388, 390, 392, 394}, 6, 2, 2)
 PLAYER_SPRITE_ATTACK  = Animation:new({416, 418, 420, 422}, 4):with_size(2, 2):at_end_goto_last_frame():to_sprite()
 PLAYER_SPRITE_ATTACK_AIR_FORWARD  = Animation:new({424, 456, 458}, 4):with_size(2, 2):at_end_goto_last_frame():to_sprite()
 PLAYER_SPRITE_ATTACK_AIR_DOWNWARD = Animation:new({490, 492, 494}, 6):with_size(2, 2):at_end_goto_last_frame():to_sprite()
-PLAYER_ATTACK_FRAME_WHEN_TO_APPLY_ATTACK = 5 -- CRINGE CODE
 PLAYER_SPRITE_JUMP = Animation:new({412, 414, 412}, 3):with_size(2, 2):at_end_goto_last_frame():to_sprite()
 PLAYER_SPRITE_FALLING = Animation:new({426}, 1):with_size(2, 2):to_sprite()
 PLAYER_SPRITE_SLIDE = Sprite:new_complex({
@@ -160,6 +163,7 @@ PLAYER_SPRITE_JUMP_PARTICLE_EFFECT = Animation:new({496, 498, 500, 502}, 6):with
 PLAYER_SPRITE_LAND_PARTICLE_EFFECT = Animation:new({500, 502}, 8):with_size(2, 1):at_end_goto_last_frame():to_sprite()
 PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_HORIZONTAL = Animation:new({488}, 18):with_size(2, 2):at_end_goto_last_frame():to_sprite();
 PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_DOWNWARD = Animation:new({444}, 18):with_size(2, 1):at_end_goto_last_frame():to_sprite();
+PLAYER_ATTACK_SPRITES = {PLAYER_SPRITE_ATTACK, PLAYER_SPRITE_ATTACK_AIR_FORWARD, PLAYER_SPRITE_ATTACK_AIR_DOWNWARD}
 
 --[[
 
