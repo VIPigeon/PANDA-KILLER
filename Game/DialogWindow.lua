@@ -2,7 +2,7 @@
 DialogWindow = {}
 
 function DialogWindow:new(x, y, text)
-    local obj = {
+    local object = {
         x = x,
         y = y,
         text = text,
@@ -10,7 +10,7 @@ function DialogWindow:new(x, y, text)
     }
     
     setmetatable(obj,self)  -- чистая магия!
-    return obj
+    return object
 end
 
 

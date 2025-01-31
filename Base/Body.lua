@@ -10,7 +10,7 @@ Body -- пережиток прошлого, который использует
 Body = {}
 
 function Body:new(sprite, x, y)
-    local obj = {
+    local object = {
         x = x,
         y = y,
         sprite = sprite,
@@ -19,7 +19,7 @@ function Body:new(sprite, x, y)
     }
 
     setmetatable(obj, self)
-    return obj
+    return object
 end
 
 function Body:draw()
