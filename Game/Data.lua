@@ -43,10 +43,16 @@ GAME_STATE_LANGUAGE_SELECTION = 'language-selection'
 GAME_STATE_PAUSED = 'paused'
 GAME_STATE_GAMEPLAY = 'gameplay'
 
-CAMERA_WIDTH  = 60
-CAMERA_HEIGHT = 80
-CAMERA_VERTICAL_OFFSET = 26
-CAMERA_SPEED = 1
+
+--
+-- Настройки камеры 🎥
+--
+-- Чтобы понять, что меняют эти параметры, включите дебаг в Camera.update()
+CAMERA_LINES_DISTANCE_FROM_CENTER = 30
+CAMERA_PAN_OFFSET = 5
+CAMERA_SMOOTH_TIME = 0.2
+
+
 
 -- Это то, что в тике на F3
 WORLD_TILEMAP_WIDTH  = 240 -- тайлов
@@ -86,7 +92,7 @@ PLAYER_HORIZONTAL_ACCELERATION = 900.0                       -- пиксели /
 PLAYER_FRICTION = 12.0                                       -- не знаю, просто магическое число
 PLAYER_AIR_FRICTION = 0.52 * PLAYER_FRICTION                 -- тоже не знаю
 -- http://www.thealmightyguru.com/Wiki/index.php?title=Coyote_time
-PLAYER_COYOTE_TIME = 0.23                                    -- секунды
+PLAYER_COYOTE_TIME = 0.12                                    -- секунды
 -- Если игрок нажимает прыжок до того, как
 -- он приземлился, мы сохраняем то, что игрок
 -- хотел прыгнуть. Вот кусок с реддита:
@@ -164,6 +170,9 @@ PLAYER_SPRITE_LAND_PARTICLE_EFFECT = Animation:new({500, 502}, 8):with_size(2, 1
 PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_HORIZONTAL = Animation:new({488}, 18):with_size(2, 2):at_end_goto_last_frame():to_sprite();
 PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_DOWNWARD = Animation:new({444}, 18):with_size(2, 1):at_end_goto_last_frame():to_sprite();
 PLAYER_ATTACK_SPRITES = {PLAYER_SPRITE_ATTACK, PLAYER_SPRITE_ATTACK_AIR_FORWARD, PLAYER_SPRITE_ATTACK_AIR_DOWNWARD}
+
+PLAYER_ATTACK_SHAKE_MAGNITUDE = 0.5
+PLAYER_ATTACK_SHAKE_DURATION = 0.05
 
 --[[
 
@@ -410,31 +419,4 @@ function is_tile_solid(tile_id)
         48 <= tile_id and tile_id <= 52 or
               tile_id == 80 or
               tile_id == 81
-end
-
--- В игре есть 3 разные координатные системы, о которых нужно помнить.
--- 1. Мировая -- измеряется в пикселях, x от 0 до 1920, y от 0 до 1088
--- 2. Тайловая -- каждый тайл 8x8 пикселей, соответственно перевод из
---    мировой в тайловую и обратно - это умножение / деление на 8.
---    В тайловой координатной системе x от 0 до 240, y от 0 до 136
--- 3. Локальная -- её ещё нету, но она связана с камерой и положением
---    игровых объектов относительно неё.
-function world_to_tile(x, y)
-    local tile_x = x // 8
-    local tile_y = y // 8
-    return tile_x, tile_y
-end
-
-function tile_to_world(x, y)
-    local world_x = x * 8
-    local world_y = y * 8
-    return world_x, world_y
-end
-
--- Таймер - это просто число с плавающей точкой (обозначим его t). Если t =
--- 0, значит таймер остановился. Если же t > 0, то таймер идет, и осталось
--- t секунд до конца. Делать с этим можно что угодно, примеры можно
--- посмотреть здесь, в игроке.
-function tick_timer(timer)
-    return math.max(timer - Time.dt(), 0.0)
 end

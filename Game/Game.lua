@@ -19,9 +19,7 @@ function game.init()
     Pandas.add(Panda:new(60,95))
     --Pandas.add(Panda:new(150,48))
     game.pandas = Pandas.alive_pandas
-
-    local camera_rect = Rect:new(player.x - 16, player.y - 8, CAMERA_WIDTH, CAMERA_HEIGHT)
-    game.camera = Camera:new(camera_rect, player, 8, 8)
+    game.camera = Camera:new(player)
 end
 
 function game.update()
@@ -47,27 +45,39 @@ function game.update()
         return
     end
 
-    local player = game.player
-    local dialog_window = game.dialog_window
-    local camera = game.camera
-    local pandas = game.pandas
-
-    dialog_window:update()
-    player:update()
-    camera:update()
+    game.dialog_window:update()
+    game.player:update()
+    game.camera:update()
     Pandas.update()
 
     update_psystems()
 
-    map(camera.gm.x, camera.gm.y, 31, 18, camera.gm.sx, camera.gm.sy)
+    game.draw_map()
     Pandas.draw()
     Effects.draw()
-    player:draw()
-    dialog_window:draw()
-    local bx, by = camera:transform_coordinates(player.x, player.y)
-    draw_blood(bx,by,-1)
+    game.player:draw()
+    game.dialog_window:draw()
+    local bx, by = camera:transform_coordinates(game.player.x, game.player.y)
+    draw_blood(bx, by, -1)
     draw_psystems()
+    Debug.draw()
 
     -- Обязательно должно выполняться последним
     Time.update()
+end
+
+function game.draw_map()
+    -- Это последний кусочек легаси, помимо Body, что остался
+    -- из бумеранга. Я его не очень понимаю и не слишком хочу
+    -- трогать. Это будет памятник нашему труду над бумерангом 🪃
+    local cx = game.camera.x
+    local cy = game.camera.y
+    local tx = math.floor(cx/8)
+    local ty = math.floor(cy/8)
+
+    local gmx = tx - math.floor(SCREEN_WIDTH / 16)
+    local gmsx = 8 * tx - cx
+    local gmy = ty - math.floor(SCREEN_HEIGHT / 16)
+    local gmsy = math.floor(8 * ty - cy)
+    map(gmx, gmy, 31, 18, gmsx, gmsy)
 end

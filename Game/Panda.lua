@@ -147,10 +147,10 @@ function Pandas.update()
                 end
                 panda.velocity.x = PANDA_CHASE_SPEED * x_direction_to_player
             end
-            panda.chase_time = tick_timer(panda.chase_time)
+            panda.chase_time = Basic.tick_timer(panda.chase_time)
         elseif status_patrol_rest then
             panda.velocity.x = panda.velocity.x - PANDA_SLOWDOWN_FOR_REST * panda.velocity.x
-            panda.rest_time = tick_timer(panda.rest_time)
+            panda.rest_time = Basic.tick_timer(panda.rest_time)
             if panda.rest_time == 0.0 then
                 panda.look_direction = -1 * panda.look_direction
                 panda.status = 'patrol/move'
@@ -208,7 +208,7 @@ function Pandas.update()
             panda.sprite = PANDA_PANIC_SPRITE
         end
 
-        panda.attacking_time = tick_timer(panda.attacking_time)
+        panda.attacking_time = Basic.tick_timer(panda.attacking_time)
     end
 end
 

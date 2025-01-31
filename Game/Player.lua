@@ -239,6 +239,8 @@ function player.update(self)
             end
             self.attack_effect_time = PLAYER_ATTACK_EFFECT_DURATION
         end
+
+        game.camera:shake(PLAYER_ATTACK_SHAKE_MAGNITUDE, PLAYER_ATTACK_SHAKE_DURATION)
     end
 
     if not moving_right and not moving_left then
@@ -330,7 +332,7 @@ function player.update(self)
     self.was_sliding_on_wall_last_frame = sliding_on_wall
 
 
-    EPSILON = 4.0
+    local EPSILON = 4.0
     if math.abs(self.velocity.x) < EPSILON then
         self.velocity.x = 0
     end
@@ -412,12 +414,12 @@ function player.update(self)
 
     -- У игрока есть много вещей, зависящих от времени (таймеров).
     -- Они обновляются тут, в самом конце.
-    self.jump_buffer_time = tick_timer(self.jump_buffer_time)
-    self.coyote_time = tick_timer(self.coyote_time)
-    self.remove_horizontal_speed_limit_time = tick_timer(self.remove_horizontal_speed_limit_time)
-    self.attack_timer = tick_timer(self.attack_timer)
-    self.attack_buffer_time = tick_timer(self.attack_buffer_time)
-    self.attack_effect_time = tick_timer(self.attack_effect_time)
+    self.jump_buffer_time = Basic.tick_timer(self.jump_buffer_time)
+    self.coyote_time = Basic.tick_timer(self.coyote_time)
+    self.remove_horizontal_speed_limit_time = Basic.tick_timer(self.remove_horizontal_speed_limit_time)
+    self.attack_timer = Basic.tick_timer(self.attack_timer)
+    self.attack_buffer_time = Basic.tick_timer(self.attack_buffer_time)
+    self.attack_effect_time = Basic.tick_timer(self.attack_effect_time)
     if self.velocity.x ~= 0 then
         self.time_we_have_been_running = self.time_we_have_been_running + Time.dt()
     else

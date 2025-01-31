@@ -63,10 +63,8 @@ function Physics.move_x(rigidbody)
     end
 
     next_x = math.clamp(next_x, -rigidbody.hitbox.offset_x, WORLD_WIDTH + rigidbody.hitbox.width)
-
-    -- Допустимое передвижение за один кадр: меньше 8 пикселей
-    -- assert(math.abs(next_x - rigidbody.x) < 8.0)
     rigidbody.x = next_x
+
     return tilemap_collision
 end
 
@@ -93,16 +91,8 @@ function Physics.move_y(rigidbody)
     end
 
     next_y = math.clamp(next_y, 0, WORLD_HEIGHT)
-
-    -- Допустимое передвижение за один кадр: меньше 8 пикселей
-    if math.abs(next_y - rigidbody.y) >= 8.0 then
-        trace(Time.dt())
-        trace(rigidbody.y)
-        trace(rigidbody.velocity.y)
-        trace(next_y)
-    end
-    --assert(math.abs(next_y - rigidbody.y) < 8.0)
     rigidbody.y = next_y
+
     return tilemap_collision
 end
 

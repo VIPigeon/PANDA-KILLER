@@ -8,6 +8,14 @@ function math.coin_flip()
     return math.random(2) == 2
 end
 
+function math.random_sign()
+    if math.coin_flip() then
+        return 1
+    else
+        return -1
+    end
+end
+
 function math.clamp(x, left, right)
     if x < left then
         return left
@@ -42,6 +50,33 @@ end
 
 function math.in_range_inclusive(num, left_border, right_border)
     return num >= left_border and num <= right_border
+end
+
+-- Украдено из юнити
+-- https://stackoverflow.com/questions/61372498/how-does-mathf-smoothdamp-work-what-is-it-algorithm
+function math.smooth_damp(current, target, velocity, smooth_time)
+    assert(smooth_time > 0.0001)
+
+    local omega = 2.0 / smooth_time;
+
+    local x = omega * Time.dt();
+    local exp = 1.0 / (1.0 + x + 0.48*x*x + 0.235*x*x*x);
+    local change = current - target;
+    local original_to = target;
+
+    local target = current - change;
+
+    local temp = (velocity + omega * change) * Time.dt();
+    local next_velocity = (velocity - omega * temp) * exp
+
+    local output = target + (change + temp) * exp;
+
+    if ((original_to - current > 0.0) == (output > original_to)) then
+        output = original_to;
+        velocity = (output - original_to) / Time.dt();
+    end
+
+    return output, next_velocity
 end
 
 

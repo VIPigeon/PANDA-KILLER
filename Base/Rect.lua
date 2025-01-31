@@ -8,7 +8,6 @@ https://gdbooks.gitbooks.io/3dcollisions/content/Chapter1/aabb.html
 
 --]]
 
-
 Rect = {}
 
 -- x, y -- координаты левого верхнего угла
@@ -109,8 +108,8 @@ end
 function Rect:combine(other)
     local x1 = math.min(self.x, other.x)
     local y1 = math.min(self.y, other.y)
-    local x2 = math.max(self.x + self.w, other.x + other.w)
-    local y2 = math.max(self.y + self.h, other.y + other.h)
+    local x2 = math.max(self:right(), other:right())
+    local y2 = math.max(self:bottom(), other:bottom())
     return {
         x = x1,
         y = y1,
