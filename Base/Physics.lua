@@ -6,13 +6,21 @@
 
 Отдельно никакого класса Rigidbody нету, это скорее "интерфейс".
 Rigidbody - это таблица, в которой есть поля x, y, velocity и hitbox.
+Также можно добавить таблицу physics_settings, которая используется
+в Physics.update().
+
 Например, игрок это Rigidbody:
 
 player = {
     x = 0,
     y = 0,
     velocity = { x = 0, y = 0 },
-    hitbox = Hitbox:new(0, 0, 8, 8)
+    hitbox = Hitbox:new(0, 0, 8, 8),
+    physics_settings = {
+        gravity = ...,
+        friction = ...,
+        min_horizontal_velocity = ...,
+    },
 
     -- Ещё какие-то поля...
     -- ...
@@ -24,6 +32,8 @@ player = {
 его velocity, а также следят за тем, чтобы у нас не было коллизий. Если же
 коллизия была, то `move_x` и `move_y` вернут её (rigidbody все равно будет
 корректно отпозиционирован (какое крутое слово)).
+
+Также я добавил `update`, которая делает всё и сразу.
 
 Для более низкоуровневых штук можно использовать другие функции. Основной
 пример использования физики в игроке - заходите туда и копипастите код! 😁
@@ -43,6 +53,29 @@ function Physics.is_on_ground(rigidbody)
         rigidbody.hitbox:to_rect(rigidbody.x, rigidbody.y + 1)
     )
     return collision ~= nil
+end
+
+function Physics.update(rigidbody)
+    local is_on_ground = Physics.is_on_ground(rigidbody)
+
+    local horizontal_collision = Physics.move_x(rigidbody)
+    if horizontal_collision ~= nil then
+        rigidbody.velocity.x = -1 * WORLD_HORIZONTAL_COEFFICIENT_OF_RESTITUTION * rigidbody.velocity.x
+    end
+
+    local vertical_collision = Physics.move_y(rigidbody)
+    if vertical_collision ~= nil then
+        rigidbody.velocity.y = 0
+    end
+
+    if not is_on_ground then
+        rigidbody.velocity.y = rigidbody.velocity.y - rigidbody.physics_settings.gravity * Time.dt()
+    end
+
+    rigidbody.velocity.x = rigidbody.velocity.x - (rigidbody.velocity.x * rigidbody.physics_settings.friction * Time.dt())
+    if math.abs(rigidbody.velocity.x) < rigidbody.physics_settings.min_horizontal_velocity then
+        rigidbody.velocity.x = 0
+    end
 end
 
 function Physics.move_x(rigidbody)

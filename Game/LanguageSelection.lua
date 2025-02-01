@@ -22,7 +22,7 @@ function draw_language_selection_boxes()
     cls(0)
 
     draw_text_centered_at_x('PANDA_KILLER', SCREEN_WIDTH/2 + 12, 10, char_width, char_height, true, 2)
-    draw_text_centered_at_x(localize(TEXT__CHOOSE_YOUR_LANGUAGE), SCREEN_WIDTH/2, y - box_height)
+    draw_text_centered_at_x(localize(TEXT.CHOOSE_YOUR_LANGUAGE), SCREEN_WIDTH/2, y - box_height)
 
     rect(x, y, box_width, box_height, color_en)
     font('EN', x + box_width/2 - char_width/2, y + box_height/2 - char_height/2)
@@ -30,6 +30,6 @@ function draw_language_selection_boxes()
     rect(x2, y, box_width, box_height, color_ru)
     font('RU', x2 + box_width/2 - char_width/2, y + box_height/ 2 - char_height/2)
 
-    draw_text_centered_at_x(localize(TEXT__PRESS_Z_TO_START), SCREEN_WIDTH/2, y + 2 * box_height)
-    draw_text_centered_at_x(localize(TEXT__PRESS_RIGHTLEFT_TO_SELECT), SCREEN_WIDTH/2, y + 2.75 * box_height)
+    draw_text_centered_at_x(localize(TEXT.PRESS_Z_TO_START), SCREEN_WIDTH/2, y + 2 * box_height)
+    draw_text_centered_at_x(localize(TEXT.PRESS_RIGHTLEFT_TO_SELECT), SCREEN_WIDTH/2, y + 2.75 * box_height)
 end

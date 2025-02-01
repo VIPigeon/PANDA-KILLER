@@ -12,13 +12,13 @@ function game.init()
     -- math.randomseed(69420)
 
     game.player = player
-    game.pandas = {}
     game.dialog_window = DialogWindow:new(100,50,"dcs")
 
-    --Pandas.add(Panda:new(130,95))
-    Pandas.add(Panda:new(60,95))
-    --Pandas.add(Panda:new(150,48))
-    game.pandas = Pandas.alive_pandas
+    game.pandas = {}
+    table.insert(game.pandas, Panda:new(60, 95))
+    table.insert(game.pandas, Panda:new(130, 95))
+    table.insert(game.pandas, Panda:new(150, 48))
+
     game.camera = Camera:new(player)
 end
 
@@ -48,12 +48,16 @@ function game.update()
     game.dialog_window:update()
     game.player:update()
     game.camera:update()
-    Pandas.update()
+    for _, panda in ipairs(game.pandas) do
+        panda:update()
+    end
 
     update_psystems()
 
     game.draw_map()
-    Pandas.draw()
+    for _, panda in ipairs(game.pandas) do
+        panda:draw()
+    end
     Effects.draw()
     game.player:draw()
     game.dialog_window:draw()

@@ -31,8 +31,16 @@ player = {
         y = 0,
     },
     hitbox = Hitbox:new(6, 0, 4, 8),
+    physics_settings = {
+        gravity = PLAYER_GRAVITY,
+        friction = PLAYER_FRICTION,
+        min_horizontal_velocity = PLAYER_MIN_HORIZONTAL_VELOCITY,
+    },
 
     sprite = PLAYER_SPRITE_IDLE,
+
+    -- Когда игрок умирает, у него слетает шляпа
+    hat = nil,
 
     attack_rects = {},
     attack_effect = nil,
@@ -56,10 +64,41 @@ player = {
     remove_horizontal_speed_limit_time = 0.0,
     attack_buffer_time = 0.0,
     time_we_have_been_running = 0.0,
+
+    time_before_showing_death_screen = 0.0,
 }
 
-function player.update(self)
+function player:die(kill_velocity_x, kill_velocity_y)
     if self.is_dead then
+        return
+    end
+
+    player.velocity.x = PLAYER_DEATH_KNOCKBACK_HORIZONTAL * math.sign(kill_velocity_x)
+    player.velocity.y = PLAYER_DEATH_KNOCKBACK_VERTICAL
+
+    self.time_before_showing_death_screen = PLAYER_TIME_BEFORE_SHOWING_DEATH_SCREEN_AFTER_DEATH
+    self.is_dead = true
+
+    self.hat = Hat:new(player.x, player.y, 0.5 * player.velocity.x + kill_velocity_x, 0.5 * player.velocity.y + kill_velocity_y)
+
+    Basic.play_sound(SOUNDS.PLAYER_DEAD)
+end
+
+function player:update()
+    if self.is_dead then
+        Physics.update(self)
+        self.hat:update()
+
+        self.sprite = PLAYER_SPRITE_DEAD
+        self.time_before_showing_death_screen = Basic.tick_timer(self.time_before_showing_death_screen)
+        if self.time_before_showing_death_screen == 0.0 then
+            game.dialog_window.is_closed = false
+            game.state = GAME_STATE_PAUSED
+            self.x = PLAYER_SPAWNPOINT_X
+            self.y = PLAYER_SPAWNPOINT_Y
+            self.velocity.x = 0
+            self.velocity.y = 0
+        end
         return
     end
 
@@ -102,13 +141,7 @@ function player.update(self)
     for _, collision in ipairs(tiles_that_we_collide_with) do
         for _, bad_tile in pairs(data.bad_tile) do
             if collision.id == bad_tile then
-                self.is_dead = true
-                game.dialog_window.is_closed = false
-                game.state = GAME_STATE_PAUSED
-                self.x = PLAYER_START_X
-                self.y = PLAYER_START_Y
-                self.velocity.x = 0
-                self.velocity.y = 0
+                self:die()
                 return
             end
         end
@@ -148,7 +181,7 @@ function player.update(self)
             self.sprite:reset()
             self.attack_timer = PLAYER_ATTACK_DURATION
             self.attack_buffer_time = 0.0
-            sfx(5, 'C-6', 10, 2)
+            Basic.play_sound(SOUNDS.PLAYER_ATTACK)
         end
     end
 
@@ -224,7 +257,7 @@ function player.update(self)
             end
 
             for _, panda in ipairs(hit_pandas) do
-                panda:get_hit(attack_direction_x, attack_direction_y)
+                panda:take_damage(attack_direction_x, attack_direction_y)
             end
             self.attack_timer = 0
         end
@@ -303,7 +336,7 @@ function player.update(self)
     if has_jumped then
         self.coyote_time = 0.0
         self.jump_buffer_time = 0.0
-        sfx(4, 'A#4', -1, 0, 3, 2)
+        Basic.play_sound(SOUNDS.PLAYER_JUMP)
     end
 
     if is_on_ground and not self.was_on_ground_last_frame then
@@ -325,18 +358,18 @@ function player.update(self)
         end
     end
     if self.was_sliding_on_wall_last_frame and not sliding_on_wall then
-        sfx(-1, -1, -1, 1)
+        Basic.play_sound(SOUNDS.MUTE_CHANNEL_ONE)
     elseif not self.was_sliding_on_wall_last_frame and sliding_on_wall then
+        Basic.play_sound(SOUNDS.PLAYER_SLIDE)
         sfx(8, 'D-1', -1, 1)
     end
     self.was_sliding_on_wall_last_frame = sliding_on_wall
 
 
-    local EPSILON = 4.0
-    if math.abs(self.velocity.x) < EPSILON then
+    if math.abs(self.velocity.x) < PLAYER_MIN_HORIZONTAL_VELOCITY then
         self.velocity.x = 0
     end
-    if math.abs(self.velocity.y) < EPSILON then
+    if math.abs(self.velocity.y) < PLAYER_MIN_VERTICAL_VELOCITY then
         self.velocity.y = 0
     end
 
@@ -363,6 +396,10 @@ function player.update(self)
     end
 
     -- Анимациями занимаются здесь 🏭
+    -- Заметка для меня из будущего:
+    -- Здесь может быть баг с тем, что спрайты глобальные. Так было
+    -- в пандах, у которых был один общий спрайт на всех, поэтому пришлось
+    -- копировать.
     if has_jumped then
         if has_walljumped then
             -- Наверное в будущем здесь вообще будут кастомные эффекты. Пока
@@ -448,6 +485,10 @@ function player.draw(self)
 
     if self.attack_effect_time > 0 then
         self.attack_effect:draw()
+    end
+
+    if self.is_dead then
+        self.hat:draw()
     end
 
     --for _, attack_rect in ipairs(self.attack_rects) do

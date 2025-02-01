@@ -32,3 +32,13 @@ end
 function Basic.tick_timer(timer)
     return math.max(timer - Time.dt(), 0.0)
 end
+
+-- Звук выглядит например так:
+--  panda_hit = {id = 11, note = 'G-6', duration = 60, channel = 2}
+function Basic.play_sound(sound)
+    local duration = sound.duration or -1
+    local channel = sound.channel or 0
+    local volume = sound.volume or 15
+    local speed = sound.speed or 0
+    sfx(sound.id, sound.note, duration, channel, volume, speed)
+end

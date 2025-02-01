@@ -6,10 +6,10 @@ function DialogWindow:new(x, y, text)
         x = x,
         y = y,
         text = text,
-        is_closed = false,
+        is_closed = true,
     }
     
-    setmetatable(object,self)  -- чистая магия!
+    setmetatable(object, self)  -- чистая магия!
     return object
 end
 

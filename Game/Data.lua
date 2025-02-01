@@ -39,19 +39,9 @@ KEY_D = 04
 
 
 
-GAME_STATE_LANGUAGE_SELECTION = 'language-selection'
-GAME_STATE_PAUSED = 'paused'
-GAME_STATE_GAMEPLAY = 'gameplay'
-
-
---
--- Настройки камеры 🎥
---
--- Чтобы понять, что меняют эти параметры, включите дебаг в Camera.update()
-CAMERA_LINES_DISTANCE_FROM_CENTER = 30
-CAMERA_PAN_OFFSET = 5
-CAMERA_SMOOTH_TIME = 0.2
-
+GAME_STATE_LANGUAGE_SELECTION = 1
+GAME_STATE_GAMEPLAY = 2
+GAME_STATE_PAUSED = 3
 
 
 -- Это то, что в тике на F3
@@ -65,8 +55,25 @@ SCREEN_HEIGHT = 136 -- пикселей
 WORLD_WIDTH  = 1920 -- пикселей (= 240 * 8)
 WORLD_HEIGHT = 1088 -- пикселей (= 136 * 8)
 
+-- Стремление всё кастомизировать и вынести в параметры приводит
+-- к тому что приходится давать имена очень многим вещам. Что сложно.
+-- Чем меньше в коде имён, тем он проще (мудрость)
+--
+-- Именно поэтому я назвал эту переменную Coeffecient Of Restituion 🤓:
+-- https://en.wikipedia.org/wiki/Coefficient_of_restitution
+WORLD_HORIZONTAL_COEFFICIENT_OF_RESTITUTION = 0.7   -- проценты
+WORLD_VERTICAL_COEFFICIENT_OF_RESTITUTION   = 0.1   -- проценты
 
 TRANSPARENT_SPRITE = Sprite:new({0})
+
+
+--
+-- Настройки камеры 🎥
+--
+-- Чтобы понять, что меняют эти параметры, включите дебаг в Camera.update()
+CAMERA_LINES_DISTANCE_FROM_CENTER = 30
+CAMERA_PAN_OFFSET = 5
+CAMERA_SMOOTH_TIME = 0.2
 
 
 
@@ -90,6 +97,8 @@ PLAYER_MAX_HORIZONTAL_SPEED = 67.0                           -- пиксели /
 PLAYER_MAX_FALL_SPEED = 200.0                                -- пиксели / секунду
 PLAYER_HORIZONTAL_ACCELERATION = 900.0                       -- пиксели / (секунду*секунду)
 PLAYER_FRICTION = 12.0                                       -- не знаю, просто магическое число
+PLAYER_MIN_HORIZONTAL_VELOCITY = 4.0                         -- пиксели / секунду
+PLAYER_MIN_VERTICAL_VELOCITY = 4.0                           -- пиксели / секунду
 PLAYER_AIR_FRICTION = 0.52 * PLAYER_FRICTION                 -- тоже не знаю
 -- http://www.thealmightyguru.com/Wiki/index.php?title=Coyote_time
 PLAYER_COYOTE_TIME = 0.12                                    -- секунды
@@ -150,6 +159,14 @@ PLAYER_ATTACK_DURATION = 0.4                   -- секунды
 PLAYER_ATTACK_BUFFER_TIME = 0.2                -- секунды
 PLAYER_ATTACK_EFFECT_DURATION = PLAYER_ATTACK_BUFFER_TIME
 
+PLAYER_ATTACK_SHAKE_MAGNITUDE = 0.5
+PLAYER_ATTACK_SHAKE_DURATION = 0.05
+
+PLAYER_TIME_BEFORE_SHOWING_DEATH_SCREEN_AFTER_DEATH = 1.5
+
+PLAYER_DEATH_KNOCKBACK_HORIZONTAL = 80
+PLAYER_DEATH_KNOCKBACK_VERTICAL = 80
+
 --
 -- Спрайты и анимации 🎞️
 --
@@ -164,15 +181,14 @@ PLAYER_SPRITE_SLIDE = Sprite:new_complex({
     Animation:new({448, 450}, 8):with_size(2, 2),
     Animation:new({452, 454}, 12):with_size(2, 2):at_end_goto_animation(2),
 })
-PLAYER_SPRITE_DEAD = Sprite:new({274})
+PLAYER_SPRITE_DEAD = Sprite:new({479})
 PLAYER_SPRITE_JUMP_PARTICLE_EFFECT = Animation:new({496, 498, 500, 502}, 6):with_size(2, 1):at_end_goto_last_frame():to_sprite()
 PLAYER_SPRITE_LAND_PARTICLE_EFFECT = Animation:new({500, 502}, 8):with_size(2, 1):at_end_goto_last_frame():to_sprite()
 PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_HORIZONTAL = Animation:new({488}, 18):with_size(2, 2):at_end_goto_last_frame():to_sprite();
 PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_DOWNWARD = Animation:new({444}, 18):with_size(2, 1):at_end_goto_last_frame():to_sprite();
 PLAYER_ATTACK_SPRITES = {PLAYER_SPRITE_ATTACK, PLAYER_SPRITE_ATTACK_AIR_FORWARD, PLAYER_SPRITE_ATTACK_AIR_DOWNWARD}
 
-PLAYER_ATTACK_SHAKE_MAGNITUDE = 0.5
-PLAYER_ATTACK_SHAKE_DURATION = 0.05
+HAT_SPRITE = Sprite:new({478})
 
 --[[
 
@@ -200,15 +216,21 @@ PLAYER_ATTACK_SHAKE_DURATION = 0.05
 -- даже в этом комментарии объяснять, что это такое!
 PANDA_TIME_INTERVAL_BETWEEN_HITS_FROM_PLAYER = 1.0
 PANDA_HITS_NEEDED_TO_GET_STUNNED = 3
-PANDA_STAGGER_TIME = 1.0
-PANDA_STUNNED_TIME = 2.5
+PANDA_STAGGER_DURATION = 1.0
+PANDA_STUN_DURATION = 2.5
 
--- Пока что используются для отлета панды (когда её застанило)
-PANDA_FLY_AWAY_SPEED = 75.0
-PANDA_FLY_UP_SPEED = 60.0
-PANDA_GRAVITY = 139.7
-PANDA_FRICTION = 3.5
-PANDA_MIN_HORIZONTAL_VELOCITY = 4.0
+-- Отбрасывание при обычном стаггере
+PANDA_KNOCKBACK_HORIZONTAL = 20.0
+PANDA_KNOCKBACK_VERTICAL = 10.0
+-- При стане
+PANDA_STUN_KNOCKBACK_HORIZONTAL = 75.0
+PANDA_STUN_KNOCKBACK_VERTICAL = 60.0
+
+PANDA_PHYSICS_SETTINGS = {
+    gravity = 139.7,
+    friction = 3.5,
+    min_horizontal_velocity = 2.0,
+}
 
 PANDA_LOOK_DIRECTION_LEFT  = -1
 PANDA_LOOK_DIRECTION_RIGHT = 1
@@ -220,25 +242,26 @@ end
 PANDA_VIEW_CONE_WIDTH = 64
 PANDA_VIEW_CONE_HEIGHT = 32
 PANDA_PATROL_SPEED = 8
-PANDA_SLOWDOWN_FOR_REST = 0.5
-PANDA_DECELERATION = 48
 PANDA_PATROL_PIXELS_UNTIL_STOP = 6
 
-PANDA_X_DISTANCE_TO_PLAYER_UNTIL_ATTACK = 16 -- pixels
-PANDA_Y_DISTANCE_TO_PLAYER_UNTIL_ATTACK = 16 -- pixels
+PANDA_X_DISTANCE_TO_PLAYER_UNTIL_ATTACK = 16
+PANDA_Y_DISTANCE_TO_PLAYER_UNTIL_ATTACK = 16
 PANDA_CHASE_JUMP_STRENGTH = 80
-PANDA_CHASE_PIXELS_UNTIL_JUMP = 12
+PANDA_CHASE_PIXELS_UNTIL_JUMP = 16
 PANDA_CHASE_SPEED = 2.5 * PANDA_PATROL_SPEED
-PANDA_CHASE_TIME = 3.0
-PANDA_ATTACK_TIME = 1.5
 
-PANDA_DEFAULT_SPRITE = Animation:new({256, 257}, 1):to_sprite()
+PANDA_CHASE_DURATION = 4.0
+PANDA_ATTACK_CHARGE_DURATION = 1.5
+PANDA_POUNCE_DURATION = 1.0
+
+PANDA_DEFAULT_SPRITE = Animation:new({256, 257}, 30):to_sprite()
 PANDA_CHASE_SPRITE = Animation:new({259, 260}, 10):to_sprite()
 PANDA_REST_SPRITE = Sprite:new_complex({
     Animation:new({276}, 8),
-    Animation:new({277}, 8):with_size(2, 1)
+    Animation:new({277-16}, 8):with_size(2, 2)
 })
-PANDA_PANIC_SPRITE = Animation:new({263, 256}, 7):to_sprite()
+PANDA_CHARGING_ATTACK_SPRITE = Animation:new({282}, 1):to_sprite()
+PANDA_POUNCING_SPRITE = Animation:new({263}, 1):to_sprite()
 
 --[[
 
@@ -248,32 +271,44 @@ PANDA_PANIC_SPRITE = Animation:new({263, 256}, 7):to_sprite()
 
 --]]
 
---[[
-
-      💬 💬 💬 💬 💬 💬 💬
-
-      Реплики!
-
---]]
-
-TEXT__CHOOSE_YOUR_LANGUAGE = {
-    ['ru'] = 'ВЫБЕРИ ЯЗЫК',
-    ['en'] = 'CHOOSE YOUR LANGUAGE',
-}
-TEXT__PRESS_Z_TO_START = {
-    ['ru'] = 'НАЖМИ Z ЧТОБЫ НАЧАТЬ',
-    ['en'] = 'PRESS Z TO START',
-}
-TEXT__PRESS_RIGHTLEFT_TO_SELECT = {
-    ['ru'] = 'НАЖИМАЙ СТРЕЛКИ ЧТОБЫ ПОМЕНЯТЬ ЯЗЫК',
-    ['en'] = 'PRESS RIGHT/LEFT TO SELECT',
+--
+-- 💬 💬 💬
+-- Реплики!
+--
+TEXT = {
+    CHOOSE_YOUR_LANGUAGE = {
+        ['ru'] = 'ВЫБЕРИ ЯЗЫК',
+        ['en'] = 'CHOOSE YOUR LANGUAGE',
+    },
+    PRESS_Z_TO_START = {
+        ['ru'] = 'НАЖМИ Z ЧТОБЫ НАЧАТЬ',
+        ['en'] = 'PRESS Z TO START',
+    },
+    PRESS_RIGHTLEFT_TO_SELECT = {
+        ['ru'] = 'НАЖИМАЙ СТРЕЛКИ ЧТОБЫ ПОМЕНЯТЬ ЯЗЫК',
+        ['en'] = 'PRESS RIGHT/LEFT TO SELECT',
+    },
 }
 
---[[
+--
+-- Звуки 🔊
+--
+SOUNDS = {
+    MUTE_CHANNEL_ZERO = {id = -1, note = -1, channel = 0},
+    MUTE_CHANNEL_ONE = {id = -1, note = -1, channel = 1},
+    MUTE_CHANNEL_TWO = {id = -1, note = -1, channel = 2},
 
-      Реплики кончились 🤐
+    PLAYER_ATTACK = {id = 5, note = 'C-6', duration = 10, channel = 2},
+    PLAYER_JUMP = {id = 4, note = 'A#4'},
+    PLAYER_SLIDE = {id = 8, note = 'D-1', channel = 1},
+    PLAYER_DEAD = {id = 5, note = 'C-5', duration = 30, channel = 2},
 
---]]
+    PANDA_ATTACK_CHARGE = {id = 11, note = 'G-3', duration = 20, channel = 2},
+    PANDA_POUNCE = {id = 11, note = 'C-5', duration = 20, channel = 2},
+    PANDA_JUMP = {id = 4, note = 'A#5'},
+    PANDA_HIT = {id = 11, note = 'G-5', duration = 20, channel = 2},
+    PANDA_DEAD = {id = 11, note = 'G-6', duration = 60, channel = 2},
+}
 
 
 
