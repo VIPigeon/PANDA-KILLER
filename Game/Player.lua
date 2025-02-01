@@ -56,6 +56,7 @@ player = {
     -- Это для анимаций. Как по другому, я не придумал 😜
     has_attacked_in_air = false,
     has_attacked_downward = false,
+    has_attacked_upwards = false,
     just_attacked = false,
 
     coyote_time = 0.0,
@@ -79,6 +80,7 @@ function player:die(kill_velocity_x, kill_velocity_y)
     self.time_before_showing_death_screen = PLAYER_TIME_BEFORE_SHOWING_DEATH_SCREEN_AFTER_DEATH
     self.is_dead = true
 
+    self.attack_effect_time = 0
     self.hat = Hat:new(player.x, player.y, 0.5 * player.velocity.x + kill_velocity_x, 0.5 * player.velocity.y + kill_velocity_y)
 
     Basic.play_sound(SOUNDS.PLAYER_DEAD)
@@ -99,6 +101,7 @@ function player:update()
             self.velocity.x = 0
             self.velocity.y = 0
         end
+
         return
     end
 
@@ -167,10 +170,13 @@ function player:update()
         else
             self.has_attacked_in_air = false
         end
+
+        self.has_attacked_downward = false
+        self.has_attacked_upwards = false
         if looking_down then
             self.has_attacked_downward = true
-        else
-            self.has_attacked_downward = false
+        elseif looking_up then
+            self.has_attacked_upwards = true
         end
     end
 
@@ -189,38 +195,15 @@ function player:update()
        table.contains(PLAYER_ATTACK_SPRITES, self.sprite) and
        self.sprite:animation_ended()
     then
-        -- Это сделано для испольнения Clean Code принципа (c)
-        -- Don't Repeat Yourself (DRY). Я, как хороший программист,
-        -- стремлюсь всегда следовать best practices и использовать
-        -- design patterns. Мой код проверяется на S.O.L.I.D, YAGNI,
-        -- G.R.A.S.P, и т.д. и т.п. Люблю TDD, DDD и OOP.
-        --
-        -- Опыт работы: нету, но стремлюсь улучшиться в этом аспекте
-        -- Пет проекты: я все пытался сделать, но потом сразу понимал,
-        --              насколько плоха architecture проекта, поэтому
-        --              я их начинал с нуля, используя более современные
-        --              best practices
-        --
-        -- Буду рад работать у вас 😻! -- kawaii-Год
         --
         -- side note:
         -- Точно ли атаки по диагонали - хорошая идея?
-        local diagonal_direction = 0
-        if walking_left then
-            diagonal_direction = 0 - 1
-        elseif walking_right then
-            -- Я хотел написать просто +1, но lua не смог откомпилировать, поэтому...
-            diagonal_direction = 0 + 1
-        end
-
         local attack_direction_x = 0
         local attack_direction_y = 0
         if looking_down then
             attack_direction_y = attack_direction_y + 1
-            attack_direction_x = attack_direction_x + diagonal_direction
         elseif looking_up then
             attack_direction_y = attack_direction_y - 1
-            attack_direction_x = attack_direction_x + diagonal_direction
         else
             if self.looking_left then
                 attack_direction_x = attack_direction_x - 1
@@ -264,8 +247,10 @@ function player:update()
 
         if not self.just_attacked then
             self.just_attacked = true
-            if self.has_attacked_downward and self.has_attacked_in_air then
+            if self.has_attacked_downward then
                 self.attack_effect = ChildBody:new(self, 8 * attack_direction_x, 8 * attack_direction_y, PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_DOWNWARD)
+            elseif self.has_attacked_upwards then
+                self.attack_effect = ChildBody:new(self, 0, -16, PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_UPWARD)
             else
                 local flip = (attack_direction_x < 0) and 1 or 0
                 self.attack_effect = ChildBody:new(self, 8 * attack_direction_x, -8 + 8 * attack_direction_y, PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_HORIZONTAL, flip)
@@ -422,12 +407,12 @@ function player:update()
     end
 
     if self.attack_timer > 0 then
-        if self.has_attacked_in_air then
-            if self.has_attacked_downward then
-                self.sprite = PLAYER_SPRITE_ATTACK_AIR_DOWNWARD
-            else
-                self.sprite = PLAYER_SPRITE_ATTACK_AIR_FORWARD
-            end
+        if self.has_attacked_downward then
+            self.sprite = PLAYER_SPRITE_ATTACK_AIR_DOWNWARD
+        elseif self.has_attacked_upwards then
+            self.sprite = PLAYER_SPRITE_ATTACK_UPWARDS
+        elseif self.has_attacked_in_air then
+            self.sprite = PLAYER_SPRITE_ATTACK_AIR_FORWARD
         else
             self.sprite = PLAYER_SPRITE_ATTACK
         end

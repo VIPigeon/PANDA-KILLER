@@ -16,7 +16,10 @@ end
 
 function DialogWindow:update()
     -- здесь будет анимация
-    
+    if self.is_closed then
+        return
+    end
+
     self:close()
 end
 

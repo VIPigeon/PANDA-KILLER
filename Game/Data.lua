@@ -175,6 +175,8 @@ PLAYER_SPRITE_RUNNING = Sprite:new({384, 386, 388, 390, 392, 394}, 6, 2, 2)
 PLAYER_SPRITE_ATTACK  = Animation:new({416, 418, 420, 422}, 4):with_size(2, 2):at_end_goto_last_frame():to_sprite()
 PLAYER_SPRITE_ATTACK_AIR_FORWARD  = Animation:new({424, 456, 458}, 4):with_size(2, 2):at_end_goto_last_frame():to_sprite()
 PLAYER_SPRITE_ATTACK_AIR_DOWNWARD = Animation:new({490, 492, 494}, 6):with_size(2, 2):at_end_goto_last_frame():to_sprite()
+PLAYER_SPRITE_ATTACK_UPWARDS = Animation:new({208, 210, 212, 214}, 3):with_size(2, 2):at_end_goto_last_frame():to_sprite()
+PLAYER_ATTACK_SPRITES = {PLAYER_SPRITE_ATTACK, PLAYER_SPRITE_ATTACK_AIR_FORWARD, PLAYER_SPRITE_ATTACK_AIR_DOWNWARD, PLAYER_SPRITE_ATTACK_UPWARDS}
 PLAYER_SPRITE_JUMP = Animation:new({412, 414, 412}, 3):with_size(2, 2):at_end_goto_last_frame():to_sprite()
 PLAYER_SPRITE_FALLING = Animation:new({426}, 1):with_size(2, 2):to_sprite()
 PLAYER_SPRITE_SLIDE = Sprite:new_complex({
@@ -186,7 +188,7 @@ PLAYER_SPRITE_JUMP_PARTICLE_EFFECT = Animation:new({496, 498, 500, 502}, 6):with
 PLAYER_SPRITE_LAND_PARTICLE_EFFECT = Animation:new({500, 502}, 8):with_size(2, 1):at_end_goto_last_frame():to_sprite()
 PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_HORIZONTAL = Animation:new({488}, 18):with_size(2, 2):at_end_goto_last_frame():to_sprite();
 PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_DOWNWARD = Animation:new({444}, 18):with_size(2, 1):at_end_goto_last_frame():to_sprite();
-PLAYER_ATTACK_SPRITES = {PLAYER_SPRITE_ATTACK, PLAYER_SPRITE_ATTACK_AIR_FORWARD, PLAYER_SPRITE_ATTACK_AIR_DOWNWARD}
+PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_UPWARD = Animation:new({176}, 18):with_size(2, 2):at_end_goto_last_frame():to_sprite();
 
 HAT_SPRITE = Sprite:new({478})
 
@@ -455,3 +457,27 @@ function is_tile_solid(tile_id)
               tile_id == 80 or
               tile_id == 81
 end
+
+
+--[[
+
+    Архив старых паст, которые утратили актуальность,
+    но слишком жалко их удалять 📚
+
+    kawaii-Code в 2024, про диагональную атаку:
+        --
+        -- Это сделано для испольнения Clean Code принципа (c)
+        -- Don't Repeat Yourself (DRY). Я, как хороший программист,
+        -- стремлюсь всегда следовать best practices и использовать
+        -- design patterns. Мой код проверяется на S.O.L.I.D, YAGNI,
+        -- G.R.A.S.P, и т.д. и т.п. Люблю TDD, DDD и OOP.
+        --
+        -- Опыт работы: нету, но стремлюсь улучшиться в этом аспекте
+        -- Пет проекты: я все пытался сделать, но потом сразу понимал,
+        --              насколько плоха architecture проекта, поэтому
+        --              я их начинал с нуля, используя более современные
+        --              best practices
+        --
+        -- Буду рад работать у вас 😻! -- kawaii-Год
+
+--]]
