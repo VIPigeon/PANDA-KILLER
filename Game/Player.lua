@@ -23,70 +23,77 @@
 
 --]]
 
-player = {
-    x = PLAYER_SPAWNPOINT_X,
-    y = PLAYER_SPAWNPOINT_Y,
-    velocity = {
-        x = 0,
-        y = 0,
-    },
-    hitbox = Hitbox:new(6, 0, 4, 8),
-    physics_settings = {
-        gravity = PLAYER_GRAVITY,
-        friction = PLAYER_FRICTION,
-        min_horizontal_velocity = PLAYER_MIN_HORIZONTAL_VELOCITY,
-    },
+Player = {}
 
-    sprite = PLAYER_SPRITE_IDLE,
+function Player:new(x, y)
+    local object = {
+        x = PLAYER_SPAWNPOINT_X,
+        y = PLAYER_SPAWNPOINT_Y,
+        velocity = {
+            x = 0,
+            y = 0,
+        },
+        hitbox = Hitbox:new(6, 0, 4, 8),
+        physics_settings = {
+            gravity = PLAYER_GRAVITY,
+            friction = PLAYER_FRICTION,
+            min_horizontal_velocity = PLAYER_MIN_HORIZONTAL_VELOCITY,
+        },
 
-    -- Когда игрок умирает, у него слетает шляпа
-    hat = nil,
+        sprite = PLAYER_SPRITE_IDLE,
 
-    attack_rects = {},
-    attack_effect = nil,
-    attack_effect_time = 0,
+        -- Когда игрок умирает, у него слетает шляпа
+        hat = nil,
 
-    stuck_to_left_wall = false,
-    stuck_to_right_wall = false,
-    looking_left = false,
-    was_on_ground_last_frame = false,
-    was_sliding_on_wall_last_frame = false,
-    is_dead = false,
+        attack_rects = {},
+        attack_effect = nil,
+        attack_effect_time = 0,
 
-    -- Это для анимаций. Как по другому, я не придумал 😜
-    has_attacked_in_air = false,
-    has_attacked_downward = false,
-    has_attacked_upwards = false,
-    just_attacked = false,
+        stuck_to_left_wall = false,
+        stuck_to_right_wall = false,
+        looking_left = false,
+        was_on_ground_last_frame = false,
+        was_sliding_on_wall_last_frame = false,
+        is_dead = false,
 
-    coyote_time = 0.0,
-    attack_timer = 0.0,
-    jump_buffer_time = 0.0,
-    remove_horizontal_speed_limit_time = 0.0,
-    attack_buffer_time = 0.0,
-    time_we_have_been_running = 0.0,
+        -- Это для анимаций. Как по другому, я не придумал 😜
+        has_attacked_in_air = false,
+        has_attacked_downward = false,
+        has_attacked_upwards = false,
+        just_attacked = false,
 
-    time_before_showing_death_screen = 0.0,
-}
+        coyote_time = 0.0,
+        attack_timer = 0.0,
+        jump_buffer_time = 0.0,
+        remove_horizontal_speed_limit_time = 0.0,
+        attack_buffer_time = 0.0,
+        time_we_have_been_running = 0.0,
 
-function player:die(kill_velocity_x, kill_velocity_y)
+        time_before_showing_death_screen = 0.0,
+    }
+
+    setmetatable(object, self)
+    return object
+end
+
+function Player:die(kill_velocity_x, kill_velocity_y)
     if self.is_dead then
         return
     end
 
-    player.velocity.x = PLAYER_DEATH_KNOCKBACK_HORIZONTAL * math.sign(kill_velocity_x)
-    player.velocity.y = PLAYER_DEATH_KNOCKBACK_VERTICAL
+    self.velocity.x = PLAYER_DEATH_KNOCKBACK_HORIZONTAL * math.sign(kill_velocity_x)
+    self.velocity.y = PLAYER_DEATH_KNOCKBACK_VERTICAL
 
     self.time_before_showing_death_screen = PLAYER_TIME_BEFORE_SHOWING_DEATH_SCREEN_AFTER_DEATH
     self.is_dead = true
 
     self.attack_effect_time = 0
-    self.hat = Hat:new(player.x, player.y, 0.5 * player.velocity.x + kill_velocity_x, 0.5 * player.velocity.y + kill_velocity_y)
+    self.hat = Hat:new(self.x, self.y, 0.5 * self.velocity.x + kill_velocity_x, 0.5 * self.velocity.y + kill_velocity_y)
 
     Basic.play_sound(SOUNDS.PLAYER_DEAD)
 end
 
-function player:update()
+function Player:update()
     if self.is_dead then
         Physics.update(self)
         self.hat:update()
@@ -449,7 +456,7 @@ function player:update()
     end
 end
 
-function player.draw(self)
+function Player:draw()
     local colorkey = 0
     local scale = 1
 
@@ -480,3 +487,5 @@ function player.draw(self)
     --    attack_rect:draw()
     --end
 end
+
+Player.__index = Player

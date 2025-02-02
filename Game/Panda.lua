@@ -8,17 +8,19 @@
 
 --]]
 
+Panda = {}
+
 -- Когда уже в lua добавят enum-ы? 😩
-local PANDA_STATE__PATROLLING = 1
-local PANDA_STATE__CHASING = 2
-local PANDA_STATE__CHARGING_ATTACK = 3
-local PANDA_STATE__POUNCE = 4
-local PANDA_STATE__STAGGERED = 5
-local PANDA_STATE__STUNNED = 6
+local PANDA_STATE = {
+    patrol = 1,
+    chase = 2,
+    charging_attack = 3,
+    pounce = 4,
+    staggered = 5,
+    stunned = 6,
+}
 
 local PANDA_STATE_COLORS = {2, 3, 4, 5, 7, 6}
-
-Panda = {}
 
 function Panda:new(x, y)
     local object = {
@@ -31,15 +33,15 @@ function Panda:new(x, y)
         hitbox = Hitbox:new(2, 0, 4, 8),
         physics_settings = PANDA_PHYSICS_SETTINGS,
 
-        state = PANDA_STATE__PATROLLING,
+        state = PANDA_STATE.patrol,
 
         sprite = nil,
         sprites = {
-            rest = PANDA_REST_SPRITE:copy(),
-            patrol = PANDA_DEFAULT_SPRITE:copy(),
-            chase = PANDA_CHASE_SPRITE:copy(),
-            charging_attack = PANDA_CHARGING_ATTACK_SPRITE:copy(),
-            pounce = PANDA_POUNCING_SPRITE:copy(),
+            rest = PANDA_SPRITES.rest:copy(),
+            patrol = PANDA_SPRITES.walk:copy(),
+            chase = PANDA_SPRITES.chase:copy(),
+            charging_attack = PANDA_SPRITES.charging_attack:copy(),
+            pounce = PANDA_SPRITES.pounce:copy(),
         },
         look_direction = math.coin_flip() and 1 or -1,
 
@@ -96,7 +98,7 @@ function Panda:take_damage(hit_x, hit_y)
         create_blood(self.x, self.y, 1)
     end
 
-    if self.state == PANDA_STATE__STUNNED then
+    if self.state == PANDA_STATE.stunned then
         -- Умираем 💀
         Basic.play_sound(SOUNDS.PANDA_DEAD)
         table.remove_element(game.pandas, self)
@@ -118,7 +120,7 @@ function Panda:take_damage(hit_x, hit_y)
         self.rest_time = 0.0
         self.count_of_recent_hits = 0
 
-        self.state = PANDA_STATE__STUNNED
+        self.state = PANDA_STATE.stunned
         self.stun_time_left = PANDA_STUN_DURATION
     else
         if hit_x < 0 then
@@ -128,7 +130,7 @@ function Panda:take_damage(hit_x, hit_y)
         end
         self.velocity.y = PANDA_KNOCKBACK_VERTICAL
 
-        self.state = PANDA_STATE__STAGGERED
+        self.state = PANDA_STATE.staggered
         self.stagger_time_left = PANDA_STAGGER_DURATION
     end
 end
@@ -203,17 +205,14 @@ function Panda:update()
     -- А всё остальное -- мусор ♻️, которым не стоит забивать голову.
     --
 
+    local player = game.player
+
     local is_on_ground = Physics.is_on_ground(self)
 
     local view_cone = self:view_cone_shape()
-    local sees_player = Physics.check_collision_shape_rect(view_cone, Hitbox.rect_of(game.player))
+    local sees_player = Physics.check_collision_shape_rect(view_cone, Hitbox.rect_of(player))
 
-    -- if panda.state ~= 'attacked/stunned' and panda.velocity.y < 0 then
-    --     -- ахаха бедная панда падает 🤣
-    --     panda.status = 'panic!'
-    -- end
-
-    if self.state == PANDA_STATE__PATROLLING then
+    if self.state == PANDA_STATE.patrol then
 
         if self.patrol_rest_time > 0.0 then
             self.patrol_rest_time = Basic.tick_timer(self.patrol_rest_time)
@@ -236,11 +235,11 @@ function Panda:update()
         end
 
         if sees_player then
-            self.state = PANDA_STATE__CHASING
+            self.state = PANDA_STATE.chase
             self.chase_time_left = PANDA_CHASE_DURATION
         end
 
-    elseif self.state == PANDA_STATE__CHASING then
+    elseif self.state == PANDA_STATE.chase then
 
         if sees_player then
             self.chase_time_left = PANDA_CHASE_DURATION
@@ -251,7 +250,7 @@ function Panda:update()
         self.look_direction = math.sign(player.x - self.x)
         if x_distance_to_player <= PANDA_X_DISTANCE_TO_PLAYER_UNTIL_ATTACK then
             Basic.play_sound(SOUNDS.PANDA_ATTACK_CHARGE)
-            self.state = PANDA_STATE__CHARGING_ATTACK
+            self.state = PANDA_STATE.charging_attack
             self.charging_attack_time_left = PANDA_ATTACK_CHARGE_DURATION
         else
             local x_in_the_near_future = self.x + self.look_direction * PANDA_CHASE_PIXELS_UNTIL_JUMP
@@ -267,15 +266,19 @@ function Panda:update()
             self.velocity.x = PANDA_CHASE_SPEED * x_direction_to_player
         end
 
-    elseif self.state == PANDA_STATE__CHARGING_ATTACK then
-
         self.chase_time_left = Basic.tick_timer(self.chase_time_left)
+        if self.chase_time_left == 0.0 then
+            self.state = PANDA_STATE.patrol
+            self.patrol_rest_time = PANDA_REST_TIME_BEFORE_DIRECTION_CHANGE()
+        end
+
+    elseif self.state == PANDA_STATE.charging_attack then
+
         self.charging_attack_time_left = Basic.tick_timer(self.charging_attack_time_left)
         if self.charging_attack_time_left == 0.0 then
             Basic.play_sound(SOUNDS.PANDA_POUNCE)
-            self.state = PANDA_STATE__POUNCE
+            self.state = PANDA_STATE.pounce
             self.time_since_pounce = 0.0
-            self.chase_time_left = PANDA_CHASE_DURATION
 
             local y_distance_to_player = math.abs(player.y - self.y)
             if y_distance_to_player <= PANDA_Y_DISTANCE_TO_PLAYER_UNTIL_ATTACK then
@@ -290,7 +293,7 @@ function Panda:update()
             end
         end
 
-    elseif self.state == PANDA_STATE__POUNCE then
+    elseif self.state == PANDA_STATE.pounce then
 
         local our_rect = Hitbox.rect_of(self)
         local player_rect = Hitbox.rect_of(game.player)
@@ -302,38 +305,28 @@ function Panda:update()
         self.time_since_pounce = self.time_since_pounce + Time.dt()
 
         if is_on_ground and self.time_since_pounce > PANDA_POUNCE_DURATION then
-            self.state = PANDA_STATE__CHASING
+            self.state = PANDA_STATE.chase
         end
         self.chase_time_left = Basic.tick_timer(self.chase_time_left)
 
-    elseif self.state == PANDA_STATE__STAGGERED then
+    elseif self.state == PANDA_STATE.staggered then
 
         self.stagger_time_left = Basic.tick_timer(self.stagger_time_left)
         if self.stagger_time_left == 0.0 then
-            self.state = PANDA_STATE__PATROLLING
+            self.state = PANDA_STATE.patrol
         end
 
-    elseif self.state == PANDA_STATE__STUNNED then
+    elseif self.state == PANDA_STATE.stunned then
 
         self.stun_time_left = Basic.tick_timer(self.stun_time_left)
         if self.stun_time_left == 0.0 then
-            self.state = PANDA_STATE__PATROLLING
+            self.state = PANDA_STATE.patrol
         end
 
     else
 
         error('Invalid panda state!') -- ✂
 
-    end
-
-    if self.state == PANDA_STATE__CHASING or
-       self.state == PANDA_STATE__CHARGING_ATTACK
-    then
-        self.chase_time_left = Basic.tick_timer(self.chase_time_left)
-        if self.chase_time_left == 0.0 then
-            self.state = PANDA_STATE__PATROLLING
-            self.patrol_rest_time = PANDA_REST_TIME_BEFORE_DIRECTION_CHANGE()
-        end
     end
 
     Physics.update(self)
@@ -345,23 +338,24 @@ function Panda:update()
     -- Под конец занимаемся спрайтами. Как в игроке! 😄
     local previous_sprite = self.sprite
 
-    if self.state == PANDA_STATE__STUNNED or
-       self.state == PANDA_STATE__STAGGERED
+    if self.state == PANDA_STATE.stunned or
+       self.state == PANDA_STATE.staggered
     then
+        -- goto 😎
         goto hitlocked
     end
 
-    if self.state == PANDA_STATE__PATROLLING then
+    if self.state == PANDA_STATE.patrol then
         if self.patrol_rest_time > 0.0 then
             self.sprite = self.sprites.rest
         else
             self.sprite = self.sprites.patrol
         end
-    elseif self.state == PANDA_STATE__CHASING then
+    elseif self.state == PANDA_STATE.chase then
         self.sprite = self.sprites.chase
-    elseif self.state == PANDA_STATE__CHARGING_ATTACK then
+    elseif self.state == PANDA_STATE.charging_attack then
         self.sprite = self.sprites.charging_attack
-    elseif self.state == PANDA_STATE__POUNCE then
+    elseif self.state == PANDA_STATE.pounce then
         self.sprite = self.sprites.pounce
     end
 

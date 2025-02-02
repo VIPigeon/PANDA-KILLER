@@ -71,9 +71,10 @@ TRANSPARENT_SPRITE = Sprite:new({0})
 -- Настройки камеры 🎥
 --
 -- Чтобы понять, что меняют эти параметры, включите дебаг в Camera.update()
-CAMERA_LINES_DISTANCE_FROM_CENTER = 30
-CAMERA_PAN_OFFSET = 5
-CAMERA_SMOOTH_TIME = 0.2
+CAMERA_LINES_DISTANCE_FROM_CENTER = 35
+CAMERA_PAN_OFFSET = 6
+CAMERA_SMOOTH_TIME = 0.18
+CAMERA_DIRECTION_CHANGE_TIME = 0.3
 
 
 
@@ -155,7 +156,6 @@ PLAYER_STATE_ATTACKING = 1
 -- Это никак не зависит от анимации атаки,
 -- она просто зависнет на последнем кадре.
 PLAYER_ATTACK_DURATION = 0.4                   -- секунды
--- Это не совсем тоже самое, что и 
 PLAYER_ATTACK_BUFFER_TIME = 0.2                -- секунды
 PLAYER_ATTACK_EFFECT_DURATION = PLAYER_ATTACK_BUFFER_TIME
 
@@ -221,7 +221,7 @@ PANDA_HITS_NEEDED_TO_GET_STUNNED = 3
 PANDA_STAGGER_DURATION = 1.0
 PANDA_STUN_DURATION = 2.5
 
--- Отбрасывание при обычном стаггере
+-- Отбрасывание панды от игрока при обычном стаггере
 PANDA_KNOCKBACK_HORIZONTAL = 20.0
 PANDA_KNOCKBACK_VERTICAL = 10.0
 -- При стане
@@ -256,14 +256,16 @@ PANDA_CHASE_DURATION = 4.0
 PANDA_ATTACK_CHARGE_DURATION = 1.5
 PANDA_POUNCE_DURATION = 1.0
 
-PANDA_DEFAULT_SPRITE = Animation:new({256, 257}, 30):to_sprite()
-PANDA_CHASE_SPRITE = Animation:new({259, 260}, 10):to_sprite()
-PANDA_REST_SPRITE = Sprite:new_complex({
-    Animation:new({276}, 8),
-    Animation:new({277-16}, 8):with_size(2, 2)
-})
-PANDA_CHARGING_ATTACK_SPRITE = Animation:new({282}, 1):to_sprite()
-PANDA_POUNCING_SPRITE = Animation:new({263}, 1):to_sprite()
+PANDA_SPRITES = {
+    walk  = Animation:new({256, 257}, 30):to_sprite(),
+    chase = Animation:new({259, 260}, 10):to_sprite(),
+    rest  = Sprite:new_complex({
+        Animation:new({276}, 8),
+        Animation:new({277-16}, 8):with_size(2, 2)
+    }),
+    charging_attack = Animation:new({282}, 1):to_sprite(),
+    pounce = Animation:new({263}, 1):to_sprite(),
+}
 
 --[[
 
@@ -290,6 +292,10 @@ TEXT = {
         ['ru'] = 'НАЖИМАЙ СТРЕЛКИ ЧТОБЫ ПОМЕНЯТЬ ЯЗЫК',
         ['en'] = 'PRESS RIGHT/LEFT TO SELECT',
     },
+    PRESS_ANY_BUTTON_TO_RESPAWN = {
+        ['ru'] = '\n\n\n\n\n\n  ДЛЯ ВОЗРОЖДЕНИЯ НАЖМИТЕ\n   НА ОДНУ ЛЮБУЮ КНОПКУ',
+        ['en'] = '\n\n\n\n\n\n  PRESS ANY BUTTON\n   TO RESPAWN',
+    }
 }
 
 --

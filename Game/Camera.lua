@@ -25,6 +25,8 @@ function Camera:new(player)
         state = CAMERA_STATE_NORMAL,
         shake_magnitude = 0,
         shake_time_left = 0,
+
+        time_since_player_changed_direction = 0.0,
     }
 
     setmetatable(object, self)
@@ -44,11 +46,13 @@ function Camera:shake(magnitude, duration)
 end
 
 function Camera:update()
-    local player_x = (self.player.x + 8)
+    local player = self.player
+    local player_x = (player.x + 8)
     local line_left_x = self.center_x - CAMERA_LINES_DISTANCE_FROM_CENTER
     local line_right_x = self.center_x + CAMERA_LINES_DISTANCE_FROM_CENTER
 
     if self.horizontal_pan_state == CAMERA_NO_HORIZONTAL_PAN then
+        self.time_since_player_changed_direction = 0.0
         if player_x < line_left_x - CAMERA_PAN_OFFSET  then
             if player.looking_left then
                 self.horizontal_pan_state = CAMERA_PANNING_LEFT
@@ -62,8 +66,13 @@ function Camera:update()
         end
     elseif self.horizontal_pan_state == CAMERA_PANNING_LEFT then
         if not player.looking_left then
-            self.horizontal_pan_state = CAMERA_NO_HORIZONTAL_PAN
-            self.pan_x_velocity = 0
+            self.time_since_player_changed_direction = self.time_since_player_changed_direction + Time.dt()
+            if self.time_since_player_changed_direction > CAMERA_DIRECTION_CHANGE_TIME then
+                self.horizontal_pan_state = CAMERA_NO_HORIZONTAL_PAN
+                self.pan_x_velocity = 0
+            end
+        else
+            self.time_since_player_changed_direction = 0.0
         end
 
         local next_x, next_velocity = math.smooth_damp(line_right_x, player_x + CAMERA_PAN_OFFSET, self.pan_x_velocity, CAMERA_SMOOTH_TIME)
@@ -72,8 +81,13 @@ function Camera:update()
         self.pan_x_velocity = next_velocity
     elseif self.horizontal_pan_state == CAMERA_PANNING_RIGHT then
         if player.looking_left then
-            self.horizontal_pan_state = CAMERA_NO_HORIZONTAL_PAN
-            self.pan_x_velocity = 0
+            self.time_since_player_changed_direction = self.time_since_player_changed_direction + Time.dt()
+            if self.time_since_player_changed_direction > CAMERA_DIRECTION_CHANGE_TIME then
+                self.horizontal_pan_state = CAMERA_NO_HORIZONTAL_PAN
+                self.pan_x_velocity = 0
+            end
+        else
+            self.time_since_player_changed_direction = 0.0
         end
 
         local next_x, next_velocity = math.smooth_damp(line_left_x, player_x - CAMERA_PAN_OFFSET, self.pan_x_velocity, CAMERA_SMOOTH_TIME)
@@ -82,7 +96,7 @@ function Camera:update()
         self.pan_x_velocity = next_velocity
     end
 
-    local player_y = self.player.y
+    local player_y = player.y
     if player_y - self.center_y > CAMERA_LINES_DISTANCE_FROM_CENTER then
         self.center_y = self.center_y + (player_y - self.center_y - CAMERA_LINES_DISTANCE_FROM_CENTER)
     elseif self.center_y - player_y > CAMERA_LINES_DISTANCE_FROM_CENTER then
