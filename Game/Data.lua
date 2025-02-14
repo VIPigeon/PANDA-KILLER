@@ -168,7 +168,7 @@ PLAYER_DEATH_KNOCKBACK_HORIZONTAL = 80
 PLAYER_DEATH_KNOCKBACK_VERTICAL = 80
 
 PLAYER_JUMP_BY_HIT = PLAYER_JUMP_STRENGTH * 1
-PLAYER_ATTACK_COOLDOWN = 0.25                  -- секунды
+PLAYER_ATTACK_COOLDOWN = 0.2                  -- секунды
 
 --
 -- Спрайты и анимации 🎞️
