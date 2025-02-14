@@ -48,6 +48,7 @@ function Player:new(x, y)
         attack_rects = {},
         attack_effect = nil,
         attack_effect_time = 0,
+        attack_cooldown = 0,
 
         stuck_to_left_wall = false,
         stuck_to_right_wall = false,
@@ -88,6 +89,7 @@ function Player:die(kill_velocity_x, kill_velocity_y)
     self.is_dead = true
 
     self.attack_effect_time = 0
+    self.attack_cooldown = 0
     self.hat = Hat:new(self.x, self.y, 0.5 * self.velocity.x + kill_velocity_x, 0.5 * self.velocity.y + kill_velocity_y)
 
     Basic.play_sound(SOUNDS.PLAYER_DEAD)
@@ -169,9 +171,9 @@ function Player:update()
       self.jump_buffer_time = PLAYER_JUMP_BUFFER_TIME
     end
 
-    if attack_pressed then
-        self.attack_buffer_time = PLAYER_ATTACK_BUFFER_TIME
 
+    if attack_pressed and self.attack_cooldown == 0 then
+        self.attack_buffer_time = PLAYER_ATTACK_BUFFER_TIME
         if not is_on_ground then
             self.has_attacked_in_air = true
         else
@@ -190,7 +192,11 @@ function Player:update()
     if self.attack_timer == 0 then
         self.just_attacked = false
         self.attack_rects = {}
-        if self.attack_buffer_time > 0.0 then
+        -- if self.attack_buffer_time > 0.0 then
+        if attack_pressed then
+            self.attack_buffer_time = PLAYER_ATTACK_BUFFER_TIME
+        end
+        if self.attack_cooldown == 0 and self.attack_buffer_time > 0 then
             self.sprite:reset()
             self.attack_timer = PLAYER_ATTACK_DURATION
             self.attack_buffer_time = 0.0
@@ -199,12 +205,9 @@ function Player:update()
     end
 
     if self.attack_timer > 0 and
-       table.contains(PLAYER_ATTACK_SPRITES, self.sprite) and
-       self.sprite:animation_ended()
+           table.contains(PLAYER_ATTACK_SPRITES, self.sprite) and
+           self.sprite:animation_ended()
     then
-        --
-        -- side note:
-        -- Точно ли атаки по диагонали - хорошая идея?
         local attack_direction_x = 0
         local attack_direction_y = 0
         if looking_down then
@@ -263,6 +266,7 @@ function Player:update()
                 self.attack_effect = ChildBody:new(self, 8 * attack_direction_x, -8 + 8 * attack_direction_y, PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_HORIZONTAL, flip)
             end
             self.attack_effect_time = PLAYER_ATTACK_EFFECT_DURATION
+            self.attack_cooldown = PLAYER_ATTACK_COOLDOWN
         end
 
         game.camera:shake(PLAYER_ATTACK_SHAKE_MAGNITUDE, PLAYER_ATTACK_SHAKE_DURATION)
@@ -449,6 +453,7 @@ function Player:update()
     self.attack_timer = Basic.tick_timer(self.attack_timer)
     self.attack_buffer_time = Basic.tick_timer(self.attack_buffer_time)
     self.attack_effect_time = Basic.tick_timer(self.attack_effect_time)
+    self.attack_cooldown = Basic.tick_timer(self.attack_cooldown)
     if self.velocity.x ~= 0 then
         self.time_we_have_been_running = self.time_we_have_been_running + Time.dt()
     else

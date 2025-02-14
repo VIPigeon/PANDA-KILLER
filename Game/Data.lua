@@ -156,8 +156,8 @@ PLAYER_STATE_ATTACKING = 1
 -- Это никак не зависит от анимации атаки,
 -- она просто зависнет на последнем кадре.
 PLAYER_ATTACK_DURATION = 0.15                   -- секунды
-PLAYER_ATTACK_BUFFER_TIME = 0.2                -- секунды
-PLAYER_ATTACK_EFFECT_DURATION = PLAYER_ATTACK_BUFFER_TIME
+PLAYER_ATTACK_BUFFER_TIME = 0.1                -- секунды
+PLAYER_ATTACK_EFFECT_DURATION = 0.15
 
 PLAYER_ATTACK_SHAKE_MAGNITUDE = 0.5
 PLAYER_ATTACK_SHAKE_DURATION = 0.05
@@ -167,7 +167,8 @@ PLAYER_TIME_BEFORE_SHOWING_DEATH_SCREEN_AFTER_DEATH = 1.5
 PLAYER_DEATH_KNOCKBACK_HORIZONTAL = 80
 PLAYER_DEATH_KNOCKBACK_VERTICAL = 80
 
-PLAYER_JUMP_BY_HIT = PLAYER_JUMP_STRENGTH * 1.
+PLAYER_JUMP_BY_HIT = PLAYER_JUMP_STRENGTH * 1
+PLAYER_ATTACK_COOLDOWN = 0.25                  -- секунды
 
 --
 -- Спрайты и анимации 🎞️
