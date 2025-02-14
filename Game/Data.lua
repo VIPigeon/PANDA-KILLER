@@ -155,7 +155,7 @@ PLAYER_STATE_ATTACKING = 1
 -- Сколько по времени занимает одна атака.
 -- Это никак не зависит от анимации атаки,
 -- она просто зависнет на последнем кадре.
-PLAYER_ATTACK_DURATION = 0.4                   -- секунды
+PLAYER_ATTACK_DURATION = 0.15                   -- секунды
 PLAYER_ATTACK_BUFFER_TIME = 0.2                -- секунды
 PLAYER_ATTACK_EFFECT_DURATION = PLAYER_ATTACK_BUFFER_TIME
 
@@ -167,15 +167,17 @@ PLAYER_TIME_BEFORE_SHOWING_DEATH_SCREEN_AFTER_DEATH = 1.5
 PLAYER_DEATH_KNOCKBACK_HORIZONTAL = 80
 PLAYER_DEATH_KNOCKBACK_VERTICAL = 80
 
+PLAYER_JUMP_BY_HIT = PLAYER_JUMP_STRENGTH * 1.
+
 --
 -- Спрайты и анимации 🎞️
 --
 PLAYER_SPRITE_IDLE    = Sprite:new({380}, 1, 2, 2)
 PLAYER_SPRITE_RUNNING = Sprite:new({384, 386, 388, 390, 392, 394}, 6, 2, 2)
-PLAYER_SPRITE_ATTACK  = Animation:new({416, 418, 420, 422}, 4):with_size(2, 2):at_end_goto_last_frame():to_sprite()
-PLAYER_SPRITE_ATTACK_AIR_FORWARD  = Animation:new({424, 456, 458}, 4):with_size(2, 2):at_end_goto_last_frame():to_sprite()
-PLAYER_SPRITE_ATTACK_AIR_DOWNWARD = Animation:new({490, 492, 494}, 6):with_size(2, 2):at_end_goto_last_frame():to_sprite()
-PLAYER_SPRITE_ATTACK_UPWARDS = Animation:new({208, 210, 212, 214}, 3):with_size(2, 2):at_end_goto_last_frame():to_sprite()
+PLAYER_SPRITE_ATTACK  = Animation:new({416, 418, 420, 422}, 2):with_size(2, 2):at_end_goto_last_frame():to_sprite()
+PLAYER_SPRITE_ATTACK_AIR_FORWARD  = Animation:new({424, 456, 458}, 2):with_size(2, 2):at_end_goto_last_frame():to_sprite()
+PLAYER_SPRITE_ATTACK_AIR_DOWNWARD = Animation:new({490, 492, 494}, 3):with_size(2, 2):at_end_goto_last_frame():to_sprite()
+PLAYER_SPRITE_ATTACK_UPWARDS = Animation:new({208, 210, 212, 214}, 2):with_size(2, 2):at_end_goto_last_frame():to_sprite()
 PLAYER_ATTACK_SPRITES = {PLAYER_SPRITE_ATTACK, PLAYER_SPRITE_ATTACK_AIR_FORWARD, PLAYER_SPRITE_ATTACK_AIR_DOWNWARD, PLAYER_SPRITE_ATTACK_UPWARDS}
 PLAYER_SPRITE_JUMP = Animation:new({412, 414, 412}, 3):with_size(2, 2):at_end_goto_last_frame():to_sprite()
 PLAYER_SPRITE_FALLING = Animation:new({426}, 1):with_size(2, 2):to_sprite()
@@ -253,8 +255,8 @@ PANDA_CHASE_PIXELS_UNTIL_JUMP = 16
 PANDA_CHASE_SPEED = 2.5 * PANDA_PATROL_SPEED
 
 PANDA_CHASE_DURATION = 4.0
-PANDA_ATTACK_CHARGE_DURATION = 1.5
-PANDA_POUNCE_DURATION = 1.0
+PANDA_ATTACK_CHARGE_DURATION = 0.8  -- 1.5
+PANDA_POUNCE_DURATION = 0.5  -- 1.0
 
 PANDA_SPRITES = {
     walk  = Animation:new({256, 257}, 30):to_sprite(),
@@ -299,8 +301,8 @@ TEXT = {
 }
 
 --
--- Звуки 🔊
---
+-- Звуки (sfx🤪) 🔊
+-- 
 SOUNDS = {
     MUTE_CHANNEL_ZERO = {id = -1, note = -1, channel = 0},
     MUTE_CHANNEL_ONE = {id = -1, note = -1, channel = 1},

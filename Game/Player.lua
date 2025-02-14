@@ -243,7 +243,7 @@ function Player:update()
         end
         if #hit_pandas > 0 then
             if looking_down then
-                self.velocity.y = PLAYER_JUMP_STRENGTH
+                self.velocity.y = PLAYER_JUMP_BY_HIT
             end
 
             for _, panda in ipairs(hit_pandas) do
