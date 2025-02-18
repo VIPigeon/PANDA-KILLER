@@ -49,6 +49,12 @@ function DialogWindow:draw()
 
         self.is_closed = false
     end
+
+    -- когда-нибудь пофиксим🙏
+    if self.tugologue then
+        self:draw_tugologue()
+        self.is_closed = false
+    end
 end 
     
 function DialogWindow:draw_dialog()
@@ -105,6 +111,26 @@ function DialogWindow:draw_bikelogue(trigger)
     trigger.wrapper:init_go_away()
     trigger.wrapper:go_away()
     trigger.wrapper:draw()
+end
+
+function DialogWindow:draw_tugologue(trigger)
+    -- я не думмаю, что это сильно плохая практика для такого небольшого количества механик,
+    -- как раз, ровно столько, сколько есть у нас
+    self.tugologue = true
+    -- да, если у dialogwindow не будет синглтоном или что-то будет происходить с triggerом,
+    -- то возможно не unопределённое behaveдение
+    self.trigger = trigger
+    self.trigger.text_progress = ClickerMinigame.update_progress_for_visual()
+
+    self.text = 'PROG'..self.trigger.text_progress
+    -- 'BANBOOK GAME. LIFE OR DEATH?'
+    self.x = 0
+    self.y = 0
+    rect(self.x, self.y, 50, 50, 0)
+    self:draw_dialog()
+
+    ClickerMinigame:update()
+    ClickerMinigame:draw()
 end
 
 function DialogWindow:close()

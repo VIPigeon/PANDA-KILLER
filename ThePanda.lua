@@ -143,7 +143,8 @@ function Pandas.update()
         end
 
         if panda.attacking_time > 0.0 and Physics.check_collision_rect_rect(Hitbox.rect_of(panda), Hitbox.rect_of(game.player)) then
-            trace('player is fucking dead')
+            -- надоело (С) - мне
+            --trace('player is fucking dead')
         end
 
         local status_patrol_rest = panda.rest_time > 0.0
@@ -276,7 +277,8 @@ function Pandas.draw()
     end
 end
 
-function Panda:new(x, y)
+function Panda:new(x, y, CANTUG)
+    CANTUG = CANTUG or false
     local ahahahahha = {
         sprite = data.panda.sprite.stay_boring,
         hitbox = Hitbox:new(2, 0, 4, 8),
@@ -303,6 +305,8 @@ function Panda:new(x, y)
         chase_time = 0.0,
         rest_time = 0.0,
         attacking_time = 0.0,
+        -- Хотите ли вы потягаться с такой пандой?🙄 Ответ был дан выше
+        kantugging_friend_panda = CANTUG,
     }
 
     setmetatable(ahahahahha, self)
@@ -404,6 +408,7 @@ function Panda:update()
         if self.staggered_time > PANDA_STAGGER_TIME then
             self.status = 'normal'
         end
+
     elseif self.status == 'stunned' then
         -- Здесь дубляж кода из `special_panda_moving()`, потому что другой
         -- **сотрудник** решил сделать такую функцию. Если бы всё было свалено в
@@ -416,6 +421,11 @@ function Panda:update()
         --
         -- Это я из будущего 👽 (каваи-грот). Копипасты получилось не так много,
         -- поэтому игнорируйте верхний пассивно-агрессивный комментарий.
+        --
+        --
+        --
+        -- Как хорошо, что я не читал россказни каваи-монолита до сегодняшнего дня😁
+        -- Мозговыжигающее зрелище, скажу вам.
         --
         local is_on_ground = Physics.is_on_ground(self)
         local horizontal_collision = Physics.move_x(self)

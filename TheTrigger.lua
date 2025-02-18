@@ -145,3 +145,12 @@ function TriggerActions.bike(triggerTile)
         triggerTile:untrigger()
     end
 end
+
+function TriggerActions.tug_of(triggerTile)
+    if true then
+        game.status = not game.status
+        TriggerTiles.__is_active__ = {status = true, trigger = triggerTile, type = 'TUGGING'}
+        --local __dx_dw = DialogWindow:new(triggerTile.x + triggerTile.dialog_offset.x, triggerTile.y + triggerTile.dialog_offset.y, triggerTile.dialog_text)
+        --table.insert(game.dialog_window, __dx_dw)
+    end
+end

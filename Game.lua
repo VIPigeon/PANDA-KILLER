@@ -16,7 +16,7 @@ function game.init()
     TriggerTiles.add(TriggerTile:new(24,88,8,8, TriggerActions.dialogue))
     game.lol = Bike:new(180, 88)
     TriggerTiles.add(game.lol)
-    --Pandas.add(Panda:new(130,95))
+    Pandas.add(Panda:new(130,95, true))
     --Pandas.add(Panda:new(60,95))
     --Pandas.add(Panda:new(150,48))
     game.pandas = Pandas.alive_pandas
@@ -42,6 +42,7 @@ function game.update()
         map(camera_window.gm.x, camera_window.gm.y, 31, 18, camera_window.gm.sx, camera_window.gm.sy)
         game.dialog_window:draw()
         Time.update()
+        trace('hahaha')
         return
     end
 
