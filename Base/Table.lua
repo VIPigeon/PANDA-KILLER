@@ -1,11 +1,44 @@
+--[[
+
+Функции для таблиц, которым давно бы уже пора появится в lua,
+но у бразильцев никак не доходят руки.
+
+Про deep X: Если у нас есть такая таблица:
+
+x = {
+    y = {
+        69
+    }
+}
+
+И мы сделаем например table.copy():
+
+z = table.copy(x)
+
+То x.y и z.y будут ссылаться на одну и ту же таблицу y.
+
+Имейте в виду, если кто побежит с таким багом плакаться ко мне,
+я его тыкну носом в эту документацию 😈. Читайте её!
+
+--]]
+
+-- Не deep copy
 function table.copy(t)
-  local t2 = {}
-  for k,v in pairs(t) do
-    t2[k] = v
-  end
-  return t2
+    local t2 = {}
+    for k, v in pairs(t) do
+        t2[k] = v
+    end
+    return t2
 end
 
+-- 🧹
+function table.clear(t)
+    for k in pairs (t) do
+        t[k] = nil
+    end
+end
+
+-- Не deep equal
 function table.equals(t1, t2)
     for i, value in ipairs(t1) do
         if value ~= t2[i] then
@@ -15,7 +48,9 @@ function table.equals(t1, t2)
     return true
 end
 
-function table.concatTable(destination, source)
+-- Добавляет к таблице destination всё из таблицы source.
+-- Это не deep copy
+function table.concat_table(destination, source)
     for _, element in ipairs(source) do
         table.insert(destination, element)
     end
@@ -39,7 +74,7 @@ function table.contains(t, element)
     return false
 end
 
-function table.removeElement(t, element)
+function table.remove_element(t, element)
     ind = 0
     for i, value in ipairs(t) do
         if value == element then
@@ -53,7 +88,7 @@ function table.removeElement(t, element)
     end
 end
 
-function table.removeElements(t, removed)
+function table.remove_elements(t, removed)
     for i, value in ipairs(t) do
         if table.contains(removed, value) then
             table.remove(t, i)
@@ -77,7 +112,7 @@ function table.length(t) -- 🤓
     return counter
 end
 
-function table.chooseRandomElement(t)
+function table.choose_random_element(t)
     local rand = math.random(table.length(t))
     local ind = 1
     local choosen = nil 

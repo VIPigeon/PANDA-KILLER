@@ -1,3 +1,16 @@
+--[[
+
+Почитать документацию про анимации можно в Sprite.lua
+
+Пример:
+
+PLAYER_SPRITE_SLIDE = Sprite:new_complex({
+    Animation:new({448, 450}, 8):with_size(2, 2),
+    Animation:new({452, 454}, 12):with_size(2, 2):at_end_goto_animation(2),
+})
+
+--]]
+
 Animation = {}
 
 function Animation:new(frames, single_frame_duration, width, height)

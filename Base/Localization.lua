@@ -1,3 +1,16 @@
+--[[
+
+Модуль для работы с русским / английским языками.
+
+Рисуйте текст через draw_text_centered_at(...)
+Все реплики оборачивайте в localize(...)
+
+Пример использования смотреть в Game/LanguageSelection.lua.
+В Game/Data.lua есть примеры как писать локализованные реплики.
+Больше документации писать не буду, лень 🐒
+
+]]--
+
 -- Ссылка на святую святых 👼
 -- https://www.unicode.org/charts/PDF/U0400.pdf
 RUSSIAN_TO_ENGLISH_OBSCURE_TABLE = {
@@ -35,15 +48,14 @@ RUSSIAN_TO_ENGLISH_OBSCURE_TABLE = {
     [0x42e] = '.', -- Ю
     [0x42f] = 'z', -- Я
 
-    -- Я ИДУ В ЗАД
     -- lt`;pbqrkvyjghcne[wxio]sm'.z
     -- a,duдеёжзийклмнопрсту
 }
 
-function russian_to_translit(string)
+function russian_to_translit(s)
     result = {}
-    for i = 1, string.len(string) do
-        local byte = string.byte(string, i)
+    for i = 1, string.len(s) do
+        local byte = string.byte(s, i)
         if (byte & 0xd0) == 0xd0 then
             --
             -- +---------------+
@@ -73,7 +85,7 @@ function russian_to_translit(string)
             -- А мне что делать, спрашивается 🤬? Ответ снизу.
             --
 
-            local next_byte = string.byte(string, i + 1)
+            local next_byte = string.byte(s, i + 1)
             local x = next_byte & 0xf
             local y = ((byte & 0x3) << 2) | (next_byte & 0x30) >> 4
             local z = (byte & 0x1c) >> 2
@@ -89,6 +101,30 @@ function russian_to_translit(string)
             table.insert(result, string.char(byte))
         end
     end
-    local string = table.concat(result)
-    return string
+    local translitted = table.concat(result)
+    return translitted
+end
+
+function localize(text_entry_in_data)
+    if game.language == 'en' then
+        return text_entry_in_data['en']
+    else
+        return russian_to_translit(text_entry_in_data['ru'])
+    end
+end
+
+function draw_text_centered_at_x(text, x, y, char_width, char_height, fixed, scale)
+    local width = measure_text_width(text, char_width, char_height, fixed, scale)
+    if char_width == nil then
+        font(text, x - width / 2, y)
+    else
+        font(text, x - width / 2, y, 0, char_width, char_height, fixed, scale)
+    end
+end
+
+function measure_text_width(text, char_width, char_height, fixed, scale)
+    if char_width == nil then
+        return font(text, 10000, 10000)
+    end
+    return font(text, 10000, 10000, 0, char_width, char_height, fixed, scale)
 end

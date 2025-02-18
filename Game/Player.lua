@@ -21,95 +21,99 @@
 ЛИЦЕНЗИЯ: Использовать этот код в коммерческих целях ЗАПРЕЩЕНО.
 Если очень хочется, то нужно заплатить мне $10. (c) кавайный-код
 
-
-
-Итак, объясняю как работает прыжок от стены 🤓
-
-1. Если игрок в воздухе врезается в стену, он "прилепляется" к ней.
-2. Если игрок продолжает идти в стену, то он будет скользит с
-   замедленной скоростью PLAYER_WALL_SLIDE_SPEED.
-3. Самое сложное: игрок отпрыгивает от стены. После прыжка на короткое
-   время (PLAYER_REMOVE_SPEED_LIMIT_AFTER_WALL_JUMP_TIME) у игрока
-   уменьшается гравитация, чтобы можно было легче контролировать полёт.
-   Такие дела.
-
-Всё константы измеряются либо в 'пикселях', либо в 'секундах', либо в 'пикселях в секунду'.
-Ещё есть проценты от 0 до 1 ⚖
-
 --]]
 
-PLAYER_MAX_HORIZONTAL_SPEED = 67.0
-PLAYER_HORIZONTAL_ACCELERATION = 900.0
-PLAYER_FRICTION = 12.0
-PLAYER_AIR_FRICTION = 0.52 * PLAYER_FRICTION
+Player = {}
 
-PLAYER_WALL_SLIDE_SPEED = 30.0
-PLAYER_WALL_JUMP_HORIZONTAL_STRENGTH = 140.0
-PLAYER_WALL_JUMP_VERTICAL_STRENGTH = 120.0
-PLAYER_REMOVE_SPEED_LIMIT_AFTER_WALL_JUMP_TIME = 0.26
-PLAYER_DELAY_AFTER_JUMP_BEFORE_STICKING_TO_WALL = 0.2
+function Player:new(x, y)
+    local object = {
+        x = PLAYER_SPAWNPOINT_X,
+        y = PLAYER_SPAWNPOINT_Y,
+        velocity = {
+            x = 0,
+            y = 0,
+        },
+        hitbox = Hitbox:new(6, 0, 4, 8),
+        physics_settings = {
+            gravity = PLAYER_GRAVITY,
+            friction = PLAYER_FRICTION,
+            min_horizontal_velocity = PLAYER_MIN_HORIZONTAL_VELOCITY,
+        },
 
-PLAYER_ATTACK_DURATION = 0.4
-PLAYER_ATTACK_BUFFER_TIME = 0.2
-PLAYER_DAMAGE = 10
+        sprite = PLAYER_SPRITE_IDLE,
 
-PLAYER_COYOTE_TIME = 0.23
-PLAYER_JUMP_BUFFER_TIME = 0.18
+        -- Когда игрок умирает, у него слетает шляпа
+        hat = nil,
 
-PLAYER_MAX_FALL_SPEED = 200.0
-PLAYER_JUMP_HEIGHT = 24
-PLAYER_TIME_TO_APEX = 0.33 -- Время, чтобы достичь высшей точки прыжка (apex)
-PLAYER_GRAVITY = (2 * PLAYER_JUMP_HEIGHT) / (PLAYER_TIME_TO_APEX * PLAYER_TIME_TO_APEX)
-PLAYER_GRAVITY_AFTER_WALL_JUMP = 0.75 * PLAYER_GRAVITY
-PLAYER_JUMP_STRENGTH = math.sqrt(2 * PLAYER_GRAVITY * PLAYER_JUMP_HEIGHT)
+        attack_rects = {},
+        attack_effect = nil,
+        attack_effect_time = 0,
 
-PLAYER_SPRITE_IDLE = Sprite:new({380}, 1, 2, 2)
-PLAYER_SPRITE_RUNNING = Sprite:new({384, 386, 388, 390, 392, 394}, 6, 2, 2)
-PLAYER_SPRITE_ATTACK = Animation:new({416, 418, 420, 422, 478}, 4):with_size(2, 2):at_end_goto_last_frame():to_sprite()
-PLAYER_SPRITE_ATTACK_2 = Animation:new({416, 458, 476, 478}, 8):with_size(2, 2):to_sprite()
-PLAYER_ATTACK_FRAME_WHEN_TO_APPLY_ATTACK = 5 -- да ну его...
-PLAYER_SPRITE_JUMP = Animation:new({412, 414, 444, 446, 426}, 3):with_size(2, 2):at_end_goto_last_frame():to_sprite()
-PLAYER_SPRITE_FALLING = Animation:new({426}, 1):with_size(2, 2):to_sprite()
-PLAYER_SPRITE_SLIDE = Sprite:new_complex({
-    Animation:new({448, 450}, 8):with_size(2, 2),
-    Animation:new({452, 454}, 12):with_size(2, 2):at_end_goto_animation(2),
-})
-PLAYER_SPRITE_DEAD = Sprite:new({274})
-PLAYER_SPRITE_JUMP_PARTICLE_EFFECT = Animation:new({496, 498, 500, 502}, 6):with_size(2, 1):at_end_goto_last_frame():to_sprite()
-PLAYER_SPRITE_LAND_PARTICLE_EFFECT = Animation:new({500, 502}, 8):with_size(2, 1):at_end_goto_last_frame():to_sprite()
+        stuck_to_left_wall = false,
+        stuck_to_right_wall = false,
+        looking_left = false,
+        was_on_ground_last_frame = false,
+        was_sliding_on_wall_last_frame = false,
+        is_dead = false,
+        hide = false,  -- Когда игрок садится на байк, его надо прятать
 
-player = {
-    x = PLAYER_START_X,
-    y = PLAYER_START_Y,
-    velocity = {
-        x = 0,
-        y = 0,
-    },
-    hitbox = Hitbox:new(6, 0, 4, 8),
+        -- Это для анимаций. Как по другому, я не придумал 😜
+        has_attacked_in_air = false,
+        has_attacked_downward = false,
+        has_attacked_upwards = false,
+        just_attacked = false,
 
-    sprite = PLAYER_SPRITE_IDLE,
+        coyote_time = 0.0,
+        attack_timer = 0.0,
+        jump_buffer_time = 0.0,
+        remove_horizontal_speed_limit_time = 0.0,
+        attack_buffer_time = 0.0,
+        time_we_have_been_running = 0.0,
 
-    attack_rects = {},
+        time_before_showing_death_screen = 0.0,
+    }
 
-    stuck_to_left_wall = false,
-    stuck_to_right_wall = false,
-    looking_left = false,
-    was_on_ground_last_frame = false,
-    was_sliding_on_wall_last_frame = false,
-    is_dead = false,
+    setmetatable(object, self)
+    return object
+end
 
-    time_before_we_can_stick_to_wall = 0.0,
-    coyote_time = 0.0,
-    attack_timer = 0.0,
-    jump_buffer_time = 0.0,
-    remove_horizontal_speed_limit_time = 0.0,
-    attack_buffer_time = 0.0,
-    time_we_have_been_running = 0.0,
-    IS_0xDEADBEAF = false,
-}
-
-function player.update(self)
+function Player:die(kill_velocity_x, kill_velocity_y)
     if self.is_dead then
+        return
+    end
+
+    self.velocity.x = PLAYER_DEATH_KNOCKBACK_HORIZONTAL * math.sign(kill_velocity_x)
+    self.velocity.y = PLAYER_DEATH_KNOCKBACK_VERTICAL
+
+    self.time_before_showing_death_screen = PLAYER_TIME_BEFORE_SHOWING_DEATH_SCREEN_AFTER_DEATH
+    self.is_dead = true
+
+    self.attack_effect_time = 0
+    self.hat = Hat:new(self.x, self.y, 0.5 * self.velocity.x + kill_velocity_x, 0.5 * self.velocity.y + kill_velocity_y)
+
+    Basic.play_sound(SOUNDS.PLAYER_DEAD)
+end
+
+function Player:update()
+    if self.hide then
+        return
+    end
+
+    if self.is_dead then
+        Physics.update(self)
+        self.hat:update()
+
+        self.sprite = PLAYER_SPRITE_DEAD
+        self.time_before_showing_death_screen = Basic.tick_timer(self.time_before_showing_death_screen)
+        if self.time_before_showing_death_screen == 0.0 then
+            game.dialog_window.is_closed = false
+            game.state = GAME_STATE_PAUSED
+            self.x = PLAYER_SPAWNPOINT_X
+            self.y = PLAYER_SPAWNPOINT_Y
+            self.velocity.x = 0
+            self.velocity.y = 0
+        end
+
         return
     end
 
@@ -152,13 +156,7 @@ function player.update(self)
     for _, collision in ipairs(tiles_that_we_collide_with) do
         for _, bad_tile in pairs(data.bad_tile) do
             if collision.id == bad_tile then
-                self.is_dead = true
-                game.dialog_window.is_closed = false
-                game.status = false
-                self.x = PLAYER_START_X
-                self.y = PLAYER_START_Y
-                self.velocity.x = 0
-                self.velocity.y = 0
+                self:die()
                 return
             end
         end
@@ -176,59 +174,56 @@ function player.update(self)
         walking_right = walking_right or key(KEY_D)
         walking_left = walking_left or key(KEY_A)
         looking_down = looking_down or key(KEY_S)
-        looking_up = looking_upor or key(KEY_W)
+        looking_up = looking_up or key(KEY_W)
         jump_pressed = jump_pressed or keyp(KEY_W)
     end
     
     if jump_pressed then
-      self.jump_buffer_time = PLAYER_JUMP_BUFFER_TIME
+        self.jump_buffer_time = PLAYER_JUMP_BUFFER_TIME
     end
 
     if attack_pressed then
         self.attack_buffer_time = PLAYER_ATTACK_BUFFER_TIME
+
+        if not is_on_ground then
+            self.has_attacked_in_air = true
+        else
+            self.has_attacked_in_air = false
+        end
+
+        self.has_attacked_downward = false
+        self.has_attacked_upwards = false
+        if looking_down then
+            self.has_attacked_downward = true
+        elseif looking_up then
+            self.has_attacked_upwards = true
+        end
     end
 
     if self.attack_timer == 0 then
+        self.just_attacked = false
         self.attack_rects = {}
         if self.attack_buffer_time > 0.0 then
             self.sprite:reset()
             self.attack_timer = PLAYER_ATTACK_DURATION
             self.attack_buffer_time = 0.0
-            sfx(5, 'C-6', 10, 2)
+            Basic.play_sound(SOUNDS.PLAYER_ATTACK)
         end
-    elseif self.sprite.frame_index >= PLAYER_ATTACK_FRAME_WHEN_TO_APPLY_ATTACK then
-        -- Это сделано для испольнения Clean Code принципа (c)
-        -- Don't Repeat Yourself (DRY). Я, как хороший программист,
-        -- стремлюсь всегда следовать best practices и использовать
-        -- design patterns. Мой код проверяется на S.O.L.I.D, YAGNI,
-        -- G.R.A.S.P, и т.д. и т.п. Люблю TDD, DDD и OOP.
-        --
-        -- Опыт работы: нету, но стремлюсь улучшиться в этом аспекте
-        -- Пет проекты: я все пытался сделать, но потом сразу понимал,
-        --              насколько плоха architecture проекта, поэтому
-        --              я их начинал с нуля, используя более современные
-        --              best practices
-        --
-        -- Буду рад работать у вас 😻! -- kawaii-Год
+    end
+
+    if self.attack_timer > 0 and
+       table.contains(PLAYER_ATTACK_SPRITES, self.sprite) and
+       self.sprite:animation_ended()
+    then
         --
         -- side note:
         -- Точно ли атаки по диагонали - хорошая идея?
-        local diagonal_direction = 0
-        if walking_left then
-            diagonal_direction = 0 - 1
-        elseif walking_right then
-            -- Я хотел написать просто +1, но lua не смог откомпилировать, поэтому...
-            diagonal_direction = 0 + 1
-        end
-
         local attack_direction_x = 0
         local attack_direction_y = 0
         if looking_down then
             attack_direction_y = attack_direction_y + 1
-            attack_direction_x = attack_direction_x + diagonal_direction
         elseif looking_up then
             attack_direction_y = attack_direction_y - 1
-            attack_direction_x = attack_direction_x + diagonal_direction
         else
             if self.looking_left then
                 attack_direction_x = attack_direction_x - 1
@@ -273,11 +268,25 @@ function player.update(self)
                     ClickerMinigame.init(panda)
                     return
                 end
-                panda:harm(PLAYER_DAMAGE)
-                panda:get_hit(attack_direction_x, attack_direction_y)
+                panda:take_damage(attack_direction_x, attack_direction_y)
             end
             self.attack_timer = 0
         end
+
+        if not self.just_attacked then
+            self.just_attacked = true
+            if self.has_attacked_downward then
+                self.attack_effect = ChildBody:new(self, 8 * attack_direction_x, 8 * attack_direction_y, PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_DOWNWARD)
+            elseif self.has_attacked_upwards then
+                self.attack_effect = ChildBody:new(self, 0, -16, PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_UPWARD)
+            else
+                local flip = (attack_direction_x < 0) and 1 or 0
+                self.attack_effect = ChildBody:new(self, 8 * attack_direction_x, -8 + 8 * attack_direction_y, PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_HORIZONTAL, flip)
+            end
+            self.attack_effect_time = PLAYER_ATTACK_EFFECT_DURATION
+        end
+
+        game.camera:shake(PLAYER_ATTACK_SHAKE_MAGNITUDE, PLAYER_ATTACK_SHAKE_DURATION)
     end
 
     if not moving_right and not moving_left then
@@ -319,7 +328,6 @@ function player.update(self)
         if is_on_ground and self.velocity.y <= 0 then
             self.velocity.y = PLAYER_JUMP_STRENGTH
             has_jumped = true
-            self.time_before_we_can_stick_to_wall = PLAYER_DELAY_AFTER_JUMP_BEFORE_STICKING_TO_WALL
         elseif hugging_left_wall and not is_on_ground then
             self.velocity.y = PLAYER_WALL_JUMP_VERTICAL_STRENGTH
             self.velocity.x = PLAYER_WALL_JUMP_HORIZONTAL_STRENGTH
@@ -336,13 +344,12 @@ function player.update(self)
     end
     if jump_pressed and self.coyote_time > 0.0 and self.velocity.y <= 0.0 then
         self.velocity.y = PLAYER_JUMP_STRENGTH
-        self.time_before_we_can_stick_to_wall = PLAYER_DELAY_AFTER_JUMP_BEFORE_STICKING_TO_WALL
         has_jumped = true
     end
     if has_jumped then
         self.coyote_time = 0.0
         self.jump_buffer_time = 0.0
-        sfx(4, 'A#4', -1, 0, 3, 2)
+        Basic.play_sound(SOUNDS.PLAYER_JUMP)
     end
 
     if is_on_ground and not self.was_on_ground_last_frame then
@@ -354,7 +361,7 @@ function player.update(self)
     end
     self.was_on_ground_last_frame = is_on_ground
 
-    local can_stick_to_wall = self.time_before_we_can_stick_to_wall == 0.0
+    local can_stick_to_wall = self.velocity.y <= 0
     local sliding_on_wall = false
     if not is_on_ground and can_stick_to_wall then
         if hugging_left_wall and self.velocity.x < 0 or
@@ -364,18 +371,18 @@ function player.update(self)
         end
     end
     if self.was_sliding_on_wall_last_frame and not sliding_on_wall then
-        sfx(-1, -1, -1, 1)
+        Basic.play_sound(SOUNDS.MUTE_CHANNEL_ONE)
     elseif not self.was_sliding_on_wall_last_frame and sliding_on_wall then
+        Basic.play_sound(SOUNDS.PLAYER_SLIDE)
         sfx(8, 'D-1', -1, 1)
     end
     self.was_sliding_on_wall_last_frame = sliding_on_wall
 
 
-    EPSILON = 4.0
-    if math.abs(self.velocity.x) < EPSILON then
+    if math.abs(self.velocity.x) < PLAYER_MIN_HORIZONTAL_VELOCITY then
         self.velocity.x = 0
     end
-    if math.abs(self.velocity.y) < EPSILON then
+    if math.abs(self.velocity.y) < PLAYER_MIN_VERTICAL_VELOCITY then
         self.velocity.y = 0
     end
 
@@ -402,6 +409,10 @@ function player.update(self)
     end
 
     -- Анимациями занимаются здесь 🏭
+    -- Заметка для меня из будущего:
+    -- Здесь может быть баг с тем, что спрайты глобальные. Так было
+    -- в пандах, у которых был один общий спрайт на всех, поэтому пришлось
+    -- копировать.
     if has_jumped then
         if has_walljumped then
             -- Наверное в будущем здесь вообще будут кастомные эффекты. Пока
@@ -424,7 +435,15 @@ function player.update(self)
     end
 
     if self.attack_timer > 0 then
-        self.sprite = PLAYER_SPRITE_ATTACK
+        if self.has_attacked_downward then
+            self.sprite = PLAYER_SPRITE_ATTACK_AIR_DOWNWARD
+        elseif self.has_attacked_upwards then
+            self.sprite = PLAYER_SPRITE_ATTACK_UPWARDS
+        elseif self.has_attacked_in_air then
+            self.sprite = PLAYER_SPRITE_ATTACK_AIR_FORWARD
+        else
+            self.sprite = PLAYER_SPRITE_ATTACK
+        end
     elseif sliding_on_wall then
         self.sprite = PLAYER_SPRITE_SLIDE
     elseif self.velocity.y < 0 and not is_on_ground then
@@ -445,12 +464,12 @@ function player.update(self)
 
     -- У игрока есть много вещей, зависящих от времени (таймеров).
     -- Они обновляются тут, в самом конце.
-    self.time_before_we_can_stick_to_wall = tick_timer(self.time_before_we_can_stick_to_wall)
-    self.jump_buffer_time = tick_timer(self.jump_buffer_time)
-    self.coyote_time = tick_timer(self.coyote_time)
-    self.remove_horizontal_speed_limit_time = tick_timer(self.remove_horizontal_speed_limit_time)
-    self.attack_timer = tick_timer(self.attack_timer)
-    self.attack_buffer_time = tick_timer(self.attack_buffer_time)
+    self.jump_buffer_time = Basic.tick_timer(self.jump_buffer_time)
+    self.coyote_time = Basic.tick_timer(self.coyote_time)
+    self.remove_horizontal_speed_limit_time = Basic.tick_timer(self.remove_horizontal_speed_limit_time)
+    self.attack_timer = Basic.tick_timer(self.attack_timer)
+    self.attack_buffer_time = Basic.tick_timer(self.attack_buffer_time)
+    self.attack_effect_time = Basic.tick_timer(self.attack_effect_time)
     if self.velocity.x ~= 0 then
         self.time_we_have_been_running = self.time_we_have_been_running + Time.dt()
     else
@@ -458,8 +477,8 @@ function player.update(self)
     end
 end
 
-function player.draw(self)
-    if self.IS_0xDEADBEAF then
+function Player:draw()
+    if self.hide then
         return
     end
 
@@ -468,7 +487,7 @@ function player.draw(self)
 
     local flip = self.looking_left and 1 or 0
 
-    local tx, ty = game.camera_window:transform_coordinates(self.x, self.y)
+    local tx, ty = game.camera:transform_coordinates(self.x, self.y)
     ty = ty - 8 * (self.sprite:current_animation().height - 1)
 
     for _, attack_rect in ipairs(self.attack_rects) do
@@ -481,7 +500,17 @@ function player.draw(self)
     self.sprite:draw(tx, ty, flip)
     self.sprite:next_frame()
 
+    if self.attack_effect_time > 0 then
+        self.attack_effect:draw()
+    end
+
+    if self.is_dead then
+        self.hat:draw()
+    end
+
     --for _, attack_rect in ipairs(self.attack_rects) do
     --    attack_rect:draw()
     --end
 end
+
+Player.__index = Player

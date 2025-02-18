@@ -2,20 +2,23 @@
 DialogWindow = {}
 
 function DialogWindow:new(x, y, text)
-    local obj = {
+    local object = {
         x = x,
         y = y,
         text = text,
-        is_closed = false,
+        is_closed = true,
     }
     
-    setmetatable(obj,self)  -- чистая магия!
-    return obj
+    setmetatable(object, self)
+    return object
 end
 
 
 function DialogWindow:update()
     -- здесь будет анимация
+    if self.is_closed then
+        return
+    end
 
     self:close()
 end
@@ -24,7 +27,6 @@ end
 function DialogWindow:draw()
     -- a здесь вылетит птичка
 
-    --trace('im closed')
     if self.is_closed then
         return
     end
@@ -37,14 +39,13 @@ function DialogWindow:draw()
     
     if not (TriggerTiles.__is_active__ == nil) and TriggerTiles.__is_active__.status and TriggerTiles.__is_active__.type == 'MONOLOGUE' then
         -- Нужен рефакторинг🙄
-        trace('reading dialog of trigger-'..tostring(TriggerTiles.__is_active__.trigger))
+        -- СДЕЛАНО!! 😄👍
         DialogWindow:draw_monologue(TriggerTiles.__is_active__.trigger)
 
         self.is_closed = false
     end
 
     if not (TriggerTiles.__is_active__ == nil) and TriggerTiles.__is_active__.status and TriggerTiles.__is_active__.type == 'BIKE' then
-        --trace('wrrrrrrrrrrrrrrrr')
         DialogWindow:draw_bikelogue(TriggerTiles.__is_active__.trigger)
 
         self.is_closed = false
@@ -52,7 +53,7 @@ function DialogWindow:draw()
 
     -- когда-нибудь пофиксим🙏
     if self.tugologue then
-        self:draw_tugologue()
+        self:draw_tugologue(self.trigger)
         self.is_closed = false
     end
 end 
@@ -85,7 +86,7 @@ function DialogWindow:draw_dialog()
 end
 
 function DialogWindow:draw_dialog_death()
-    self.text = russian_to_translit('\n\n\n\n\n\n  ДЛЯ ВОЗРОЖДЕНИЯ НАЖМИТЕ\n   НА ОДНУ ЛЮБУЮ КНОПКУ')
+    self.text = localize(TEXT.PRESS_ANY_BUTTON_TO_RESPAWN)
     self.x = 0
     self.y = 0
     rect(self.x,self.y,SCREEN_WIDTH,SCREEN_HEIGHT,0)
@@ -93,13 +94,11 @@ function DialogWindow:draw_dialog_death()
 end 
 
 function DialogWindow:draw_monologue(trigger)
-    --trace('hellp')
     self.text = russian_to_translit(trigger.dialog_text)
     self.x = trigger.x + trigger.dialog_offset.x
     self.y = trigger.y + trigger.dialog_offset.y
     rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0)
     self:draw_dialog()
-    --trace(self.text)
 end
 
 function DialogWindow:draw_bikelogue(trigger)
@@ -140,9 +139,8 @@ function DialogWindow:close()
         self.is_closed = true
         self.text = ""
         self:draw_dialog()
-        game.status = true
-        game.player.is_dead = false
-        game.dialog_window = DialogWindow:new(0,0, '')
+        game.restart()
+        game.state = GAME_STATE_GAMEPLAY
     end
 end
 

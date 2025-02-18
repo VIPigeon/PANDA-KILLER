@@ -3,11 +3,10 @@
 Прямоугольник -- основной примитив физики. Если мы хотим проверить какую-то
 коллизию, то нам понадобится прямоугольник 🔲.
 
-На умном языке, это axis aligned bounding box:
+На умном языке, это axis aligned bounding box (AABB):
 https://gdbooks.gitbooks.io/3dcollisions/content/Chapter1/aabb.html
 
 --]]
-
 
 Rect = {}
 
@@ -54,48 +53,48 @@ function Rect:move(dx, dy)
     self.y = self.y + dy
 end
 
-function Rect:moveLeftTo(x)
+function Rect:move_left_to(x)
     self.x = x
 end
 
-function Rect:moveRightTo(x)
+function Rect:move_right_to(x)
     self.x = x - self.w
 end
 
-function Rect:moveUpTo(y)
+function Rect:move_up_to(y)
     self.y = y
 end
 
-function Rect:moveDownTo(y)
+function Rect:move_down_to(y)
     self.y = y - self.h
 end
 
-function Rect:moveCenterTo(x, y)
+function Rect:move_center_to(x, y)
     self.x = x - self.w / 2
     self.y = y - self.h / 2
 end
 
-function Rect:isObjectRight(object, objectWidth)
-    return self:right() < object.x + objectWidth
+function Rect:is_object_right(object, object_width)
+    return self:right() < object.x + object_width
 end
 
-function Rect:isObjectLeft(object)
+function Rect:is_object_left(object)
     return self.x > object.x
 end
 
-function Rect:isObjectAbove(object)
+function Rect:is_object_above(object)
     return self.y > object.y
 end
 
-function Rect:isObjectBelow(object, objectHeight)
-    return self:bottom() < object.y + objectHeight
+function Rect:is_object_below(object, object_height)
+    return self:bottom() < object.y + object_height
 end
 
-function Rect:isObjectInside(object, objectWidth, objectHeight)
-    return not self:isObjectAbove(object) and
-           not self:isObjectBelow(object, objectHeight) and
-           not self:isObjectLeft(object) and
-           not self:isObjectRight(object, objectWidth)
+function Rect:is_object_inside(object, object_width, object_height)
+    return not self:is_object_above(object) and
+           not self:is_object_below(object, object_height) and
+           not self:is_object_left(object) and
+           not self:is_object_right(object, object_width)
 end
 
 --[[
@@ -109,8 +108,8 @@ end
 function Rect:combine(other)
     local x1 = math.min(self.x, other.x)
     local y1 = math.min(self.y, other.y)
-    local x2 = math.max(self.x + self.w, other.x + other.w)
-    local y2 = math.max(self.y + self.h, other.y + other.h)
+    local x2 = math.max(self:right(), other:right())
+    local y2 = math.max(self:bottom(), other:bottom())
     return {
         x = x1,
         y = y1,
@@ -121,7 +120,7 @@ end
 
 function Rect:draw(color)
     color = color or 1
-    local x, y = game.camera_window:transform_coordinates(self.x, self.y)
+    local x, y = game.camera:transform_coordinates(self.x, self.y)
     rect(x, y, self.w, self.h, color)
 end
 

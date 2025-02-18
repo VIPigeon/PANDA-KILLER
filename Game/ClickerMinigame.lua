@@ -45,9 +45,12 @@ function ClickerMinigame:init(panda)
 
     game.status = false
     -- я сделаю обёртку триггером, чтобы работало медленнее. Не люблю, когда больше 60 fps.
+    game.state = GAME_STATE_RIDING_BIKE
     trigger = {panda= panda, text_progress= ClickerMinigame:update_progress_for_visual()}
-    trace(trigger)
-    DialogWindow:draw_tugologue(trigger)
+    local __dx_dw = DialogWindow:new(0, 0, 'hi')
+    __dx_dw.is_closed = false
+    __dx_dw:draw_tugologue(trigger)
+    table.insert(game.CRUTCH_dialog_window, __dx_dw)
 
     ClickerMinigame:reset_local_var()
 
@@ -81,8 +84,6 @@ function ClickerMinigame:update()
         -- Обновление прогресса - спасибо, я бы не понял сам
         progress = progress + (current_player_force - current_panda_force) * Time.dt()
         trace(progress)
-        trace(current_player_force)
-        trace(current_panda_force)
 
         -- Ограничение прогресса - прямо best practices массонов.
         if progress <= MIN_PROGRESS then
@@ -122,8 +123,10 @@ function ClickerMinigame:draw()
     -- Поэтому я бы не сказал, что всегда better to rewrite код с full confidence.
 
     -- тут стоит подумать, может стоит символично оставить только одну панду
-    Pandas.draw()
-    player:draw()
+    for _, panda in ipairs(game.pandas) do
+        panda:draw()
+    end
+    game.player:draw()
 
 
 
