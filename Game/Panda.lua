@@ -64,6 +64,7 @@ function Panda:new(x, y, can_tug)
         stun_time_left = 0.0,
         basic_attack_time_left = 0.0,
 
+        -- Хотите ли вы потягаться с такой пандой?🙄 Ответ был дан выше
         kantugging_friend_panda = CANTUG,
     }
     object.sprite = object.sprites.rest
