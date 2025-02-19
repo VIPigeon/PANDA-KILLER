@@ -46,6 +46,11 @@ function Sprite:current_frame()
     return self:current_animation().frames[self.frame_index]
 end
 
+function Sprite:is_at_last_frame()
+    return self.animation_index == #self.animation_sequence and
+           self.frame_index == #self:current_animation().frames
+end
+
 function Sprite:animation_ended()
     return self.animation_index == #self.animation_sequence and
            self.frame_index == #self:current_animation().frames and

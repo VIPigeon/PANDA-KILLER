@@ -250,15 +250,26 @@ PANDA_VIEW_CONE_HEIGHT = 32
 PANDA_PATROL_SPEED = 8
 PANDA_PATROL_PIXELS_UNTIL_STOP = 6
 
-PANDA_X_DISTANCE_TO_PLAYER_UNTIL_ATTACK = 16
-PANDA_Y_DISTANCE_TO_PLAYER_UNTIL_ATTACK = 16
+PANDA_X_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK = 10
+PANDA_Y_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK = 10
+PANDA_BASIC_ATTACK_DURATION = 0.3
+PANDA_X_DISTANCE_TO_PLAYER_UNTIL_DASH = 16
+PANDA_Y_DISTANCE_TO_PLAYER_UNTIL_DASH = 24
 PANDA_CHASE_JUMP_STRENGTH = 80
 PANDA_CHASE_PIXELS_UNTIL_JUMP = 16
 PANDA_CHASE_SPEED = 2.5 * PANDA_PATROL_SPEED
+-- Это отсчет до того как панда сможет атаковать после
+-- того как начала гнаться за игроком.
+PANDA_CHASE_DUMBNESS_TIME_AFTER_STARTING_CHASE = 0.3
 
+PANDA_BASIC_ATTACK_EFFECT_DURATION = PLAYER_ATTACK_EFFECT_DURATION
+PANDA_SPRITE_BASIC_ATTACK_PARTICLE_EFFECT_HORIZONTAL = PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_HORIZONTAL
+
+-- Время, после которого панда устанет гоняться за игроком.
+-- Это при условии, что она игрока не видит.
 PANDA_CHASE_DURATION = 4.0
-PANDA_ATTACK_CHARGE_DURATION = 0.8  -- 1.5
-PANDA_POUNCE_DURATION = 0.5  -- 1.0
+PANDA_DASH_CHARGE_DURATION = 0.8  -- 1.5
+PANDA_DASH_DURATION = 0.5  -- 1.0
 
 PANDA_SPRITES = {
     walk  = Animation:new({256, 257}, 30):to_sprite(),
@@ -267,8 +278,12 @@ PANDA_SPRITES = {
         Animation:new({276}, 8),
         Animation:new({277-16}, 8):with_size(2, 2)
     }),
-    charging_attack = Animation:new({282}, 1):to_sprite(),
-    pounce = Animation:new({263}, 1):to_sprite(),
+    charging_basic_attack = Sprite:new_complex({
+        Animation:new({282}, 30),
+        Animation:new({267, 268, 269, 270}, 10):with_size(1, 2):at_end_goto_last_frame()
+    }),
+    charging_dash = Animation:new({258}, 1):to_sprite(),
+    dash = Animation:new({263}, 1):to_sprite(),
 }
 
 --[[
@@ -315,8 +330,10 @@ SOUNDS = {
     PLAYER_SLIDE = {id = 8, note = 'D-1', channel = 1},
     PLAYER_DEAD = {id = 5, note = 'C-5', duration = 30, channel = 2},
 
-    PANDA_ATTACK_CHARGE = {id = 11, note = 'G-3', duration = 20, channel = 2},
-    PANDA_POUNCE = {id = 11, note = 'C-5', duration = 20, channel = 2},
+    PANDA_DASH_CHARGE = {id = 11, note = 'G-3', duration = 20, channel = 2},
+    PANDA_DASH = {id = 11, note = 'C-5', duration = 20, channel = 2},
+    PANDA_BASIC_ATTACK_CHARGE = {id = 11, note = 'G-4', duration = 20, channel = 2},
+    PANDA_BASIC_ATTACK = {id = 11, note = 'C-4', duration = 20, channel = 2},
     PANDA_JUMP = {id = 4, note = 'A#5'},
     PANDA_HIT = {id = 11, note = 'G-5', duration = 20, channel = 2},
     PANDA_DEAD = {id = 11, note = 'G-6', duration = 60, channel = 2},

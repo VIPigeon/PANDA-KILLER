@@ -14,13 +14,15 @@ Panda = {}
 local PANDA_STATE = {
     patrol = 1,
     chase = 2,
-    charging_attack = 3,
-    pounce = 4,
-    staggered = 5,
-    stunned = 6,
+    charging_dash = 3,
+    charging_basic_attack = 4,
+    doing_basic_attack = 5,
+    dashing = 6,
+    staggered = 7,
+    stunned = 8,
 }
 
-local PANDA_STATE_COLORS = {2, 3, 4, 5, 7, 6}
+local PANDA_STATE_COLORS = {2, 3, 4, 5, 7, 6, 8, 9}
 
 function Panda:new(x, y, can_tug)
     CANTUG = can_tug or false
@@ -41,19 +43,26 @@ function Panda:new(x, y, can_tug)
             rest = PANDA_SPRITES.rest:copy(),
             patrol = PANDA_SPRITES.walk:copy(),
             chase = PANDA_SPRITES.chase:copy(),
-            charging_attack = PANDA_SPRITES.charging_attack:copy(),
-            pounce = PANDA_SPRITES.pounce:copy(),
+            charging_dash = PANDA_SPRITES.charging_dash:copy(),
+            charging_basic_attack = PANDA_SPRITES.charging_basic_attack:copy(),
+            dash = PANDA_SPRITES.dash:copy(),
         },
         look_direction = math.coin_flip() and 1 or -1,
+
+        attack_effect = nil,       -- Мне не нравятся, что в панде плодятся такие поля
+        attack_effect_time = 0.0,  -- и такие...
 
         time_of_most_recent_hit = 0.0,
         count_of_recent_hits = 0.0,
 
-        time_since_pounce = 0.0,
+        time_we_have_been_chasing = 0.0,
+        time_since_dashing = 0.0,
+
         chase_time_left = 0.0,
         patrol_rest_time = 0.0,
         stagger_time_left = 0.0,
         stun_time_left = 0.0,
+        basic_attack_time_left = 0.0,
 
         kantugging_friend_panda = CANTUG,
     }
@@ -248,14 +257,37 @@ function Panda:update()
             self.chase_time_left = PANDA_CHASE_DURATION
         end
 
-        -- Bullshit
+        local chased_the_player_enough = self.time_we_have_been_chasing > PANDA_CHASE_DUMBNESS_TIME_AFTER_STARTING_CHASE
         local x_distance_to_player = math.abs(player.x - self.x)
+        local y_distance_to_player = math.abs(player.y - self.y)
+
         self.look_direction = math.sign(player.x - self.x)
-        if x_distance_to_player <= PANDA_X_DISTANCE_TO_PLAYER_UNTIL_ATTACK then
-            Basic.play_sound(SOUNDS.PANDA_ATTACK_CHARGE)
-            self.state = PANDA_STATE.charging_attack
-            self.charging_attack_time_left = PANDA_ATTACK_CHARGE_DURATION
+
+        if chased_the_player_enough and
+           x_distance_to_player <= PANDA_X_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK and
+           y_distance_to_player <= PANDA_Y_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK
+        then
+
+            Basic.play_sound(SOUNDS.PANDA_BASIC_ATTACK_CHARGE)
+            self.state = PANDA_STATE.charging_basic_attack
+
+        elseif chased_the_player_enough and 
+               is_on_ground and
+               x_distance_to_player <= PANDA_X_DISTANCE_TO_PLAYER_UNTIL_DASH
+        then
+
+            if y_distance_to_player <= PANDA_Y_DISTANCE_TO_PLAYER_UNTIL_DASH then
+                Basic.play_sound(SOUNDS.PANDA_DASH_CHARGE)
+                self.state = PANDA_STATE.charging_dash
+                self.charging_dash_time_left = PANDA_DASH_CHARGE_DURATION
+            else
+                -- Мы слишком низко, попробуем к игроку прыгнуть
+                Basic.play_sound(SOUNDS.PANDA_JUMP)
+                self.velocity.y = PANDA_CHASE_JUMP_STRENGTH
+            end
+
         else
+
             local x_in_the_near_future = self.x + self.look_direction * PANDA_CHASE_PIXELS_UNTIL_JUMP
             local x_direction_to_player = math.sign(game.player.x - self.x)
 
@@ -267,6 +299,7 @@ function Panda:update()
                 self.velocity.y = PANDA_CHASE_JUMP_STRENGTH
             end
             self.velocity.x = PANDA_CHASE_SPEED * x_direction_to_player
+
         end
 
         self.chase_time_left = Basic.tick_timer(self.chase_time_left)
@@ -275,28 +308,59 @@ function Panda:update()
             self.patrol_rest_time = PANDA_REST_TIME_BEFORE_DIRECTION_CHANGE()
         end
 
-    elseif self.state == PANDA_STATE.charging_attack then
+    elseif self.state == PANDA_STATE.charging_dash then
 
-        self.charging_attack_time_left = Basic.tick_timer(self.charging_attack_time_left)
-        if self.charging_attack_time_left == 0.0 then
-            Basic.play_sound(SOUNDS.PANDA_POUNCE)
-            self.state = PANDA_STATE.pounce
-            self.time_since_pounce = 0.0
+        self.charging_dash_time_left = Basic.tick_timer(self.charging_dash_time_left)
+        if self.charging_dash_time_left == 0.0 then
+            Basic.play_sound(SOUNDS.PANDA_DASH)
+            self.state = PANDA_STATE.dashing
+            self.time_since_dashing = 0.0
 
             local y_distance_to_player = math.abs(player.y - self.y)
-            if y_distance_to_player <= PANDA_Y_DISTANCE_TO_PLAYER_UNTIL_ATTACK then
-                -- Тут прикольно было бы сделать математику чтобы панда расчитывала
-                -- угол прыжка в зависимости от того, где находится игрок, но это
-                -- если ГД захочет.
-                self.velocity.x = 100 * math.sign(player.x - self.x)
-                self.velocity.y = 60 * -1 * math.sign(player.y - self.y)
-            elseif is_on_ground and player.y < self.y then
-                Basic.play_sound(SOUNDS.PANDA_JUMP)
-                self.velocity.y = PANDA_CHASE_JUMP_STRENGTH
+            self.velocity.x = 100 * math.sign(player.x - self.x)
+        end
+
+    elseif self.state == PANDA_STATE.charging_basic_attack then
+
+        self.look_direction = player.x < self.x and -1 or 1
+
+        if self.sprite:is_at_last_frame() then
+            if self.basic_attack_time_left == 0.0 then
+                local our_rect = Hitbox.rect_of(self)
+                local player_rect = Hitbox.rect_of(player)
+                local attack_rect = Rect:new(
+                    our_rect:center_x() + 8 * self.look_direction,
+                    our_rect:center_y(),
+                    8 + 2 * self.look_direction,
+                    8
+                )
+                if Physics.check_collision_rect_rect(our_rect, player_rect) then
+                    player:die(self.look_direction, 0)
+                elseif Physics.check_collision_rect_rect(attack_rect, player_rect) then
+                    player:die(self.look_direction, 0)
+                end
+
+                Basic.play_sound(SOUNDS.PANDA_BASIC_ATTACK)
+
+                local flip = (self.look_direction < 0) and 1 or 0
+                self.attack_effect = ChildBody:new(
+                    self,
+                    8 * (self.look_direction - flip),
+                    -8 * (self.sprite:current_animation().height - 1),
+                    PANDA_SPRITE_BASIC_ATTACK_PARTICLE_EFFECT_HORIZONTAL,
+                    flip
+                )
+                self.attack_effect_time = PANDA_BASIC_ATTACK_EFFECT_DURATION
+                self.basic_attack_time_left = PANDA_BASIC_ATTACK_DURATION
+            else
+                self.basic_attack_time_left = Basic.tick_timer(self.basic_attack_time_left)
+                if self.basic_attack_time_left == 0.0 then
+                    self.state = PANDA_STATE.chase
+                end
             end
         end
 
-    elseif self.state == PANDA_STATE.pounce then
+    elseif self.state == PANDA_STATE.dashing then
 
         local our_rect = Hitbox.rect_of(self)
         local player_rect = Hitbox.rect_of(game.player)
@@ -305,9 +369,9 @@ function Panda:update()
             game.player:die(self.velocity.x, self.velocity.y)
         end
 
-        self.time_since_pounce = self.time_since_pounce + Time.dt()
+        self.time_since_dashing = self.time_since_dashing + Time.dt()
 
-        if is_on_ground and self.time_since_pounce > PANDA_POUNCE_DURATION then
+        if is_on_ground and self.time_since_dashing > PANDA_DASH_DURATION then
             self.state = PANDA_STATE.chase
         end
         self.chase_time_left = Basic.tick_timer(self.chase_time_left)
@@ -354,12 +418,14 @@ function Panda:update()
         else
             self.sprite = self.sprites.patrol
         end
+    elseif self.state == PANDA_STATE.charging_basic_attack then
+        self.sprite = self.sprites.charging_basic_attack
     elseif self.state == PANDA_STATE.chase then
         self.sprite = self.sprites.chase
-    elseif self.state == PANDA_STATE.charging_attack then
-        self.sprite = self.sprites.charging_attack
-    elseif self.state == PANDA_STATE.pounce then
-        self.sprite = self.sprites.pounce
+    elseif self.state == PANDA_STATE.charging_dash then
+        self.sprite = self.sprites.charging_dash
+    elseif self.state == PANDA_STATE.dashing then
+        self.sprite = self.sprites.dash
     end
 
     if previous_sprite ~= self.sprite then
@@ -368,6 +434,13 @@ function Panda:update()
     self.sprite:next_frame()
 
     ::hitlocked::
+
+    self.attack_effect_time = Basic.tick_timer(self.attack_effect_time)
+    if self.state == PANDA_STATE.chase then
+        self.time_we_have_been_chasing = self.time_we_have_been_chasing + Time.dt()
+    else
+        self.time_we_have_been_chasing = 0.0
+    end
 end
 
 function Panda:draw()
@@ -377,11 +450,15 @@ function Panda:draw()
 
     rect(tx, ty - 6, 4, 4, PANDA_STATE_COLORS[self.state])
 
+    if self.attack_effect_time > 0.0 then
+        self.attack_effect:draw()
+    end
+
     -- Ну тип ладно. Вообще довольно дурацкий костыль, не знаю как это лучше сделать.
     -- Это для правильного позиционирования спрайтов, у которых несколько анимаций
     -- с разными размерами.
     tx = tx - 4 * (self.sprite:current_animation().width - 1)
-    ty = ty - 8 * (self.sprite:current_animation().width - 1)
+    ty = ty - 8 * (self.sprite:current_animation().height - 1)
     self.sprite:draw(tx, ty, flip)
 end
 
