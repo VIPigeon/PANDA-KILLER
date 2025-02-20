@@ -25,7 +25,7 @@
 
 Player = {}
 
-function Player:new(x, y)
+function Player:new()
     local object = {
         x = PLAYER_SPAWNPOINT_X,
         y = PLAYER_SPAWNPOINT_Y,
@@ -244,11 +244,11 @@ function Player:update()
         -- Выделение памяти 🤮
         self.attack_rects = {attack_rect, player_rect}
 
-        hit_pandas = {}
+        local hit_pandas = {}
         for _, panda in ipairs(game.pandas) do
             local panda_rect = Hitbox.rect_of(panda)
-            for _, attack_rect in ipairs(self.attack_rects) do
-                if Physics.check_collision_rect_rect(attack_rect, panda_rect) then
+            for _, rect in ipairs(self.attack_rects) do
+                if Physics.check_collision_rect_rect(rect, panda_rect) then
                     table.insert(hit_pandas, panda)
                     break
                 end
@@ -275,9 +275,9 @@ function Player:update()
 
         if not self.just_attacked then
             self.just_attacked = true
-            if self.has_attacked_downward then
+            if attack_direction_y > 0 then
                 self.attack_effect = ChildBody:new(self, 8 * attack_direction_x, 8 * attack_direction_y, PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_DOWNWARD)
-            elseif self.has_attacked_upwards then
+            elseif attack_direction_y < 0 then
                 self.attack_effect = ChildBody:new(self, 0, -16, PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_UPWARD)
             else
                 local flip = (attack_direction_x < 0) and 1 or 0
@@ -375,7 +375,6 @@ function Player:update()
         Basic.play_sound(SOUNDS.MUTE_CHANNEL_ONE)
     elseif not self.was_sliding_on_wall_last_frame and sliding_on_wall then
         Basic.play_sound(SOUNDS.PLAYER_SLIDE)
-        sfx(8, 'D-1', -1, 1)
     end
     self.was_sliding_on_wall_last_frame = sliding_on_wall
 
@@ -477,9 +476,6 @@ function Player:draw()
     if self.hide then
         return
     end
-
-    local colorkey = 0
-    local scale = 1
 
     local flip = self.looking_left and 1 or 0
 

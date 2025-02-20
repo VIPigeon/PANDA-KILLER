@@ -21,7 +21,7 @@ function game.init()
 end
 
 function game.restart()
-    game.player = Player:new(PLAYER_SPAWNPOINT_X, PLAYER_SPAWNPOINT_Y)
+    game.player = Player:new()
 
     game.pandas = {
         Panda:new(60, 95, false),
