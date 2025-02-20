@@ -156,9 +156,9 @@ PLAYER_STATE_ATTACKING = 1
 -- Сколько по времени занимает одна атака.
 -- Это никак не зависит от анимации атаки,
 -- она просто зависнет на последнем кадре.
-PLAYER_ATTACK_DURATION = 0.15                   -- секунды
+PLAYER_ATTACK_DURATION = 0.2                   -- секунды
 PLAYER_ATTACK_BUFFER_TIME = 0.1                -- секунды
-PLAYER_ATTACK_EFFECT_DURATION = 0.15
+PLAYER_ATTACK_EFFECT_DURATION = 0.2
 
 PLAYER_ATTACK_SHAKE_MAGNITUDE = 0.5
 PLAYER_ATTACK_SHAKE_DURATION = 0.05
@@ -202,7 +202,7 @@ PLAYER_ATTACK_SPRITES = {
 PLAYER_SPRITE_JUMP_PARTICLE_EFFECT = Animation:new({496, 498, 500, 502}, 6):with_size(2, 1):at_end_goto_last_frame():to_sprite()
 PLAYER_SPRITE_LAND_PARTICLE_EFFECT = Animation:new({500, 502}, 8):with_size(2, 1):at_end_goto_last_frame():to_sprite()
 PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_HORIZONTAL = Animation:new({488}, 18):with_size(2, 2):at_end_goto_last_frame():to_sprite();
-PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_DOWNWARD = Animation:new({444}, 18):with_size(2, 1):at_end_goto_last_frame():to_sprite();
+PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_DOWNWARD = Animation:new({444}, 18):with_size(2, 2):at_end_goto_last_frame():to_sprite();
 PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_UPWARD = Animation:new({176}, 18):with_size(2, 2):at_end_goto_last_frame():to_sprite();
 
 HAT_SPRITE = Sprite:new({478})
