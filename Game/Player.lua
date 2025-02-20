@@ -40,7 +40,7 @@ function Player:new(x, y)
             min_horizontal_velocity = PLAYER_MIN_HORIZONTAL_VELOCITY,
         },
 
-        sprite = PLAYER_SPRITE_IDLE,
+        animation_controller = AnimationController:new(PLAYER_SPRITES.idle),
 
         -- Когда игрок умирает, у него слетает шляпа
         hat = nil,
@@ -105,7 +105,7 @@ function Player:update()
         Physics.update(self)
         self.hat:update()
 
-        self.sprite = PLAYER_SPRITE_DEAD
+        self.animation_controller:set_sprite(PLAYER_SPRITES.dead)
         self.time_before_showing_death_screen = Basic.tick_timer(self.time_before_showing_death_screen)
         if self.time_before_showing_death_screen == 0.0 then
             game.dialog_window.is_closed = false
@@ -210,7 +210,7 @@ function Player:update()
             self.attack_buffer_time = PLAYER_ATTACK_BUFFER_TIME
         end
         if self.attack_cooldown == 0 and self.attack_buffer_time > 0 then
-            self.sprite:reset()
+            self.animation_controller:reset_animation()
             self.attack_timer = PLAYER_ATTACK_DURATION
             self.attack_buffer_time = 0.0
             Basic.play_sound(SOUNDS.PLAYER_ATTACK)
@@ -218,8 +218,8 @@ function Player:update()
     end
 
     if self.attack_timer > 0 and
-           table.contains(PLAYER_ATTACK_SPRITES, self.sprite) and
-           self.sprite:animation_ended()
+           table.contains(PLAYER_ATTACK_SPRITES, self.animation_controller.sprite) and
+           self.animation_controller:animation_ended()
     then
         local attack_direction_x = 0
         local attack_direction_y = 0
@@ -428,37 +428,31 @@ function Player:update()
         end
     end
 
-    local previous_sprite = self.sprite
-
-    if self.sprite == PLAYER_SPRITE_ATTACK and not self.sprite:animation_ended() then
+    if self.animation_controller.sprite == PLAYER_SPRITE_ATTACK and not self.animation_controller:animation_ended() then
         -- goto использован 😎
         goto no_sprite_change
     end
 
     if self.attack_timer > 0 then
         if self.has_attacked_downward then
-            self.sprite = PLAYER_SPRITE_ATTACK_AIR_DOWNWARD
+            self.animation_controller:set_sprite(PLAYER_SPRITES.attack_air_downward)
         elseif self.has_attacked_upwards then
-            self.sprite = PLAYER_SPRITE_ATTACK_UPWARDS
+            self.animation_controller:set_sprite(PLAYER_SPRITES.attack_upwards)
         elseif self.has_attacked_in_air then
-            self.sprite = PLAYER_SPRITE_ATTACK_AIR_FORWARD
+            self.animation_controller:set_sprite(PLAYER_SPRITES.attack_air_forward)
         else
-            self.sprite = PLAYER_SPRITE_ATTACK
+            self.animation_controller:set_sprite(PLAYER_SPRITES.attack)
         end
     elseif sliding_on_wall then
-        self.sprite = PLAYER_SPRITE_SLIDE
+        self.animation_controller:set_sprite(PLAYER_SPRITES.slide)
     elseif self.velocity.y < 0 and not is_on_ground then
-        self.sprite = PLAYER_SPRITE_FALLING
+        self.animation_controller:set_sprite(PLAYER_SPRITES.falling)
     elseif self.velocity.y ~= 0 or not is_on_ground then
-        self.sprite = PLAYER_SPRITE_JUMP
+        self.animation_controller:set_sprite(PLAYER_SPRITES.jump)
     elseif self.time_we_have_been_running > 0.1 and self.velocity.x ~= 0 then
-        self.sprite = PLAYER_SPRITE_RUNNING
+        self.animation_controller:set_sprite(PLAYER_SPRITES.running)
     else
-        self.sprite = PLAYER_SPRITE_IDLE
-    end
-
-    if self.sprite ~= previous_sprite then
-        self.sprite:reset()
+        self.animation_controller:set_sprite(PLAYER_SPRITES.idle)
     end
 
     ::no_sprite_change::
@@ -490,7 +484,7 @@ function Player:draw()
     local flip = self.looking_left and 1 or 0
 
     local tx, ty = game.camera:transform_coordinates(self.x, self.y)
-    ty = ty - 8 * (self.sprite:current_animation().height - 1)
+    ty = ty - 8 * (self.animation_controller:current_animation().height - 1)
 
     for _, attack_rect in ipairs(self.attack_rects) do
         -- Этот код не работает. Почему?
@@ -499,8 +493,8 @@ function Player:draw()
         --end
     end
 
-    self.sprite:draw(tx, ty, flip)
-    self.sprite:next_frame()
+    self.animation_controller:draw(tx, ty, flip)
+    self.animation_controller:next_frame()
 
     if self.attack_effect_time > 0 then
         self.attack_effect:draw()

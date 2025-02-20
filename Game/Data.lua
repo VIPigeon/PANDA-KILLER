@@ -174,20 +174,31 @@ PLAYER_ATTACK_COOLDOWN = 0.2                  -- секунды
 --
 -- Спрайты и анимации 🎞️
 --
-PLAYER_SPRITE_IDLE    = Sprite:new({380}, 1, 2, 2)
-PLAYER_SPRITE_RUNNING = Sprite:new({384, 386, 388, 390, 392, 394}, 6, 2, 2)
-PLAYER_SPRITE_ATTACK  = Animation:new({416, 418, 420, 422}, 2):with_size(2, 2):at_end_goto_last_frame():to_sprite()
-PLAYER_SPRITE_ATTACK_AIR_FORWARD  = Animation:new({424, 456, 458}, 2):with_size(2, 2):at_end_goto_last_frame():to_sprite()
-PLAYER_SPRITE_ATTACK_AIR_DOWNWARD = Animation:new({490, 492, 494}, 3):with_size(2, 2):at_end_goto_last_frame():to_sprite()
-PLAYER_SPRITE_ATTACK_UPWARDS = Animation:new({208, 210, 212, 214}, 2):with_size(2, 2):at_end_goto_last_frame():to_sprite()
-PLAYER_ATTACK_SPRITES = {PLAYER_SPRITE_ATTACK, PLAYER_SPRITE_ATTACK_AIR_FORWARD, PLAYER_SPRITE_ATTACK_AIR_DOWNWARD, PLAYER_SPRITE_ATTACK_UPWARDS}
-PLAYER_SPRITE_JUMP = Animation:new({412, 414, 412}, 3):with_size(2, 2):at_end_goto_last_frame():to_sprite()
-PLAYER_SPRITE_FALLING = Animation:new({426}, 1):with_size(2, 2):to_sprite()
-PLAYER_SPRITE_SLIDE = Sprite:new_complex({
-    Animation:new({448, 450}, 8):with_size(2, 2),
-    Animation:new({452, 454}, 12):with_size(2, 2):at_end_goto_animation(2),
-})
-PLAYER_SPRITE_DEAD = Sprite:new({479})
+PLAYER_SPRITES = {
+    idle = Sprite:new({380}, 1, 2, 2),
+    dead = Sprite:new({479}),
+
+    running = Sprite:new({384, 386, 388, 390, 392, 394}, 6, 2, 2),
+    jump = Animation:new({412, 414, 412}, 3):with_size(2, 2):at_end_goto_last_frame():to_sprite(),
+    falling = Animation:new({426}, 1):with_size(2, 2):to_sprite(),
+
+    slide = Sprite:new_complex({
+        Animation:new({448, 450}, 8):with_size(2, 2),
+        Animation:new({452, 454}, 12):with_size(2, 2):at_end_goto_animation(2),
+    }),
+
+    attack = Animation:new({416, 418, 420, 422}, 2):with_size(2, 2):at_end_goto_last_frame():to_sprite(),
+    attack_upwards = Animation:new({208, 210, 212, 214}, 2):with_size(2, 2):at_end_goto_last_frame():to_sprite(),
+    attack_air_forward = Animation:new({424, 456, 458}, 2):with_size(2, 2):at_end_goto_last_frame():to_sprite(),
+    attack_air_downward = Animation:new({424, 456, 458}, 2):with_size(2, 2):at_end_goto_last_frame():to_sprite(),
+}
+PLAYER_ATTACK_SPRITES = {
+    PLAYER_SPRITES.attack,
+    PLAYER_SPRITES.attack_upwards,
+    PLAYER_SPRITES.attack_air_forward,
+    PLAYER_SPRITES.attack_air_downward,
+}
+
 PLAYER_SPRITE_JUMP_PARTICLE_EFFECT = Animation:new({496, 498, 500, 502}, 6):with_size(2, 1):at_end_goto_last_frame():to_sprite()
 PLAYER_SPRITE_LAND_PARTICLE_EFFECT = Animation:new({500, 502}, 8):with_size(2, 1):at_end_goto_last_frame():to_sprite()
 PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_HORIZONTAL = Animation:new({488}, 18):with_size(2, 2):at_end_goto_last_frame():to_sprite();
@@ -468,12 +479,6 @@ data.run = {
 
 data.bad_tile = {
 	bad_tile1 = 32
-}
-
-data.panda.sprite = {
-
-	stay_boring = Animation:new({267}, 1):to_sprite(),
-
 }
 
 function is_tile_solid(tile_id)

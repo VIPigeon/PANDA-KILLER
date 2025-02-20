@@ -38,15 +38,7 @@ function Panda:new(x, y, can_tug)
 
         state = PANDA_STATE.patrol,
 
-        sprite = nil,
-        sprites = {
-            rest = PANDA_SPRITES.rest:copy(),
-            patrol = PANDA_SPRITES.walk:copy(),
-            chase = PANDA_SPRITES.chase:copy(),
-            charging_dash = PANDA_SPRITES.charging_dash:copy(),
-            charging_basic_attack = PANDA_SPRITES.charging_basic_attack:copy(),
-            dash = PANDA_SPRITES.dash:copy(),
-        },
+        animation_controller = AnimationController:new(PANDA_SPRITES.rest),
         look_direction = math.coin_flip() and 1 or -1,
 
         attack_effect = nil,       -- Мне не нравятся, что в панде плодятся такие поля
@@ -67,7 +59,6 @@ function Panda:new(x, y, can_tug)
         -- Хотите ли вы потягаться с такой пандой?🙄 Ответ был дан выше
         kantugging_friend_panda = CANTUG,
     }
-    object.sprite = object.sprites.rest
 
     setmetatable(object, self)
     return object
@@ -325,7 +316,7 @@ function Panda:update()
 
         self.look_direction = player.x < self.x and -1 or 1
 
-        if self.sprite:is_at_last_frame() then
+        if self.animation_controller:is_at_last_frame() then
             if self.basic_attack_time_left == 0.0 then
                 local our_rect = Hitbox.rect_of(self)
                 local player_rect = Hitbox.rect_of(player)
@@ -347,7 +338,7 @@ function Panda:update()
                 self.attack_effect = ChildBody:new(
                     self,
                     8 * (self.look_direction - flip),
-                    -8 * (self.sprite:current_animation().height - 1),
+                    -8 * (self.animation_controller:current_animation().height - 1),
                     PANDA_SPRITE_BASIC_ATTACK_PARTICLE_EFFECT_HORIZONTAL,
                     flip
                 )
@@ -404,8 +395,6 @@ function Panda:update()
     end
 
     -- Под конец занимаемся спрайтами. Как в игроке! 😄
-    local previous_sprite = self.sprite
-
     if self.state == PANDA_STATE.stunned or
        self.state == PANDA_STATE.staggered
     then
@@ -415,24 +404,21 @@ function Panda:update()
 
     if self.state == PANDA_STATE.patrol then
         if self.patrol_rest_time > 0.0 then
-            self.sprite = self.sprites.rest
+            self.animation_controller:set_sprite(PANDA_SPRITES.rest)
         else
-            self.sprite = self.sprites.patrol
+            self.animation_controller:set_sprite(PANDA_SPRITES.walk)
         end
     elseif self.state == PANDA_STATE.charging_basic_attack then
-        self.sprite = self.sprites.charging_basic_attack
+        self.animation_controller:set_sprite(PANDA_SPRITES.charging_basic_attack)
     elseif self.state == PANDA_STATE.chase then
-        self.sprite = self.sprites.chase
+        self.animation_controller:set_sprite(PANDA_SPRITES.chase)
     elseif self.state == PANDA_STATE.charging_dash then
-        self.sprite = self.sprites.charging_dash
+        self.animation_controller:set_sprite(PANDA_SPRITES.charging_dash)
     elseif self.state == PANDA_STATE.dashing then
-        self.sprite = self.sprites.dash
+        self.animation_controller:set_sprite(PANDA_SPRITES.dash)
     end
 
-    if previous_sprite ~= self.sprite then
-        self.sprite:reset()
-    end
-    self.sprite:next_frame()
+    self.animation_controller:next_frame()
 
     ::hitlocked::
 
@@ -458,9 +444,9 @@ function Panda:draw()
     -- Ну тип ладно. Вообще довольно дурацкий костыль, не знаю как это лучше сделать.
     -- Это для правильного позиционирования спрайтов, у которых несколько анимаций
     -- с разными размерами.
-    tx = tx - 4 * (self.sprite:current_animation().width - 1)
-    ty = ty - 8 * (self.sprite:current_animation().height - 1)
-    self.sprite:draw(tx, ty, flip)
+    tx = tx - 4 * (self.animation_controller:current_animation().width - 1)
+    ty = ty - 8 * (self.animation_controller:current_animation().height - 1)
+    self.animation_controller:draw(tx, ty, flip)
 end
 
 Panda.__index = Panda

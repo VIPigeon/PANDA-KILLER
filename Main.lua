@@ -1,5 +1,6 @@
 -- Когда добавляете новый файл, сортируйте по алфавиту, пожалуйста 😇
 require 'Base/Animation'
+require 'Base/AnimationController'
 require 'Base/Basic'
 require 'Base/Body'
 require 'Base/ChildBody'

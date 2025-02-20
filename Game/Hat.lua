@@ -14,7 +14,7 @@ function Hat:new(x, y, velocity_x, velocity_y)
             friction = 0.5 * PLAYER_FRICTION,
             min_horizontal_velocity = PLAYER_MIN_HORIZONTAL_VELOCITY,
         },
-        sprite = HAT_SPRITE:copy(),
+        sprite = HAT_SPRITE,
     }
 
     setmetatable(object, self)

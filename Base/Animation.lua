@@ -13,7 +13,7 @@ PLAYER_SPRITE_SLIDE = Sprite:new_complex({
 
 Animation = {}
 
-function Animation:new(frames, single_frame_duration, width, height)
+function Animation:new(frames, single_frame_duration)
     local object = {
         frames = frames,
         single_frame_duration = single_frame_duration,
