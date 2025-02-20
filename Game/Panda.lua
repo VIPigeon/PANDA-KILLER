@@ -309,7 +309,7 @@ function Panda:update()
             self.time_since_dashing = 0.0
 
             local y_distance_to_player = math.abs(player.y - self.y)
-            self.velocity.x = 100 * math.sign(player.x - self.x)
+            self.velocity.x = 100 * self.look_direction
         end
 
     elseif self.state == PANDA_STATE.charging_basic_attack then
