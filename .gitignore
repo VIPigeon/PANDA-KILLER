@@ -2,3 +2,4 @@
 *.exe
 *.bat
 start
+.luarc.json

@@ -74,7 +74,7 @@ TRANSPARENT_SPRITE = Sprite:new({0})
 -- Чтобы понять, что меняют эти параметры, включите дебаг в Camera.update()
 CAMERA_LINES_DISTANCE_FROM_CENTER = 35
 CAMERA_PAN_OFFSET = 6
-CAMERA_SMOOTH_TIME = 0.18
+CAMERA_SMOOTH_TIME = 0.26
 CAMERA_DIRECTION_CHANGE_TIME = 0.3
 
 
@@ -278,7 +278,7 @@ PANDA_CHASE_PIXELS_UNTIL_JUMP = 16
 PANDA_CHASE_SPEED = 2.5 * PANDA_PATROL_SPEED
 -- Это отсчет до того как панда сможет атаковать после
 -- того как начала гнаться за игроком.
-PANDA_DELAY_AFTER_STARTING_CHASE_BEFORE_ATTACKING = 0.8
+PANDA_DELAY_AFTER_STARTING_CHASE_BEFORE_ATTACKING = 2.0
 
 -- Чтобы панда не крутилась как бешеная
 PANDA_CHANGE_LOOK_DIRECTION_COOLDOWN = 0.1
@@ -294,18 +294,17 @@ PANDA_DASH_DURATION = 0.6  -- 1.0
 PANDA_DASH_STRENGTH = 170
 
 PANDA_SPRITES = {
-    walk  = Animation:new({256, 257}, 30):to_sprite(),
+    walk  = Animation:new({256, 257}, 22):to_sprite(),
     chase = Animation:new({259, 260}, 10):to_sprite(),
-    rest  = Sprite:new_complex({
-        Animation:new({276}, 8),
-        Animation:new({277-16}, 8):with_size(2, 2)
-    }),
+    rest  = Animation:new({256, 272}, 20):to_sprite(),
     charging_basic_attack = Sprite:new_complex({
         Animation:new({282}, 10),
         Animation:new({267, 268, 269, 270}, 3):with_size(1, 2):at_end_goto_last_frame()
     }),
     charging_dash = Animation:new({258}, 1):to_sprite(),
     dash = Animation:new({263}, 1):to_sprite(),
+
+    lying_on_ground = Animation:new({265, 279}):with_size(2, 1):to_sprite(),
 }
 
 --[[
