@@ -205,7 +205,6 @@ function Player:update()
     if self.attack_timer == 0 then
         self.just_attacked = false
         self.attack_rects = {}
-        -- if self.attack_buffer_time > 0.0 then
         if attack_pressed then
             self.attack_buffer_time = PLAYER_ATTACK_BUFFER_TIME
         end
@@ -427,11 +426,6 @@ function Player:update()
         end
     end
 
-    if self.animation_controller.sprite == PLAYER_SPRITE_ATTACK and not self.animation_controller:animation_ended() then
-        -- goto использован 😎
-        goto no_sprite_change
-    end
-
     if self.attack_timer > 0 then
         if self.has_attacked_downward then
             self.animation_controller:set_sprite(PLAYER_SPRITES.attack_air_downward)
@@ -453,8 +447,6 @@ function Player:update()
     else
         self.animation_controller:set_sprite(PLAYER_SPRITES.idle)
     end
-
-    ::no_sprite_change::
 
     -- У игрока есть много вещей, зависящих от времени (таймеров).
     -- Они обновляются тут, в самом конце.

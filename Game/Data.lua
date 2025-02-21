@@ -80,11 +80,13 @@ CAMERA_DIRECTION_CHANGE_TIME = 0.3
 
 SPECIAL_TILES = {
     panda_spawn = 38,
+    chilling_panda_spawn = 39,
 }
 
 -- Linus Torvalds был совершенно прав, снимаю шляпу 😢🎩
 ENTITY_TYPE = {
     panda = 0,
+    chilling_panda = 1,
 }
 
 
@@ -304,7 +306,7 @@ PANDA_SPRITES = {
     charging_dash = Animation:new({258}, 1):to_sprite(),
     dash = Animation:new({263}, 1):to_sprite(),
 
-    lying_on_ground = Animation:new({265, 279}):with_size(2, 1):to_sprite(),
+    chilling = Animation:new({264}):with_size(2, 1):to_sprite(),
 }
 
 --[[

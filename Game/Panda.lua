@@ -108,6 +108,8 @@ function Panda:take_damage(hit_x, hit_y)
         -- Умираем 💀
         Basic.play_sound(SOUNDS.PANDA_DEAD)
         table.remove_element(game.pandas, self)
+        -- Да нет, если так подумать, то эти Entities отстой
+        table.remove_element(game.entities, self)
         return
     end
 
