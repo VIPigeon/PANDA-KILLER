@@ -78,6 +78,15 @@ CAMERA_SMOOTH_TIME = 0.18
 CAMERA_DIRECTION_CHANGE_TIME = 0.3
 
 
+SPECIAL_TILES = {
+    panda_spawn = 38,
+}
+
+-- Linus Torvalds был совершенно прав, снимаю шляпу 😢🎩
+ENTITY_TYPE = {
+    panda = 0,
+}
+
 
 --[[
 
@@ -249,8 +258,6 @@ PANDA_PHYSICS_SETTINGS = {
     min_horizontal_velocity = 2.0,
 }
 
-PANDA_LOOK_DIRECTION_LEFT  = -1
-PANDA_LOOK_DIRECTION_RIGHT = 1
 -- константная функция 📛
 PANDA_REST_TIME_BEFORE_DIRECTION_CHANGE = function()
     return 1 + 1.0 * math.random()
@@ -271,7 +278,10 @@ PANDA_CHASE_PIXELS_UNTIL_JUMP = 16
 PANDA_CHASE_SPEED = 2.5 * PANDA_PATROL_SPEED
 -- Это отсчет до того как панда сможет атаковать после
 -- того как начала гнаться за игроком.
-PANDA_CHASE_DUMBNESS_TIME_AFTER_STARTING_CHASE = 0.3
+PANDA_DELAY_AFTER_STARTING_CHASE_BEFORE_ATTACKING = 0.6
+
+-- Чтобы панда не крутилась как бешеная
+PANDA_CHANGE_LOOK_DIRECTION_COOLDOWN = 0.1
 
 PANDA_BASIC_ATTACK_EFFECT_DURATION = PLAYER_ATTACK_EFFECT_DURATION
 PANDA_SPRITE_BASIC_ATTACK_PARTICLE_EFFECT_HORIZONTAL = PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_HORIZONTAL

@@ -1,0 +1,10 @@
+{
+    "diagnostics.globals": [
+        "rect",
+        "game",
+        "btnp",
+        "map",
+        "mget",
+        "mset"
+    ]
+}

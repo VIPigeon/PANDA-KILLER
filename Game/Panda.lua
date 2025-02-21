@@ -44,10 +44,11 @@ function Panda:new(x, y, can_tug)
         attack_effect = nil,       -- Мне не нравятся, что в панде плодятся такие поля
         attack_effect_time = 0.0,  -- и такие...
 
+        -- Как же я обожаю таймеры 😍
         time_of_most_recent_hit = 0.0,
         count_of_recent_hits = 0.0,
 
-        time_we_have_been_chasing = 0.0,
+        time_after_which_we_should_attack = 0.0,
         time_since_dashing = 0.0,
 
         chase_time_left = 0.0,
@@ -55,6 +56,7 @@ function Panda:new(x, y, can_tug)
         stagger_time_left = 0.0,
         stun_time_left = 0.0,
         basic_attack_time_left = 0.0,
+        change_look_direction_cooldown = 0.0,
 
         -- Хотите ли вы потягаться с такой пандой?🙄 Ответ был дан выше
         kantugging_friend_panda = CANTUG,
@@ -69,7 +71,7 @@ function Panda:view_cone_shape()
 
     local tx, ty = rect:center_x(), rect:center_y()
 
-    if self.look_direction == PANDA_LOOK_DIRECTION_LEFT then
+    if self.look_direction == -1 then
         tx = tx - PANDA_VIEW_CONE_WIDTH / 2
     else
         tx = tx + PANDA_VIEW_CONE_WIDTH / 2
@@ -222,7 +224,7 @@ function Panda:update()
             self.patrol_rest_time = Basic.tick_timer(self.patrol_rest_time)
             self.velocity.x = 0
             if self.patrol_rest_time == 0.0 then
-                self.look_direction = -1 * self.look_direction
+                self:set_look_direction(-1 * self.look_direction)
             end
         else
             local x_in_the_near_future = self.x + self.look_direction * PANDA_PATROL_PIXELS_UNTIL_STOP
@@ -244,54 +246,53 @@ function Panda:update()
         end
 
     elseif self.state == PANDA_STATE.chase then
-
         if sees_player then
             self.chase_time_left = PANDA_CHASE_DURATION
         end
 
-        local chased_the_player_enough = self.time_we_have_been_chasing > PANDA_CHASE_DUMBNESS_TIME_AFTER_STARTING_CHASE
+        local can_attack_the_player = false
+        if self.time_after_which_we_should_attack > 0.0 then
+            self.time_after_which_we_should_attack = Basic.tick_timer(self.time_after_which_we_should_attack)
+            can_attack_the_player = self.time_after_which_we_should_attack == 0.0
+        end
+
         local x_distance_to_player = math.abs(player.x - self.x)
         local y_distance_to_player = math.abs(player.y - self.y)
 
-        self.look_direction = math.sign(player.x - self.x)
+        self:set_look_direction(math.sign(player.x - self.x))
 
-        if chased_the_player_enough and
-           x_distance_to_player <= PANDA_X_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK and
-           y_distance_to_player <= PANDA_Y_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK
-        then
-
-            Basic.play_sound(SOUNDS.PANDA_BASIC_ATTACK_CHARGE)
-            self.state = PANDA_STATE.charging_basic_attack
-
-        elseif chased_the_player_enough and 
-               is_on_ground and
-               x_distance_to_player <= PANDA_X_DISTANCE_TO_PLAYER_UNTIL_DASH
-        then
-
-            if y_distance_to_player <= PANDA_Y_DISTANCE_TO_PLAYER_UNTIL_DASH then
-                Basic.play_sound(SOUNDS.PANDA_DASH_CHARGE)
-                self.state = PANDA_STATE.charging_dash
-                self.charging_dash_time_left = PANDA_DASH_CHARGE_DURATION
-            else
-                -- Мы слишком низко, попробуем к игроку прыгнуть
-                Basic.play_sound(SOUNDS.PANDA_JUMP)
-                self.velocity.y = PANDA_CHASE_JUMP_STRENGTH
+        if x_distance_to_player <= PANDA_X_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK and y_distance_to_player <= PANDA_Y_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK then
+            if can_attack_the_player then
+                Basic.play_sound(SOUNDS.PANDA_BASIC_ATTACK_CHARGE)
+                self.state = PANDA_STATE.charging_basic_attack
+            elseif self.time_after_which_we_should_attack == 0.0 then
+                self.time_after_which_we_should_attack = PANDA_DELAY_AFTER_STARTING_CHASE_BEFORE_ATTACKING
             end
-
+        elseif is_on_ground and x_distance_to_player <= PANDA_X_DISTANCE_TO_PLAYER_UNTIL_DASH then
+            if can_attack_the_player then
+                if y_distance_to_player <= PANDA_Y_DISTANCE_TO_PLAYER_UNTIL_DASH then
+                    Basic.play_sound(SOUNDS.PANDA_DASH_CHARGE)
+                    self.state = PANDA_STATE.charging_dash
+                    self.charging_dash_time_left = PANDA_DASH_CHARGE_DURATION
+                else
+                    -- Мы слишком низко, попробуем к игроку прыгнуть
+                    Basic.play_sound(SOUNDS.PANDA_JUMP)
+                    self.velocity.y = PANDA_CHASE_JUMP_STRENGTH
+                end
+            elseif self.time_after_which_we_should_attack == 0.0 then
+                self.time_after_which_we_should_attack = PANDA_DELAY_AFTER_STARTING_CHASE_BEFORE_ATTACKING
+            end
         else
-
             local x_in_the_near_future = self.x + self.look_direction * PANDA_CHASE_PIXELS_UNTIL_JUMP
             local x_direction_to_player = math.sign(game.player.x - self.x)
 
             local wall_to_the_right = Physics.check_collision_rect_tilemap(self.hitbox:to_rect(x_in_the_near_future, self.y)) ~= nil
-            local ground_forward = Physics.check_collision_rect_tilemap(self.hitbox:to_rect(x_in_the_near_future, self.y + 1)) ~= nil
 
             if is_on_ground and wall_to_the_right then
                 Basic.play_sound(SOUNDS.PANDA_JUMP)
                 self.velocity.y = PANDA_CHASE_JUMP_STRENGTH
             end
             self.velocity.x = PANDA_CHASE_SPEED * x_direction_to_player
-
         end
 
         self.chase_time_left = Basic.tick_timer(self.chase_time_left)
@@ -307,25 +308,31 @@ function Panda:update()
             Basic.play_sound(SOUNDS.PANDA_DASH)
             self.state = PANDA_STATE.dashing
             self.time_since_dashing = 0.0
-
-            local y_distance_to_player = math.abs(player.y - self.y)
             self.velocity.x = 100 * self.look_direction
         end
 
     elseif self.state == PANDA_STATE.charging_basic_attack then
 
-        self.look_direction = player.x < self.x and -1 or 1
+        self:set_look_direction(player.x < self.x and -1 or 1)
 
         if self.animation_controller:is_at_last_frame() then
             if self.basic_attack_time_left == 0.0 then
                 local our_rect = Hitbox.rect_of(self)
                 local player_rect = Hitbox.rect_of(player)
+                local attack_width = 22
                 local attack_rect = Rect:new(
-                    our_rect:center_x() + 8 * self.look_direction,
-                    our_rect:center_y(),
-                    8 + 2 * self.look_direction,
+                    our_rect:center_x() + 8 * self.look_direction - attack_width / 2,
+                    our_rect:top(),
+                    attack_width,
                     8
                 )
+
+                -- Раскомментируйте, чтобы посмотреть на hurtbox атаки панды.
+                --Debug.add(function()
+                --    attack_rect:draw(2)
+                --    our_rect:draw(2)
+                --end)
+
                 if Physics.check_collision_rect_rect(our_rect, player_rect) then
                     player:die(self.look_direction, 0)
                 elseif Physics.check_collision_rect_rect(attack_rect, player_rect) then
@@ -423,15 +430,24 @@ function Panda:update()
     ::hitlocked::
 
     self.attack_effect_time = Basic.tick_timer(self.attack_effect_time)
-    if self.state == PANDA_STATE.chase then
-        self.time_we_have_been_chasing = self.time_we_have_been_chasing + Time.dt()
-    else
-        self.time_we_have_been_chasing = 0.0
+    self.change_look_direction_cooldown = Basic.tick_timer(self.change_look_direction_cooldown)
+end
+
+-- Направления: -1 влево, 1 вправо
+function Panda:set_look_direction(new_look_direction)
+    assert(new_look_direction == 1 or new_look_direction == -1)
+    if new_look_direction == self.look_direction then
+        return
+    end
+
+    if self.change_look_direction_cooldown == 0.0 then
+        self.look_direction = new_look_direction
+        self.change_look_direction_cooldown = PANDA_CHANGE_LOOK_DIRECTION_COOLDOWN
     end
 end
 
 function Panda:draw()
-    local flip = self.look_direction == PANDA_LOOK_DIRECTION_RIGHT and 0 or 1
+    local flip = (self.look_direction == 1) and 0 or 1
 
     local tx, ty = game.camera:transform_coordinates(self.x, self.y)
 

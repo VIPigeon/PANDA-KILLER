@@ -17,17 +17,36 @@ function game.init()
     -- тика. 🤓
 
     game.dialog_window = DialogWindow:new(100,50,"dcs")
+    game.collect_entity_spawn_information_from_tiles()
     game.restart()
+end
+
+function game.collect_entity_spawn_information_from_tiles()
+    game.entity_spawn_info = {}
+
+    for row = 0, WORLD_TILEMAP_WIDTH do
+        for col = 0, WORLD_TILEMAP_HEIGHT do
+            local tile_id = mget(row, col)
+            if tile_id == SPECIAL_TILES.panda_spawn then
+                local x, y = Basic.tile_to_world(row, col)
+                table.insert(game.entity_spawn_info, {type = ENTITY_TYPE.panda, x = x, y = y})
+                mset(row, col, 0)
+            end
+        end
+    end
 end
 
 function game.restart()
     game.player = Player:new()
 
-    game.pandas = {
-        Panda:new(60, 95, false),
-        Panda:new(130, 95, false),
-        Panda:new(150, 48, false),
-    }
+    game.pandas = {}
+    for _, entity_info in ipairs(game.entity_spawn_info) do
+        if entity_info.type == ENTITY_TYPE.panda then
+            table.insert(game.pandas, Panda:new(entity_info.x, entity_info.y, false))
+        else
+            error('Invalid entity type: ' .. entity_info.type)
+        end
+    end
 
     -- TODO: Это работает с рестартом?
     -- TriggerTiles.add(TriggerTile:new(24,88,8,8, TriggerActions.dialogue))
