@@ -27,6 +27,7 @@ function game.restart()
         Panda:new(60, 95, false),
         Panda:new(130, 95, false),
         Panda:new(150, 48, false),
+        Panda:new(250, 48, false),
     }
 
     -- TODO: Это работает с рестартом?

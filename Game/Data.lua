@@ -261,17 +261,17 @@ PANDA_VIEW_CONE_HEIGHT = 32
 PANDA_PATROL_SPEED = 8
 PANDA_PATROL_PIXELS_UNTIL_STOP = 6
 
-PANDA_X_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK = 10
-PANDA_Y_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK = 10
+PANDA_X_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK = 20
+PANDA_Y_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK = 14
 PANDA_BASIC_ATTACK_DURATION = 0.3
-PANDA_X_DISTANCE_TO_PLAYER_UNTIL_DASH = 16
+PANDA_X_DISTANCE_TO_PLAYER_UNTIL_DASH = 32
 PANDA_Y_DISTANCE_TO_PLAYER_UNTIL_DASH = 24
-PANDA_CHASE_JUMP_STRENGTH = 80
+PANDA_CHASE_JUMP_STRENGTH = 90
 PANDA_CHASE_PIXELS_UNTIL_JUMP = 16
 PANDA_CHASE_SPEED = 2.5 * PANDA_PATROL_SPEED
 -- Это отсчет до того как панда сможет атаковать после
 -- того как начала гнаться за игроком.
-PANDA_CHASE_DUMBNESS_TIME_AFTER_STARTING_CHASE = 0.3
+PANDA_CHASE_DUMBNESS_TIME_AFTER_STARTING_CHASE = 0.8
 
 PANDA_BASIC_ATTACK_EFFECT_DURATION = PLAYER_ATTACK_EFFECT_DURATION
 PANDA_SPRITE_BASIC_ATTACK_PARTICLE_EFFECT_HORIZONTAL = PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_HORIZONTAL
@@ -279,8 +279,9 @@ PANDA_SPRITE_BASIC_ATTACK_PARTICLE_EFFECT_HORIZONTAL = PLAYER_SPRITE_ATTACK_PART
 -- Время, после которого панда устанет гоняться за игроком.
 -- Это при условии, что она игрока не видит.
 PANDA_CHASE_DURATION = 4.0
-PANDA_DASH_CHARGE_DURATION = 0.8  -- 1.5
-PANDA_DASH_DURATION = 0.5  -- 1.0
+PANDA_DASH_CHARGE_DURATION = 0.35  -- 1.5
+PANDA_DASH_DURATION = 0.6  -- 1.0
+PANDA_DASH_STRENGTH = 170
 
 PANDA_SPRITES = {
     walk  = Animation:new({256, 257}, 30):to_sprite(),
@@ -290,8 +291,8 @@ PANDA_SPRITES = {
         Animation:new({277-16}, 8):with_size(2, 2)
     }),
     charging_basic_attack = Sprite:new_complex({
-        Animation:new({282}, 30),
-        Animation:new({267, 268, 269, 270}, 10):with_size(1, 2):at_end_goto_last_frame()
+        Animation:new({282}, 10),
+        Animation:new({267, 268, 269, 270}, 3):with_size(1, 2):at_end_goto_last_frame()
     }),
     charging_dash = Animation:new({258}, 1):to_sprite(),
     dash = Animation:new({263}, 1):to_sprite(),
@@ -320,7 +321,7 @@ TEXT = {
     },
     PRESS_RIGHTLEFT_TO_SELECT = {
         ['ru'] = 'НАЖИМАЙ СТРЕЛКИ ЧТОБЫ ПОМЕНЯТЬ ЯЗЫК',
-        ['en'] = 'PRESS RIGHT/LEFT TO SELECT',
+        ['en'] = 'PRESS RIGHT/LEFT TO SELECT LANGUAGE',
     },
     PRESS_ANY_BUTTON_TO_RESPAWN = {
         ['ru'] = '\n\n\n\n\n\n  ДЛЯ ВОЗРОЖДЕНИЯ НАЖМИТЕ\n   НА ОДНУ ЛЮБУЮ КНОПКУ',
