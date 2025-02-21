@@ -38,7 +38,7 @@ function Panda:new(x, y, can_tug)
 
         state = PANDA_STATE.patrol,
 
-        animation_controller = AnimationController:new(PANDA_SPRITES.rest),
+        animation_controller = AnimationController:new(SPRITES.panda.rest),
         look_direction = math.coin_flip() and 1 or -1,
 
         attack_effect = nil,       -- Мне не нравятся, что в панде плодятся такие поля
@@ -108,8 +108,6 @@ function Panda:take_damage(hit_x, hit_y)
         -- Умираем 💀
         Basic.play_sound(SOUNDS.PANDA_DEAD)
         table.remove_element(game.pandas, self)
-        -- Да нет, если так подумать, то эти Entities отстой
-        table.remove_element(game.entities, self)
         return
     end
 
@@ -215,6 +213,9 @@ function Panda:update()
 
     local player = game.player
 
+    local our_rect = Hitbox.rect_of(self)
+    local player_rect = Hitbox.rect_of(player)
+
     local is_on_ground = Physics.is_on_ground(self)
 
     local view_cone = self:view_cone_shape()
@@ -258,10 +259,12 @@ function Panda:update()
             can_attack_the_player = self.time_after_which_we_should_attack == 0.0
         end
 
-        local x_distance_to_player = math.abs(player.x - self.x)
-        local y_distance_to_player = math.abs(player.y - self.y)
+        local x_distance_to_player = math.abs(player_rect:center_x() - our_rect:center_x())
+        local y_distance_to_player = math.abs(player_rect:center_y() - our_rect:center_y())
 
-        self:set_look_direction(math.sign(player.x - self.x))
+        self:set_look_direction(math.sign(player_rect:center_x() - our_rect:center_x()))
+
+        local should_we_chase_the_player = true
 
         if x_distance_to_player <= PANDA_X_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK and y_distance_to_player <= PANDA_Y_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK then
             if can_attack_the_player then
@@ -281,12 +284,19 @@ function Panda:update()
                     Basic.play_sound(SOUNDS.PANDA_JUMP)
                     self.velocity.y = PANDA_CHASE_JUMP_STRENGTH
                 end
+                should_we_chase_the_player = false
             elseif self.time_after_which_we_should_attack == 0.0 then
                 self.time_after_which_we_should_attack = PANDA_DELAY_AFTER_STARTING_CHASE_BEFORE_ATTACKING
             end
-        else
+        end
+
+        if x_distance_to_player <= PANDA_MIN_X_DISTANCE_TO_PLAYER then
+            should_we_chase_the_player = false
+        end
+
+        if should_we_chase_the_player then
             local x_in_the_near_future = self.x + self.look_direction * PANDA_CHASE_PIXELS_UNTIL_JUMP
-            local x_direction_to_player = math.sign(game.player.x - self.x)
+            local x_direction_to_player = math.sign(player_rect:center_x() - our_rect:center_x())
 
             local wall_to_the_right = Physics.check_collision_rect_tilemap(self.hitbox:to_rect(x_in_the_near_future, self.y)) ~= nil
 
@@ -315,12 +325,10 @@ function Panda:update()
 
     elseif self.state == PANDA_STATE.charging_basic_attack then
 
-        self:set_look_direction(player.x < self.x and -1 or 1)
+        self:set_look_direction(player_rect:center_x() < our_rect:center_x() and -1 or 1)
 
         if self.animation_controller:is_at_last_frame() then
             if self.basic_attack_time_left == 0.0 then
-                local our_rect = Hitbox.rect_of(self)
-                local player_rect = Hitbox.rect_of(player)
                 local attack_width = 22
                 local attack_rect = Rect:new(
                     our_rect:center_x() + 8 * self.look_direction - attack_width / 2,
@@ -348,7 +356,7 @@ function Panda:update()
                     self,
                     8 * (self.look_direction - flip),
                     -8 * (self.animation_controller:current_animation().height - 1),
-                    PANDA_SPRITE_BASIC_ATTACK_PARTICLE_EFFECT_HORIZONTAL,
+                    SPRITES.particle_effects.horizontal_attack,
                     flip
                 )
                 self.attack_effect_time = PANDA_BASIC_ATTACK_EFFECT_DURATION
@@ -413,18 +421,18 @@ function Panda:update()
 
     if self.state == PANDA_STATE.patrol then
         if self.patrol_rest_time > 0.0 then
-            self.animation_controller:set_sprite(PANDA_SPRITES.rest)
+            self.animation_controller:set_sprite(SPRITES.panda.rest)
         else
-            self.animation_controller:set_sprite(PANDA_SPRITES.walk)
+            self.animation_controller:set_sprite(SPRITES.panda.walk)
         end
     elseif self.state == PANDA_STATE.charging_basic_attack then
-        self.animation_controller:set_sprite(PANDA_SPRITES.charging_basic_attack)
+        self.animation_controller:set_sprite(SPRITES.panda.charging_basic_attack)
     elseif self.state == PANDA_STATE.chase then
-        self.animation_controller:set_sprite(PANDA_SPRITES.chase)
+        self.animation_controller:set_sprite(SPRITES.panda.chase)
     elseif self.state == PANDA_STATE.charging_dash then
-        self.animation_controller:set_sprite(PANDA_SPRITES.charging_dash)
+        self.animation_controller:set_sprite(SPRITES.panda.charging_dash)
     elseif self.state == PANDA_STATE.dashing then
-        self.animation_controller:set_sprite(PANDA_SPRITES.dash)
+        self.animation_controller:set_sprite(SPRITES.panda.dash)
     end
 
     self.animation_controller:next_frame()

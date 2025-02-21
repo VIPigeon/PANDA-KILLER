@@ -40,7 +40,7 @@ function Player:new()
             min_horizontal_velocity = PLAYER_MIN_HORIZONTAL_VELOCITY,
         },
 
-        animation_controller = AnimationController:new(PLAYER_SPRITES.idle),
+        animation_controller = AnimationController:new(SPRITES.player.idle),
 
         -- Когда игрок умирает, у него слетает шляпа
         hat = nil,
@@ -105,7 +105,7 @@ function Player:update()
         Physics.update(self)
         self.hat:update()
 
-        self.animation_controller:set_sprite(PLAYER_SPRITES.dead)
+        self.animation_controller:set_sprite(SPRITES.player.dead)
         self.time_before_showing_death_screen = Basic.tick_timer(self.time_before_showing_death_screen)
         if self.time_before_showing_death_screen == 0.0 then
             game.dialog_window.is_closed = false
@@ -275,12 +275,12 @@ function Player:update()
         if not self.just_attacked then
             self.just_attacked = true
             if attack_direction_y > 0 then
-                self.attack_effect = ChildBody:new(self, 8 * attack_direction_x, 8 * attack_direction_y, PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_DOWNWARD)
+                self.attack_effect = ChildBody:new(self, 8 * attack_direction_x, 8 * attack_direction_y, SPRITES.particle_effects.downward_attack)
             elseif attack_direction_y < 0 then
-                self.attack_effect = ChildBody:new(self, 0, -16, PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_UPWARD)
+                self.attack_effect = ChildBody:new(self, 0, -16, SPRITES.particle_effects.upward_attack)
             else
                 local flip = (attack_direction_x < 0) and 1 or 0
-                self.attack_effect = ChildBody:new(self, 8 * attack_direction_x, -8 + 8 * attack_direction_y, PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_HORIZONTAL, flip)
+                self.attack_effect = ChildBody:new(self, 8 * attack_direction_x, -8 + 8 * attack_direction_y, SPRITES.particle_effects.horizontal_attack, flip)
             end
             self.attack_effect_time = PLAYER_ATTACK_EFFECT_DURATION
             self.attack_cooldown = PLAYER_ATTACK_COOLDOWN
@@ -353,7 +353,7 @@ function Player:update()
     end
 
     if is_on_ground and not self.was_on_ground_last_frame then
-        Effects.add(self.x, self.y, PLAYER_SPRITE_LAND_PARTICLE_EFFECT)
+        Effects.add(self.x, self.y, SPRITES.particle_effects.land)
     end
 
     if not is_on_ground and self.was_on_ground_last_frame and self.velocity.y <= 0 then
@@ -417,35 +417,35 @@ function Player:update()
             -- Наверное в будущем здесь вообще будут кастомные эффекты. Пока
             -- что же тут магические константы 🪄
             if self.looking_left then
-                Effects.add(self.x + 2, self.y, PLAYER_SPRITE_JUMP_PARTICLE_EFFECT)
+                Effects.add(self.x + 2, self.y, SPRITES.particle_effects.jump)
             else
-                Effects.add(self.x + 1, self.y, PLAYER_SPRITE_JUMP_PARTICLE_EFFECT)
+                Effects.add(self.x + 1, self.y, SPRITES.particle_effects.jump)
             end
         else
-            Effects.add(self.x, self.y, PLAYER_SPRITE_JUMP_PARTICLE_EFFECT)
+            Effects.add(self.x, self.y, SPRITES.particle_effects.jump)
         end
     end
 
     if self.attack_timer > 0 then
         if self.has_attacked_downward then
-            self.animation_controller:set_sprite(PLAYER_SPRITES.attack_air_downward)
+            self.animation_controller:set_sprite(SPRITES.player.attack_air_downward)
         elseif self.has_attacked_upwards then
-            self.animation_controller:set_sprite(PLAYER_SPRITES.attack_upwards)
+            self.animation_controller:set_sprite(SPRITES.player.attack_upwards)
         elseif self.has_attacked_in_air then
-            self.animation_controller:set_sprite(PLAYER_SPRITES.attack_air_forward)
+            self.animation_controller:set_sprite(SPRITES.player.attack_air_forward)
         else
-            self.animation_controller:set_sprite(PLAYER_SPRITES.attack)
+            self.animation_controller:set_sprite(SPRITES.player.attack)
         end
     elseif sliding_on_wall then
-        self.animation_controller:set_sprite(PLAYER_SPRITES.slide)
+        self.animation_controller:set_sprite(SPRITES.player.slide)
     elseif self.velocity.y < 0 and not is_on_ground then
-        self.animation_controller:set_sprite(PLAYER_SPRITES.falling)
+        self.animation_controller:set_sprite(SPRITES.player.falling)
     elseif self.velocity.y ~= 0 or not is_on_ground then
-        self.animation_controller:set_sprite(PLAYER_SPRITES.jump)
+        self.animation_controller:set_sprite(SPRITES.player.jump)
     elseif self.time_we_have_been_running > 0.1 and self.velocity.x ~= 0 then
-        self.animation_controller:set_sprite(PLAYER_SPRITES.running)
+        self.animation_controller:set_sprite(SPRITES.player.running)
     else
-        self.animation_controller:set_sprite(PLAYER_SPRITES.idle)
+        self.animation_controller:set_sprite(SPRITES.player.idle)
     end
 
     -- У игрока есть много вещей, зависящих от времени (таймеров).

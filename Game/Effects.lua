@@ -12,7 +12,7 @@ Effects = {
 -- Одновременно могут проигрываться 64 эффекта.
 -- Число взято с потолка, просто вот мне так захотелось.
 for i = 1, 64 do
-    Effects.effects[i] = {x=-100,y=-100, animation_controller=AnimationController:new(TRANSPARENT_SPRITE), flip=false}
+    Effects.effects[i] = {x=-100,y=-100, animation_controller=AnimationController:new(SPRITES.transparent), flip=false}
 end
 
 function Effects.add(x, y, sprite, flip)

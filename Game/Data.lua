@@ -65,8 +65,6 @@ WORLD_HEIGHT = 1088 -- пикселей (= 136 * 8)
 WORLD_HORIZONTAL_COEFFICIENT_OF_RESTITUTION = 0.7   -- проценты
 WORLD_VERTICAL_COEFFICIENT_OF_RESTITUTION   = 0.1   -- проценты
 
-TRANSPARENT_SPRITE = Sprite:new({0})
-
 
 --
 -- Настройки камеры 🎥
@@ -81,12 +79,6 @@ CAMERA_DIRECTION_CHANGE_TIME = 0.3
 SPECIAL_TILES = {
     panda_spawn = 38,
     chilling_panda_spawn = 39,
-}
-
--- Linus Torvalds был совершенно прав, снимаю шляпу 😢🎩
-ENTITY_TYPE = {
-    panda = 0,
-    chilling_panda = 1,
 }
 
 
@@ -182,41 +174,7 @@ PLAYER_DEATH_KNOCKBACK_VERTICAL = 80
 PLAYER_JUMP_BY_HIT = PLAYER_JUMP_STRENGTH * 1
 PLAYER_ATTACK_COOLDOWN = 0.2                  -- секунды
 
---
--- Спрайты и анимации 🎞️
---
-PLAYER_SPRITES = {
-    idle = Sprite:new({380}, 1, 2, 2),
-    dead = Sprite:new({479}),
 
-    running = Sprite:new({384, 386, 388, 390, 392, 394}, 6, 2, 2),
-    jump = Animation:new({412, 414, 412}, 3):with_size(2, 2):at_end_goto_last_frame():to_sprite(),
-    falling = Animation:new({426}, 1):with_size(2, 2):to_sprite(),
-
-    slide = Sprite:new_complex({
-        Animation:new({448, 450}, 8):with_size(2, 2),
-        Animation:new({452, 454}, 12):with_size(2, 2):at_end_goto_animation(2),
-    }),
-
-    attack = Animation:new({416, 418, 420, 422}, 2):with_size(2, 2):at_end_goto_last_frame():to_sprite(),
-    attack_upwards = Animation:new({208, 210, 212, 214}, 2):with_size(2, 2):at_end_goto_last_frame():to_sprite(),
-    attack_air_forward = Animation:new({424, 456, 458}, 2):with_size(2, 2):at_end_goto_last_frame():to_sprite(),
-    attack_air_downward = Animation:new({424, 456, 458}, 2):with_size(2, 2):at_end_goto_last_frame():to_sprite(),
-}
-PLAYER_ATTACK_SPRITES = {
-    PLAYER_SPRITES.attack,
-    PLAYER_SPRITES.attack_upwards,
-    PLAYER_SPRITES.attack_air_forward,
-    PLAYER_SPRITES.attack_air_downward,
-}
-
-PLAYER_SPRITE_JUMP_PARTICLE_EFFECT = Animation:new({496, 498, 500, 502}, 6):with_size(2, 1):at_end_goto_last_frame():to_sprite()
-PLAYER_SPRITE_LAND_PARTICLE_EFFECT = Animation:new({500, 502}, 8):with_size(2, 1):at_end_goto_last_frame():to_sprite()
-PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_HORIZONTAL = Animation:new({488}, 18):with_size(2, 2):at_end_goto_last_frame():to_sprite();
-PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_DOWNWARD = Animation:new({444}, 18):with_size(2, 2):at_end_goto_last_frame():to_sprite();
-PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_UPWARD = Animation:new({176}, 18):with_size(2, 2):at_end_goto_last_frame():to_sprite();
-
-HAT_SPRITE = Sprite:new({478})
 
 --[[
 
@@ -235,6 +193,21 @@ HAT_SPRITE = Sprite:new({478})
       🐼 🐼 🐼 🐼 🐼
 
 --]]
+
+-- Linux Torbolts был совершенно прав, снимаю шляпу 😢🎩
+-- ^- Сказал бы я, если бы не быстро вскрывшиеся проблемы с Entity.
+--    Мне приходится поддерживать одновременно и game.entities, и
+--    game.pandas. Забыл удалить панду и из того, и из другого - баг!
+--    А если не использовать game.pandas, то как мне фильтровать панд
+--    из всех game.entities? Тоже непонятно. В общем, абстракция опять
+--    оказалась обструкцией.
+--
+--    (c) кви кд 2025
+--
+PANDA_TYPE = {
+    basic = 0,
+    chilling = 1,
+}
 
 -- Стаггер - небольшое время стана после одного удара от игрока
 -- Если игрок бъет панду много раз и быстро, то она входит в стан
@@ -270,6 +243,9 @@ PANDA_VIEW_CONE_HEIGHT = 32
 PANDA_PATROL_SPEED = 8
 PANDA_PATROL_PIXELS_UNTIL_STOP = 6
 
+-- Если мы ближе, чем это расстояние, то пора остановиться
+PANDA_MIN_X_DISTANCE_TO_PLAYER = 8
+
 PANDA_X_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK = 20
 PANDA_Y_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK = 14
 PANDA_BASIC_ATTACK_DURATION = 0.3
@@ -280,13 +256,12 @@ PANDA_CHASE_PIXELS_UNTIL_JUMP = 16
 PANDA_CHASE_SPEED = 2.5 * PANDA_PATROL_SPEED
 -- Это отсчет до того как панда сможет атаковать после
 -- того как начала гнаться за игроком.
-PANDA_DELAY_AFTER_STARTING_CHASE_BEFORE_ATTACKING = 2.0
+PANDA_DELAY_AFTER_STARTING_CHASE_BEFORE_ATTACKING = 0.3
 
 -- Чтобы панда не крутилась как бешеная
-PANDA_CHANGE_LOOK_DIRECTION_COOLDOWN = 0.1
+PANDA_CHANGE_LOOK_DIRECTION_COOLDOWN = 0.25
 
 PANDA_BASIC_ATTACK_EFFECT_DURATION = PLAYER_ATTACK_EFFECT_DURATION
-PANDA_SPRITE_BASIC_ATTACK_PARTICLE_EFFECT_HORIZONTAL = PLAYER_SPRITE_ATTACK_PARTICLE_EFFECT_HORIZONTAL
 
 -- Время, после которого панда устанет гоняться за игроком.
 -- Это при условии, что она игрока не видит.
@@ -294,20 +269,6 @@ PANDA_CHASE_DURATION = 4.0
 PANDA_DASH_CHARGE_DURATION = 0.35  -- 1.5
 PANDA_DASH_DURATION = 0.6  -- 1.0
 PANDA_DASH_STRENGTH = 170
-
-PANDA_SPRITES = {
-    walk  = Animation:new({256, 257}, 22):to_sprite(),
-    chase = Animation:new({259, 260}, 10):to_sprite(),
-    rest  = Animation:new({256, 272}, 20):to_sprite(),
-    charging_basic_attack = Sprite:new_complex({
-        Animation:new({282}, 10),
-        Animation:new({267, 268, 269, 270}, 3):with_size(1, 2):at_end_goto_last_frame()
-    }),
-    charging_dash = Animation:new({258}, 1):to_sprite(),
-    dash = Animation:new({263}, 1):to_sprite(),
-
-    chilling = Animation:new({264}):with_size(2, 1):to_sprite(),
-}
 
 --[[
 
@@ -318,30 +279,63 @@ PANDA_SPRITES = {
 --]]
 
 --
--- 💬 💬 💬
--- Реплики!
+-- Спрайты! 🖼️
 --
-TEXT = {
-    CHOOSE_YOUR_LANGUAGE = {
-        ['ru'] = 'ВЫБЕРИ ЯЗЫК',
-        ['en'] = 'CHOOSE YOUR LANGUAGE',
+SPRITES = {
+    transparent = Sprite:new({0}),
+
+    player = {
+        idle = Sprite:new({380}, 1, 2, 2),
+        dead = Sprite:new({479}),
+
+        running = Sprite:new({384, 386, 388, 390, 392, 394}, 6, 2, 2),
+        jump = Animation:new({412, 414, 412}, 3):with_size(2, 2):at_end_goto_last_frame():to_sprite(),
+        falling = Animation:new({426}, 1):with_size(2, 2):to_sprite(),
+
+        slide = Sprite:new_complex({
+            Animation:new({448, 450}, 8):with_size(2, 2),
+            Animation:new({452, 454}, 12):with_size(2, 2):at_end_goto_animation(2),
+        }),
+
+        attack = Animation:new({416, 418, 420, 422}, 2):with_size(2, 2):at_end_goto_last_frame():to_sprite(),
+        attack_upwards = Animation:new({208, 210, 212, 214}, 2):with_size(2, 2):at_end_goto_last_frame():to_sprite(),
+        attack_air_forward = Animation:new({424, 456, 458}, 2):with_size(2, 2):at_end_goto_last_frame():to_sprite(),
+        attack_air_downward = Animation:new({424, 456, 458}, 2):with_size(2, 2):at_end_goto_last_frame():to_sprite(),
     },
-    PRESS_Z_TO_START = {
-        ['ru'] = 'НАЖМИ Z ЧТОБЫ НАЧАТЬ',
-        ['en'] = 'PRESS Z TO START',
+
+    hat = Sprite:new({478}),
+
+    particle_effects = {
+        jump = Animation:new({496, 498, 500, 502}, 6):with_size(2, 1):at_end_goto_last_frame():to_sprite(),
+        land = Animation:new({500, 502}, 8):with_size(2, 1):at_end_goto_last_frame():to_sprite(),
+        horizontal_attack = Animation:new({488}, 18):with_size(2, 2):at_end_goto_last_frame():to_sprite(),
+        downward_attack = Animation:new({444}, 18):with_size(2, 2):at_end_goto_last_frame():to_sprite(),
+        upward_attack = Animation:new({176}, 18):with_size(2, 2):at_end_goto_last_frame():to_sprite(),
     },
-    PRESS_RIGHTLEFT_TO_SELECT = {
-        ['ru'] = 'НАЖИМАЙ СТРЕЛКИ ЧТОБЫ ПОМЕНЯТЬ ЯЗЫК',
-        ['en'] = 'PRESS RIGHT/LEFT TO SELECT LANGUAGE',
+
+    panda = {
+        walk = Animation:new({256, 257}, 22):to_sprite(),
+        chase = Animation:new({259, 260}, 10):to_sprite(),
+        rest = Animation:new({256, 272}, 20):to_sprite(),
+        charging_basic_attack = Sprite:new_complex({
+            Animation:new({282}, 10),
+            Animation:new({267, 268, 269, 270}, 3):with_size(1, 2):at_end_goto_last_frame()
+        }),
+        charging_dash = Animation:new({258}, 1):to_sprite(),
+        dash = Animation:new({263}, 1):to_sprite(),
+        chilling = Animation:new({264}):with_size(2, 1):to_sprite(),
     },
-    PRESS_ANY_BUTTON_TO_RESPAWN = {
-        ['ru'] = '\n\n\n\n\n\n  ДЛЯ ВОЗРОЖДЕНИЯ НАЖМИТЕ\n   НА ОДНУ ЛЮБУЮ КНОПКУ',
-        ['en'] = '\n\n\n\n\n\n  PRESS ANY BUTTON\n   TO RESPAWN',
-    }
+}
+
+PLAYER_ATTACK_SPRITES = {
+    SPRITES.player.attack,
+    SPRITES.player.attack_upwards,
+    SPRITES.player.attack_air_forward,
+    SPRITES.player.attack_air_downward,
 }
 
 --
--- Звуки (sfx🤪) 🔊
+-- Звуки (sfx🤪)! 🔊
 -- 
 SOUNDS = {
     MUTE_CHANNEL_ZERO = {id = -1, note = -1, channel = 0},
@@ -360,6 +354,28 @@ SOUNDS = {
     PANDA_JUMP = {id = 4, note = 'A#5'},
     PANDA_HIT = {id = 11, note = 'G-5', duration = 20, channel = 2},
     PANDA_DEAD = {id = 11, note = 'G-6', duration = 60, channel = 2},
+}
+
+--
+-- Реплики! 💬
+--
+TEXT = {
+    CHOOSE_YOUR_LANGUAGE = {
+        ['ru'] = 'ВЫБЕРИ ЯЗЫК',
+        ['en'] = 'CHOOSE YOUR LANGUAGE',
+    },
+    PRESS_Z_TO_START = {
+        ['ru'] = 'НАЖМИ Z ЧТОБЫ НАЧАТЬ',
+        ['en'] = 'PRESS Z TO START',
+    },
+    PRESS_RIGHTLEFT_TO_SELECT = {
+        ['ru'] = 'НАЖИМАЙ СТРЕЛКИ ЧТОБЫ ПОМЕНЯТЬ ЯЗЫК',
+        ['en'] = 'PRESS RIGHT/LEFT TO SELECT LANGUAGE',
+    },
+    PRESS_ANY_BUTTON_TO_RESPAWN = {
+        ['ru'] = '\n\n\n\n\n\n  ДЛЯ ВОЗРОЖДЕНИЯ НАЖМИТЕ\n   НА ОДНУ ЛЮБУЮ КНОПКУ',
+        ['en'] = '\n\n\n\n\n\n  PRESS ANY BUTTON\n   TO RESPAWN',
+    }
 }
 
 

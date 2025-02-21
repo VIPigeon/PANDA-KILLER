@@ -34,10 +34,10 @@ function game.collect_entity_spawn_information_from_tiles()
 
             local tile_id = mget(row, col)
             if tile_id == SPECIAL_TILES.panda_spawn then
-                table.insert(game.entity_spawn_info, {type = ENTITY_TYPE.panda, x = x, y = y})
+                table.insert(game.entity_spawn_info, {type = PANDA_TYPE.panda, x = x, y = y})
                 mset(row, col, 0)
             elseif tile_id == SPECIAL_TILES.chilling_panda_spawn then
-                table.insert(game.entity_spawn_info, {type = ENTITY_TYPE.chilling_panda, x = x, y = y})
+                table.insert(game.entity_spawn_info, {type = PANDA_TYPE.chilling_panda, x = x, y = y})
                 mset(row, col, 0)
             end
         end
@@ -48,20 +48,16 @@ function game.restart()
     game.player = Player:new()
 
     game.pandas = {}
-    game.chilling_pandas = {}
     for _, entity_info in ipairs(game.entity_spawn_info) do
-        if entity_info.type == ENTITY_TYPE.panda then
+        if entity_info.type == PANDA_TYPE.panda then
             table.insert(game.pandas, Panda:new(entity_info.x, entity_info.y, false))
-        elseif entity_info.type == ENTITY_TYPE.chilling_panda then
-            table.insert(game.chilling_pandas, ChillingPanda:new(entity_info.x, entity_info.y))
+        elseif entity_info.type == PANDA_TYPE.chilling_panda then
+            --?????
+            --table.insert(game.pandas, ChillingPanda:new(entity_info.x, entity_info.y))
         else
             error('Invalid entity type: ' .. entity_info.type)
         end
     end
-
-    game.entities = {}
-    -- А чилящих панд мы сюда не добавляем!
-    table.concat_table(game.entities, game.pandas)
 
     -- TODO: Это работает с рестартом?
     -- TriggerTiles.add(TriggerTile:new(24,88,8,8, TriggerActions.dialogue))
@@ -102,18 +98,14 @@ function game.update()
         game.player:update()
         TriggerTiles.update()
         game.camera:update()
-        Entities.update()
-        for _, chilling_panda in ipairs(game.chilling_pandas) do
-            -- Бешеный костыль, но на что только не пойдешь ради Clean Code (tm)!
-            ChillingPanda.special_chilling_panda_update(chilling_panda)
+        for _, panda in ipairs(game.pandas) do
+            panda:update()
         end
         update_psystems()
 
         game.draw_map()
-        Entities.draw()
-        for _, chilling_panda in ipairs(game.chilling_pandas) do
-            -- Бешеный костыль, но на что только не пойдешь ради Clean Code (tm)!
-            ChillingPanda.special_chilling_panda_draw(chilling_panda)
+        for _, panda in ipairs(game.pandas) do
+            panda:draw()
         end
         Effects.draw()
         --game.bike:draw()
