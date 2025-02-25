@@ -34,10 +34,10 @@ function game.collect_entity_spawn_information_from_tiles()
 
             local tile_id = mget(row, col)
             if tile_id == SPECIAL_TILES.panda_spawn then
-                table.insert(game.entity_spawn_info, {type = PANDA_TYPE.panda, x = x, y = y})
+                table.insert(game.entity_spawn_info, {type = PANDA_TYPE.basic, x = x, y = y})
                 mset(row, col, 0)
             elseif tile_id == SPECIAL_TILES.chilling_panda_spawn then
-                table.insert(game.entity_spawn_info, {type = PANDA_TYPE.chilling_panda, x = x, y = y})
+                table.insert(game.entity_spawn_info, {type = PANDA_TYPE.chilling, x = x, y = y})
                 mset(row, col, 0)
             end
         end
@@ -49,11 +49,10 @@ function game.restart()
 
     game.pandas = {}
     for _, entity_info in ipairs(game.entity_spawn_info) do
-        if entity_info.type == PANDA_TYPE.panda then
-            table.insert(game.pandas, Panda:new(entity_info.x, entity_info.y, false))
-        elseif entity_info.type == PANDA_TYPE.chilling_panda then
-            --?????
-            --table.insert(game.pandas, ChillingPanda:new(entity_info.x, entity_info.y))
+        if entity_info.type == PANDA_TYPE.basic then
+            table.insert(game.pandas, Panda:new(entity_info.x, entity_info.y, PANDA_TYPE.basic, false))
+        elseif entity_info.type == PANDA_TYPE.chilling then
+            table.insert(game.pandas, Panda:new(entity_info.x, entity_info.y, PANDA_TYPE.chilling, false))
         else
             error('Invalid entity type: ' .. entity_info.type)
         end
