@@ -173,6 +173,7 @@ function Player:update()
     local jump_pressed = btnp(BUTTON_Z)
     local jump_held_down = btn(BUTTON_Z)
     local attack_pressed = btnp(BUTTON_X)
+    -- local attack_held_down = btn(BUTTON_X)
 
     if DEV_MODE_ENABLED then
         walking_right = walking_right or key(KEY_D)

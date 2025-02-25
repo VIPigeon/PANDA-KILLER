@@ -113,14 +113,14 @@ PLAYER_COYOTE_TIME = 0.12                                    -- секунды
 -- https://www.reddit.com/r/gamedev/comments/w1dau6/input_buffering_action_canceling_and_also/
 PLAYER_JUMP_BUFFER_TIME = 0.18                               -- секунды
 -- Поменяйте это, чтобы игрок стал прыгать выше
-PLAYER_JUMP_HEIGHT = 20                                      -- пиксели
+PLAYER_JUMP_HEIGHT = 27                                      -- пиксели
 -- Поменяйте это, чтобы изменить время, за которое
 -- игрок достигнет высшей точки прыжка (APEX).
-PLAYER_TIME_TO_APEX = 0.33                                    -- секунды
+PLAYER_TIME_TO_APEX = 0.34                                    -- секунды
 
 -- Когда игрок не зажимает прыжок, у него увеличивается гравитация
 -- Этим достигается "усиленный прыжок" при зажатии кнопки
-PLAYER_GRAVITY_SCALE_WHEN_NOT_HOLDING = 2.0
+PLAYER_GRAVITY_SCALE_WHEN_NOT_HOLDING = 1.92
 
 -- Считается автоматически! Вручную не менять.
 PLAYER_GRAVITY = (2 * PLAYER_JUMP_HEIGHT) / (PLAYER_TIME_TO_APEX * PLAYER_TIME_TO_APEX)
@@ -175,7 +175,7 @@ PLAYER_TIME_BEFORE_SHOWING_DEATH_SCREEN_AFTER_DEATH = 1.5
 PLAYER_DEATH_KNOCKBACK_HORIZONTAL = 80
 PLAYER_DEATH_KNOCKBACK_VERTICAL = 80
 
-PLAYER_JUMP_BY_HIT = PLAYER_JUMP_STRENGTH * 1
+PLAYER_JUMP_BY_HIT = PLAYER_JUMP_STRENGTH * 1.03
 PLAYER_ATTACK_COOLDOWN = 0.2                  -- секунды
 
 
