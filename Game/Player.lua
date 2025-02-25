@@ -171,15 +171,15 @@ function Player:update()
     local looking_up = btn(BUTTON_UP)
     local jump_pressed = btnp(BUTTON_Z)
     local attack_pressed = btnp(BUTTON_X)
-    
-    if GAMEMODE == GAMEMODE_DEBUG then
+
+    if DEV_MODE_ENABLED then
         walking_right = walking_right or key(KEY_D)
         walking_left = walking_left or key(KEY_A)
         looking_down = looking_down or key(KEY_S)
         looking_up = looking_up or key(KEY_W)
         jump_pressed = jump_pressed or keyp(KEY_W)
     end
-    
+
     if jump_pressed then
         self.jump_buffer_time = PLAYER_JUMP_BUFFER_TIME
     end
@@ -289,15 +289,14 @@ function Player:update()
         game.camera:shake(PLAYER_ATTACK_SHAKE_MAGNITUDE, PLAYER_ATTACK_SHAKE_DURATION)
     end
 
-    if not moving_right and not moving_left then
-        if is_on_ground then
-            self.velocity.x = self.velocity.x - self.velocity.x * PLAYER_FRICTION * Time.dt()
-        else
-            -- Типа в воздухе другое сопротивление 💨
-            -- Не знаю, на сколько это нужно 😅
-            self.velocity.x = self.velocity.x - self.velocity.x * PLAYER_AIR_FRICTION * Time.dt()
-        end
+    if is_on_ground then
+        self.velocity.x = self.velocity.x - self.velocity.x * PLAYER_FRICTION * Time.dt()
+    else
+        -- Типа в воздухе другое сопротивление 💨
+        -- Не знаю, на сколько это нужно 😅
+        self.velocity.x = self.velocity.x - self.velocity.x * PLAYER_AIR_FRICTION * Time.dt()
     end
+
     local not_at_speed_limit = math.abs(self.velocity.x) < PLAYER_MAX_HORIZONTAL_SPEED
     if not_at_speed_limit then
         if walking_right then
@@ -387,11 +386,9 @@ function Player:update()
 
     self.velocity.y = math.clamp(self.velocity.y, -PLAYER_MAX_FALL_SPEED, PLAYER_MAX_FALL_SPEED)
 
-    local moving_right = self.velocity.x > 0
-    local moving_left  = self.velocity.x < 0
-    if moving_right then
+    if self.velocity.x > 0 then
         self.looking_left = false
-    elseif moving_left then
+    elseif self.velocity.x < 0 then
         self.looking_left = true
     end
 
