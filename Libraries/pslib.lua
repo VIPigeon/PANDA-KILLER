@@ -120,7 +120,8 @@ function update_ps(ps, timenow)
 		p.y = p.y + p.vy
 
 		local dead = false
-		if (p.x<0 or p.x>240 or p.y<0 or p.y>136) then
+        local tx, ty = game.camera:transform_coordinates(p.x, p.y)
+		if (tx<0 or tx>240 or ty<0 or ty>136) then
 			dead = true
 		end
 

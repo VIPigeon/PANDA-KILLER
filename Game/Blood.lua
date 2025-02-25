@@ -39,14 +39,14 @@ function create_blood(x, y, orientation)
     }
     )
     if orientation == 1 then
-        table.insert(ps.emitters, 
+        table.insert(ps.emitters,
         {
             emitfunc = emitter_point,
             params = { x = x, y = y, minstartvx = minstartvx, maxstartvx = maxstartvx, minstartvy = minstartvy, maxstartvy = maxstartvy }
         }
         )
-    else 
-        table.insert(ps.emitters, 
+    else
+        table.insert(ps.emitters,
         {
             emitfunc = emitter_point,
             params = { x = x, y = y, minstartvx = -1*minstartvx, maxstartvx = -1*maxstartvx, minstartvy = minstartvy, maxstartvy = maxstartvy }
@@ -60,13 +60,13 @@ function create_blood(x, y, orientation)
     }
     )
     table.insert(ps.affectors,
-    { 
+    {
         affectfunc = affect_force,
         params = { fx = fx, fy = fy}
     }
     )
     table.insert(ps.affectors,
-    { 
+    {
         affectfunc = affect_stopzone,
         params = { zoneminx = zoneminx, zonemaxx = zonemaxx, zoneminy = zoneminy, zonemaxy = zonemaxy }
     }
