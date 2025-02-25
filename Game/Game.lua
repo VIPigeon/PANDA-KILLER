@@ -26,10 +26,6 @@ function game.collect_entity_spawn_information_from_tiles()
 
     for row = 0, WORLD_TILEMAP_WIDTH do
         for col = 0, WORLD_TILEMAP_HEIGHT do
-            for _, id in ipairs(SPECIAL_TILES) do
-                trace(id)
-            end
-
             local x, y = Basic.tile_to_world(row, col)
 
             local tile_id = mget(row, col)

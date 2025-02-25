@@ -116,7 +116,11 @@ PLAYER_JUMP_BUFFER_TIME = 0.18                               -- секунды
 PLAYER_JUMP_HEIGHT = 20                                      -- пиксели
 -- Поменяйте это, чтобы изменить время, за которое
 -- игрок достигнет высшей точки прыжка (APEX).
-PLAYER_TIME_TO_APEX = 0.33                                   -- секунды
+PLAYER_TIME_TO_APEX = 0.33                                    -- секунды
+
+-- Когда игрок не зажимает прыжок, у него увеличивается гравитация
+-- Этим достигается "усиленный прыжок" при зажатии кнопки
+PLAYER_GRAVITY_SCALE_WHEN_NOT_HOLDING = 2.0
 
 -- Считается автоматически! Вручную не менять.
 PLAYER_GRAVITY = (2 * PLAYER_JUMP_HEIGHT) / (PLAYER_TIME_TO_APEX * PLAYER_TIME_TO_APEX)

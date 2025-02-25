@@ -55,6 +55,7 @@ function Player:new()
         looking_left = false,
         was_on_ground_last_frame = false,
         was_sliding_on_wall_last_frame = false,
+        we_jumped_off_a_panda = false,
         is_dead = false,
         hide = false,  -- Когда игрок садится на байк, его надо прятать
 
@@ -170,6 +171,7 @@ function Player:update()
     local looking_down = btn(BUTTON_DOWN)
     local looking_up = btn(BUTTON_UP)
     local jump_pressed = btnp(BUTTON_Z)
+    local jump_held_down = btn(BUTTON_Z)
     local attack_pressed = btnp(BUTTON_X)
 
     if DEV_MODE_ENABLED then
@@ -216,79 +218,6 @@ function Player:update()
         end
     end
 
-    if self.attack_timer > 0 and
-           table.contains(PLAYER_ATTACK_SPRITES, self.animation_controller.sprite) and
-           self.animation_controller:animation_ended()
-    then
-        local attack_direction_x = 0
-        local attack_direction_y = 0
-        if looking_down then
-            attack_direction_y = attack_direction_y + 1
-        elseif looking_up then
-            attack_direction_y = attack_direction_y - 1
-        else
-            if self.looking_left then
-                attack_direction_x = attack_direction_x - 1
-            else
-                attack_direction_x = attack_direction_x + 1
-            end
-        end
-
-        local attack_width = 8 + 5 * math.abs(attack_direction_x)
-        local attack_height = 8 + 5 * math.abs(attack_direction_y)
-        local attack_x = player_rect:center_x() - attack_width / 2 + attack_direction_x * 8
-        local attack_y = player_rect:center_y() - attack_height / 2 + attack_direction_y * 8
-        local attack_rect = Rect:new(attack_x, attack_y, attack_width, attack_height)
-
-        -- Выделение памяти 🤮
-        self.attack_rects = {attack_rect, player_rect}
-
-        local hit_pandas = {}
-        for _, panda in ipairs(game.pandas) do
-            local panda_rect = Hitbox.rect_of(panda)
-            for _, rect in ipairs(self.attack_rects) do
-                if Physics.check_collision_rect_rect(rect, panda_rect) then
-                    table.insert(hit_pandas, panda)
-                    break
-                end
-            end
-        end
-        if #hit_pandas > 0 then
-            if looking_down then
-                self.velocity.y = PLAYER_JUMP_BY_HIT
-            end
-
-            for _, panda in ipairs(hit_pandas) do
-                -- Я положу здесь новую механику, каваи-гоплит не заметит грязный код,
-                -- потому что он окружен обширным комментарием с смайликами😉
-                -- да и монолитность не пропала, тут действительно не к чему придраться😎
-                -- кхм, так вот - перетягивание бамбука
-                if panda.kantugging_friend_panda then
-                    ClickerMinigame.init(panda)
-                    return
-                end
-                panda:take_damage(attack_direction_x, attack_direction_y)
-            end
-            self.attack_timer = 0
-        end
-
-        if not self.just_attacked then
-            self.just_attacked = true
-            if attack_direction_y > 0 then
-                self.attack_effect = ChildBody:new(self, 8 * attack_direction_x, 8 * attack_direction_y, SPRITES.particle_effects.downward_attack)
-            elseif attack_direction_y < 0 then
-                self.attack_effect = ChildBody:new(self, 0, -16, SPRITES.particle_effects.upward_attack)
-            else
-                local flip = (attack_direction_x < 0) and 1 or 0
-                self.attack_effect = ChildBody:new(self, 8 * attack_direction_x, -8 + 8 * attack_direction_y, SPRITES.particle_effects.horizontal_attack, flip)
-            end
-            self.attack_effect_time = PLAYER_ATTACK_EFFECT_DURATION
-            self.attack_cooldown = PLAYER_ATTACK_COOLDOWN
-        end
-
-        game.camera:shake(PLAYER_ATTACK_SHAKE_MAGNITUDE, PLAYER_ATTACK_SHAKE_DURATION)
-    end
-
     if is_on_ground then
         self.velocity.x = self.velocity.x - self.velocity.x * PLAYER_FRICTION * Time.dt()
     else
@@ -313,10 +242,14 @@ function Player:update()
     end
 
     if not is_on_ground then
+        local gravity_scale = 1
+        if self.velocity.y > 0 and not jump_held_down and not self.we_jumped_off_a_panda then
+            gravity_scale = PLAYER_GRAVITY_SCALE_WHEN_NOT_HOLDING
+        end
         if self.remove_horizontal_speed_limit_time == 0.0 then
-            self.velocity.y = self.velocity.y - PLAYER_GRAVITY * Time.dt()
+            self.velocity.y = self.velocity.y - gravity_scale * PLAYER_GRAVITY * Time.dt()
         else
-            self.velocity.y = self.velocity.y - PLAYER_GRAVITY_AFTER_WALL_JUMP * Time.dt()
+            self.velocity.y = self.velocity.y - gravity_scale * PLAYER_GRAVITY_AFTER_WALL_JUMP * Time.dt()
         end
     end
 
@@ -351,8 +284,13 @@ function Player:update()
         Basic.play_sound(SOUNDS.PLAYER_JUMP)
     end
 
-    if is_on_ground and not self.was_on_ground_last_frame then
-        Effects.add(self.x, self.y, SPRITES.particle_effects.land)
+    if is_on_ground then
+        if self.velocity.y == 0 then
+            self.we_jumped_off_a_panda = false
+        end
+        if not self.was_on_ground_last_frame then
+            Effects.add(self.x, self.y, SPRITES.particle_effects.land)
+        end
     end
 
     if not is_on_ground and self.was_on_ground_last_frame and self.velocity.y <= 0 then
@@ -402,6 +340,81 @@ function Player:update()
     local vertical_collision = Physics.move_y(self)
     if vertical_collision ~= nil then
         self.velocity.y = 0
+    end
+
+    -- Атака
+    if self.attack_timer > 0 and
+           table.contains(PLAYER_ATTACK_SPRITES, self.animation_controller.sprite) and
+           self.animation_controller:animation_ended()
+    then
+        local attack_direction_x = 0
+        local attack_direction_y = 0
+        if looking_down then
+            attack_direction_y = attack_direction_y + 1
+        elseif looking_up then
+            attack_direction_y = attack_direction_y - 1
+        else
+            if self.looking_left then
+                attack_direction_x = attack_direction_x - 1
+            else
+                attack_direction_x = attack_direction_x + 1
+            end
+        end
+
+        local attack_width = 8 + 5 * math.abs(attack_direction_x)
+        local attack_height = 8 + 5 * math.abs(attack_direction_y)
+        local attack_x = player_rect:center_x() - attack_width / 2 + attack_direction_x * 8
+        local attack_y = player_rect:center_y() - attack_height / 2 + attack_direction_y * 8
+        local attack_rect = Rect:new(attack_x, attack_y, attack_width, attack_height)
+
+        -- Выделение памяти 🤮
+        self.attack_rects = {attack_rect, player_rect}
+
+        local hit_pandas = {}
+        for _, panda in ipairs(game.pandas) do
+            local panda_rect = Hitbox.rect_of(panda)
+            for _, rect in ipairs(self.attack_rects) do
+                if Physics.check_collision_rect_rect(rect, panda_rect) then
+                    table.insert(hit_pandas, panda)
+                    break
+                end
+            end
+        end
+        if #hit_pandas > 0 then
+            if looking_down then
+                self.velocity.y = PLAYER_JUMP_BY_HIT
+                self.we_jumped_off_a_panda = true
+            end
+
+            for _, panda in ipairs(hit_pandas) do
+                -- Я положу здесь новую механику, каваи-гоплит не заметит грязный код,
+                -- потому что он окружен обширным комментарием с смайликами😉
+                -- да и монолитность не пропала, тут действительно не к чему придраться😎
+                -- кхм, так вот - перетягивание бамбука
+                if panda.kantugging_friend_panda then
+                    ClickerMinigame.init(panda)
+                    return
+                end
+                panda:take_damage(attack_direction_x, attack_direction_y)
+            end
+            self.attack_timer = 0
+        end
+
+        if not self.just_attacked then
+            self.just_attacked = true
+            if attack_direction_y > 0 then
+                self.attack_effect = ChildBody:new(self, 8 * attack_direction_x, 8 * attack_direction_y, SPRITES.particle_effects.downward_attack)
+            elseif attack_direction_y < 0 then
+                self.attack_effect = ChildBody:new(self, 0, -16, SPRITES.particle_effects.upward_attack)
+            else
+                local flip = (attack_direction_x < 0) and 1 or 0
+                self.attack_effect = ChildBody:new(self, 8 * attack_direction_x, -8 + 8 * attack_direction_y, SPRITES.particle_effects.horizontal_attack, flip)
+            end
+            self.attack_effect_time = PLAYER_ATTACK_EFFECT_DURATION
+            self.attack_cooldown = PLAYER_ATTACK_COOLDOWN
+        end
+
+        game.camera:shake(PLAYER_ATTACK_SHAKE_MAGNITUDE, PLAYER_ATTACK_SHAKE_DURATION)
     end
 
     -- Анимациями занимаются здесь 🏭
