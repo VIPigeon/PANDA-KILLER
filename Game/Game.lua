@@ -24,7 +24,7 @@ function game.restart()
     game.player = Player:new(PLAYER_SPAWNPOINT_X, PLAYER_SPAWNPOINT_Y)
 
     game.pandas = {
-        Panda:new(60, 95, false),
+        Panda:new(60, 95, true),
         Panda:new(130, 95, false),
         Panda:new(150, 48, false),
     }
@@ -55,6 +55,7 @@ function game.update()
         game.dialog_window:update()
         game.dialog_window:draw()
     elseif game.state == GAME_STATE_RIDING_BIKE then
+        trace('bikeini')
         game.draw_map()
         for _, dialog_window in ipairs(game.CRUTCH_dialog_window) do
             dialog_window:update()
@@ -62,6 +63,19 @@ function game.update()
         for _, dialog_window in ipairs(game.CRUTCH_dialog_window) do
             dialog_window:draw()
         end
+    elseif game.state == GAME_STATE_TRIGGERED then
+        trace('triggered')
+        game.draw_map()
+        for _, dialog_window in ipairs(game.CRUTCH_dialog_window) do
+            dialog_window:update()
+        end
+        for _, dialog_window in ipairs(game.CRUTCH_dialog_window) do
+            dialog_window:draw()
+        end
+    elseif game.state == GAME_STATE_CLICKERMINIGAME then
+        trace('clickerd')
+        ClickerMinigame:update()
+        ClickerMinigame:draw()
     elseif game.state == GAME_STATE_GAMEPLAY then
         game.dialog_window:update()
         --game.bike:update()
