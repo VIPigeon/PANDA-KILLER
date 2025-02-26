@@ -247,7 +247,10 @@ function Player:update()
                     direction_x = attack_direction_x,
                     direction_y = attack_direction_y,
                     speed = self.bullet_speed,  
-                    rect = Rect:new(player_rect:center_x() + attack_direction_x, player_rect:center_y() + attack_direction_y, 2, 2)
+                    rect = Rect:new(player_rect:center_x() + attack_direction_x, 
+                                    player_rect:center_y() + attack_direction_y, 
+                                    BULLET_WIDTH, 
+                                    BULLET_HEIGHT)
                 }
                 table.insert(self.bullets, bullet)
             end
@@ -335,10 +338,9 @@ function Player:update()
                 end
             end
 
-            tile11 = {}
-            tile11= Physics.check_collision_rect_tilemap(bullet.rect) 
+            local collision= Physics.check_collision_rect_tilemap(bullet.rect) 
             
-            if(tile11 ~= nil) then
+            if(collision ~= nil) then
                 table.remove(self.bullets,i)
             end
         end
@@ -538,7 +540,7 @@ function Player:draw()
 
     for _, bullet in ipairs(self.bullets) do
         local tx_bullet, ty_bullet = game.camera:transform_coordinates(bullet.x,bullet.y)
-        rect(tx_bullet, ty_bullet, 2, 2, 15) 
+        rect(tx_bullet, ty_bullet, BULLET_WIDTH, BULLET_HEIGHT, 15) 
     end
 
     self.animation_controller:draw(tx, ty, flip)
