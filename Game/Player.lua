@@ -72,6 +72,10 @@ function Player:new()
         time_we_have_been_running = 0.0,
 
         time_before_showing_death_screen = 0.0,
+
+        bullet_speed = 50,
+        bullets = {},
+        is_hooting = true,
     }
 
     setmetatable(object, self)
@@ -94,6 +98,25 @@ function Player:die(kill_velocity_x, kill_velocity_y)
     self.hat = Hat:new(self.x, self.y, 0.5 * self.velocity.x + kill_velocity_x, 0.5 * self.velocity.y + kill_velocity_y)
 
     Basic.play_sound(SOUNDS.PLAYER_DEAD)
+end
+
+function Player:measuring_direction_attack(looking_up,looking_down)
+    local attack_direction_x = 0
+    local attack_direction_y = 0
+
+    if looking_down then
+        attack_direction_y = attack_direction_y + 1
+    elseif looking_up then
+        attack_direction_y = attack_direction_y - 1
+    else
+        if self.looking_left then
+            attack_direction_x = attack_direction_x - 1
+        else
+            attack_direction_x = attack_direction_x + 1
+        end
+    end
+
+    return attack_direction_x, attack_direction_y
 end
 
 function Player:update()
@@ -185,6 +208,8 @@ function Player:update()
     end
 
 
+
+
     if attack_pressed and self.attack_cooldown == 0 then
         self.attack_buffer_time = PLAYER_ATTACK_BUFFER_TIME
         if not is_on_ground then
@@ -213,26 +238,29 @@ function Player:update()
             self.attack_timer = PLAYER_ATTACK_DURATION
             self.attack_buffer_time = 0.0
             Basic.play_sound(SOUNDS.PLAYER_ATTACK)
+
+            if(self.is_hooting) then
+                local attack_direction_x, attack_direction_y = self:measuring_direction_attack(looking_up,looking_down)
+                local bullet = {
+                    x = player_rect:center_x() + attack_direction_x, 
+                    y = player_rect:center_y() + attack_direction_y,
+                    direction_x = attack_direction_x,
+                    direction_y = attack_direction_y,
+                    speed = self.bullet_speed,  
+                    rect = Rect:new(player_rect:center_x() + attack_direction_x, player_rect:center_y() + attack_direction_y, 2, 2)
+                }
+                table.insert(self.bullets, bullet)
+            end
         end
     end
 
     if self.attack_timer > 0 and
            table.contains(PLAYER_ATTACK_SPRITES, self.animation_controller.sprite) and
-           self.animation_controller:animation_ended()
+           self.animation_controller:animation_ended() and
+           not self.is_hooting
     then
-        local attack_direction_x = 0
-        local attack_direction_y = 0
-        if looking_down then
-            attack_direction_y = attack_direction_y + 1
-        elseif looking_up then
-            attack_direction_y = attack_direction_y - 1
-        else
-            if self.looking_left then
-                attack_direction_x = attack_direction_x - 1
-            else
-                attack_direction_x = attack_direction_x + 1
-            end
-        end
+
+        local attack_direction_x, attack_direction_y = self:measuring_direction_attack(looking_up,looking_down)
 
         local attack_width = 8 + 5 * math.abs(attack_direction_x)
         local attack_height = 8 + 5 * math.abs(attack_direction_y)
@@ -287,6 +315,33 @@ function Player:update()
         end
 
         game.camera:shake(PLAYER_ATTACK_SHAKE_MAGNITUDE, PLAYER_ATTACK_SHAKE_DURATION)
+    end
+
+    if (self.is_hooting) then
+        for i = #self.bullets, 1, -1 do
+            local bullet = self.bullets[i]
+
+            bullet.x = bullet.x + bullet.direction_x * bullet.speed * Time.dt()
+            bullet.y = bullet.y + bullet.direction_y * bullet.speed * Time.dt()
+            bullet.rect:move(bullet.direction_x * bullet.speed * Time.dt(), bullet.direction_y * bullet.speed * Time.dt())
+
+            for _, panda in ipairs(game.pandas) do
+                local panda_rect = Hitbox.rect_of(panda)
+                
+                if Physics.check_collision_rect_rect(bullet.rect, panda_rect) then
+                    panda:take_damage(bullet.direction_x, bullet.direction_y)
+                    table.remove(self.bullets,i)
+                    break
+                end
+            end
+
+            tile11 = {}
+            tile11= Physics.check_collision_rect_tilemap(bullet.rect) 
+            
+            if(tile11 ~= nil) then
+                table.remove(self.bullets,i)
+            end
+        end
     end
 
     if not moving_right and not moving_left then
@@ -479,6 +534,11 @@ function Player:draw()
         --if attack_rect.y < Hitbox.rect_of(self).y - 2 then
         --    flip = flip + 2
         --end
+    end
+
+    for _, bullet in ipairs(self.bullets) do
+        local tx_bullet, ty_bullet = game.camera:transform_coordinates(bullet.x,bullet.y)
+        rect(tx_bullet, ty_bullet, 2, 2, 15) 
     end
 
     self.animation_controller:draw(tx, ty, flip)
