@@ -359,6 +359,7 @@ function Panda:update()
         if self.charging_dash_time_left == 0.0 then
             Basic.play_sound(SOUNDS.PANDA_DASH)
             self.state = PANDA_STATE.dashing
+
             self.time_since_dashing = 0.0
             self.velocity.x = PANDA_SETTINGS[self.type].dash_strength * self.look_direction
         end
@@ -410,6 +411,46 @@ function Panda:update()
         end
 
     elseif self.state == PANDA_STATE.dashing then
+
+        if self.animation_controller:is_at_last_frame() then
+            if self.basic_attack_time_left == 0.0 then
+                local flip = (self.look_direction < 0) and 1 or 0
+                self.attack_effect = ChildBody:new(
+                    self,
+                    8 * (self.look_direction - flip),
+                    -8 * (self.animation_controller:current_animation().height - 1),
+                    SPRITES.particle_effects.horizontal_attack,
+                    flip
+                )
+                self.attack_effect_time = PANDA_BASIC_ATTACK_EFFECT_DURATION
+                self.basic_attack_time_left = PANDA_BASIC_ATTACK_DURATION
+            else
+                local attack_width = 22
+                local attack_rect = Rect:new(
+                    our_rect:center_x() + 8 * self.look_direction - attack_width / 2,
+                    our_rect:top(),
+                    attack_width,
+                    8
+                )
+
+                -- Раскомментируйте, чтобы посмотреть на hurtbox атаки панды.
+                --Debug.add(function()
+                --    attack_rect:draw(2)
+                --    our_rect:draw(2)
+                --end)
+
+                if Physics.check_collision_rect_rect(our_rect, player_rect) then
+                    player:die(self.look_direction, 0)
+                elseif Physics.check_collision_rect_rect(attack_rect, player_rect) then
+                    player:die(self.look_direction, 0)
+                end
+
+                self.basic_attack_time_left = Basic.tick_timer(self.basic_attack_time_left)
+                if self.basic_attack_time_left == 0.0 then
+                    self.state = PANDA_STATE.chase
+                end
+            end
+        end
 
         if Physics.check_collision_rect_rect(our_rect, player_rect) then
             game.player:die(self.velocity.x, self.velocity.y)
@@ -476,7 +517,7 @@ function Panda:update()
     elseif self.state == PANDA_STATE.charging_dash then
         self.animation_controller:set_sprite(sprites.charging_dash)
     elseif self.state == PANDA_STATE.dashing then
-        self.animation_controller:set_sprite(sprites.dash)
+        self.animation_controller:set_sprite(sprites.dashing)
     elseif self.state == PANDA_STATE.sleeping then
         self.animation_controller:set_sprite(sprites.sleeping)
     end

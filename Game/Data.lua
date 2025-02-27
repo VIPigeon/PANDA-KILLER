@@ -116,7 +116,7 @@ PLAYER_JUMP_BUFFER_TIME = 0.18                               -- секунды
 PLAYER_JUMP_HEIGHT = 27                                      -- пиксели
 -- Поменяйте это, чтобы изменить время, за которое
 -- игрок достигнет высшей точки прыжка (APEX).
-PLAYER_TIME_TO_APEX = 0.34                                    -- секунды
+PLAYER_TIME_TO_APEX = 0.35                                    -- секунды
 
 -- Когда игрок не зажимает прыжок, у него увеличивается гравитация
 -- Этим достигается "усиленный прыжок" при зажатии кнопки
@@ -344,6 +344,7 @@ SPRITES = {
             walk = Animation:new({256, 257}, 22):to_sprite(),
             chase = Animation:new({259, 260}, 10):to_sprite(),
             rest = Animation:new({256, 272}, 20):to_sprite(),
+            dashing = Animation:new({267, 268, 269, 270}, 3):with_size(1, 2):at_end_goto_last_frame():to_sprite(),
             charging_basic_attack = Sprite:new_complex({
                 Animation:new({282}, 10),
                 Animation:new({267, 268, 269, 270}, 3):with_size(1, 2):at_end_goto_last_frame()
