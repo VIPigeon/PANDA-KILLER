@@ -160,7 +160,11 @@ function Panda:take_damage(hit_x, hit_y)
         elseif hit_x > 0 then
             self.velocity.x = PANDA_STUN_KNOCKBACK_HORIZONTAL
         end
-        self.velocity.y = PANDA_STUN_KNOCKBACK_VERTICAL
+        if hit_y < 0 then
+            self.velocity.y = PANDA_STUN_KNOCKBACK_VERTICAL_FROM_VERTICAL_ATTACK
+        else
+            self.velocity.y = PANDA_STUN_KNOCKBACK_VERTICAL
+        end
 
         self.rest_time = 0.0
         self.count_of_recent_hits = 0
@@ -173,7 +177,11 @@ function Panda:take_damage(hit_x, hit_y)
         else
             self.velocity.x = PANDA_KNOCKBACK_HORIZONTAL
         end
-        self.velocity.y = PANDA_KNOCKBACK_VERTICAL
+        if hit_y < 0 then
+            self.velocity.y = PANDA_KNOCKBACK_VERTICAL_FROM_VERTICAL_ATTACK
+        else
+            self.velocity.y = PANDA_KNOCKBACK_VERTICAL
+        end
 
         self.state = PANDA_STATE.staggered
         self.stagger_time_left = PANDA_STAGGER_DURATION
@@ -532,6 +540,10 @@ end
 
 -- Направления: -1 влево, 1 вправо
 function Panda:set_look_direction(new_look_direction)
+    if new_look_direction == 0 then
+        return
+    end
+
     assert(new_look_direction == 1 or new_look_direction == -1)
     if new_look_direction == self.look_direction then
         return
