@@ -362,8 +362,8 @@ function Player:update()
             end
         end
 
-        local attack_width = 8 + 5 * math.abs(attack_direction_x)
-        local attack_height = 8 + 5 * math.abs(attack_direction_y)
+        local attack_width = 8 + 4 * math.abs(attack_direction_x)
+        local attack_height = 8 + 4 * math.abs(attack_direction_y)
         local attack_x = player_rect:center_x() - attack_width / 2 + attack_direction_x * 8
         local attack_y = player_rect:center_y() - attack_height / 2 + attack_direction_y * 8
         local attack_rect = Rect:new(attack_x, attack_y, attack_width, attack_height)

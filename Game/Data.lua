@@ -256,8 +256,8 @@ PANDA_X_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK = 20
 PANDA_Y_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK = 14
 -- Время, которое панда будет держать свой последний кадр
 -- анимации атаки.
-PANDA_BASIC_ATTACK_DURATION = 0.3
-PANDA_BASIC_ATTACK_EFFECT_DURATION = PLAYER_ATTACK_EFFECT_DURATION
+PANDA_BASIC_ATTACK_EFFECT_DURATION = 0.25
+PANDA_BASIC_ATTACK_DURATION = PANDA_BASIC_ATTACK_EFFECT_DURATION - 0.08
 
 PANDA_X_DISTANCE_TO_PLAYER_UNTIL_DASH = 32
 PANDA_Y_DISTANCE_TO_PLAYER_UNTIL_DASH = 24
@@ -286,7 +286,7 @@ PANDA_STUN_DURATION = 2.5
 
 -- Отбрасывание панды от игрока при обычном стаггере
 PANDA_KNOCKBACK_HORIZONTAL = 20.0
-PANDA_KNOCKBACK_VERTICAL = 10.0
+PANDA_KNOCKBACK_VERTICAL = 50.0
 -- При стане
 PANDA_STUN_KNOCKBACK_HORIZONTAL = 75.0
 PANDA_STUN_KNOCKBACK_VERTICAL = 60.0
@@ -347,7 +347,7 @@ SPRITES = {
             dashing = Animation:new({267, 268, 269, 270}, 3):with_size(1, 2):at_end_goto_last_frame():to_sprite(),
             charging_basic_attack = Sprite:new_complex({
                 Animation:new({282}, 10),
-                Animation:new({267, 268, 269, 270}, 3):with_size(1, 2):at_end_goto_last_frame()
+                Animation:new({267, 268, 269, 270}, 2):with_size(1, 2):at_end_goto_last_frame()
             }),
             charging_dash = Animation:new({258}, 1):to_sprite(),
             dash = Animation:new({263}, 1):to_sprite(),
