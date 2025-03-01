@@ -20,6 +20,11 @@ KEY_W = 23
 KEY_A = 01
 KEY_S = 19
 KEY_D = 04
+KEY_SPACE = 48
+
+KEY_E = 5
+KEY_F = 6
+KEY_J = 10
 
 --[[
 
@@ -436,6 +441,47 @@ TEXT = {
     }
 }
 
+--
+-- Бинды на клавиши ⌨️
+--
+CONTROLS = {
+    left      = { keys = { KEY_A },     buttons = { BUTTON_LEFT }, },
+    right     = { keys = { KEY_D },     buttons = { BUTTON_RIGHT }, },
+    look_up   = { keys = { KEY_W },     buttons = { BUTTON_UP }, },
+    look_down = { keys = { KEY_S },     buttons = { BUTTON_DOWN }, },
+    jump      = { keys = { KEY_SPACE }, buttons = { BUTTON_Z }, },
+    attack    = { keys = { KEY_E, KEY_F, KEY_J },           buttons = { BUTTON_X }, },
+}
+
+function was_just_pressed(control)
+    local pressed = false
+    for _, keyboard_key in ipairs(control.keys) do
+        if keyp(keyboard_key) then
+            pressed = true
+        end
+    end
+    for _, button in ipairs(control.buttons) do
+        if btnp(button) then
+            pressed = true
+        end
+    end
+    return pressed
+end
+
+function is_held_down(control)
+    local held_down = false
+    for _, keyboard_key in ipairs(control.keys) do
+        if key(keyboard_key) then
+            held_down = true
+        end
+    end
+    for _, button in ipairs(control.buttons) do
+        if btn(button) then
+            held_down = true
+        end
+    end
+    return held_down
+end
 
 
 data.bad_tile = {}

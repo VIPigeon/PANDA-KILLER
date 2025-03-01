@@ -166,27 +166,17 @@ function Player:update()
     end
 
     -- 2. Считываем ввод, работаем только с self.velocity
-    local walking_right = btn(BUTTON_RIGHT)
-    local walking_left = btn(BUTTON_LEFT)
-    local looking_down = btn(BUTTON_DOWN)
-    local looking_up = btn(BUTTON_UP)
-    local jump_pressed = btnp(BUTTON_Z) or keyp(KEY_W)
-    local jump_held_down = btn(BUTTON_Z) or key(KEY_W)
-    local attack_pressed = btnp(BUTTON_X)
-    -- local attack_held_down = btn(BUTTON_X)
-
-    if DEV_MODE_ENABLED then
-        walking_right = walking_right or key(KEY_D)
-        walking_left = walking_left or key(KEY_A)
-        looking_down = looking_down or key(KEY_S)
-        looking_up = looking_up or key(KEY_W)
-        jump_pressed = jump_pressed or keyp(KEY_W)
-    end
+    local walking_right = is_held_down(CONTROLS.right)
+    local walking_left = is_held_down(CONTROLS.left)
+    local looking_down = is_held_down(CONTROLS.look_down)
+    local looking_up = is_held_down(CONTROLS.look_up)
+    local jump_pressed = was_just_pressed(CONTROLS.jump)
+    local jump_held_down = is_held_down(CONTROLS.jump)
+    local attack_pressed = was_just_pressed(CONTROLS.attack)
 
     if jump_pressed then
         self.jump_buffer_time = PLAYER_JUMP_BUFFER_TIME
     end
-
 
     if attack_pressed and self.attack_cooldown == 0 then
         self.attack_buffer_time = PLAYER_ATTACK_BUFFER_TIME
