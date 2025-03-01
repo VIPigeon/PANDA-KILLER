@@ -581,7 +581,7 @@ function is_tile_solid(tile_id)
         108 <= tile_id and tile_id <= 110 or
          1 <= tile_id and tile_id <= 4 or
         16 <= tile_id and tile_id <= 19 or
-        35 <= tile_id and tile_id <= 35 or
+        33 <= tile_id and tile_id <= 35 or
         48 < tile_id and tile_id <= 52 or
               tile_id == 80 or
               tile_id == 81

@@ -157,7 +157,7 @@ function Player:update()
     --
     local tiles_that_we_collide_with = Physics.tile_ids_that_intersect_with_rect(self.hitbox:to_rect(self.x,self.y))
     for _, collision in ipairs(tiles_that_we_collide_with) do
-        for _, bad_tile in ipairs(data.bad_tile) do
+        for _, bad_tile in pairs(data.bad_tile) do
             if collision.id == bad_tile then
                 self:die(0, 50)
                 return
@@ -170,8 +170,8 @@ function Player:update()
     local walking_left = btn(BUTTON_LEFT)
     local looking_down = btn(BUTTON_DOWN)
     local looking_up = btn(BUTTON_UP)
-    local jump_pressed = btnp(BUTTON_Z) or keyp(KEY_W)
-    local jump_held_down = btn(BUTTON_Z) or key(KEY_W)
+    local jump_pressed = btnp(BUTTON_Z)
+    local jump_held_down = btn(BUTTON_Z)
     local attack_pressed = btnp(BUTTON_X)
     -- local attack_held_down = btn(BUTTON_X)
 
