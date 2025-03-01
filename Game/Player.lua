@@ -392,6 +392,8 @@ function Player:update()
             end
         end
         if #hit_pandas > 0 then
+            game.camera:shake(PLAYER_ATTACK_SHAKE_MAGNITUDE, PLAYER_ATTACK_SHAKE_DURATION)
+
             if looking_down then
                 self.velocity.y = PLAYER_JUMP_BY_HIT
                 self.we_jumped_off_a_panda = true
@@ -424,8 +426,6 @@ function Player:update()
             self.attack_effect_time = PLAYER_ATTACK_EFFECT_DURATION
             self.attack_cooldown = PLAYER_ATTACK_COOLDOWN
         end
-
-        game.camera:shake(PLAYER_ATTACK_SHAKE_MAGNITUDE, PLAYER_ATTACK_SHAKE_DURATION)
     end
 
     -- Анимациями занимаются здесь 🏭
