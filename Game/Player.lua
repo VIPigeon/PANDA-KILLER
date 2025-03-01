@@ -84,6 +84,10 @@ function Player:die(kill_velocity_x, kill_velocity_y)
         return
     end
 
+    -- heart attack 💔 <- 💓 <- 💢
+    kill_velocity_x = kill_velocity_x or 0
+    kill_velocity_y = kill_velocity_y or 0
+
     self.velocity.x = PLAYER_DEATH_KNOCKBACK_HORIZONTAL * math.sign(kill_velocity_x)
     self.velocity.y = PLAYER_DEATH_KNOCKBACK_VERTICAL
 

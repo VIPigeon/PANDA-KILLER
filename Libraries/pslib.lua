@@ -120,10 +120,15 @@ function update_ps(ps, timenow)
 		p.y = p.y + p.vy
 
 		local dead = false
-        local tx, ty = game.camera:transform_coordinates(p.x, p.y)
-		if (tx<0 or tx>240 or ty<0 or ty>136) then
-			dead = true
-		end
+        -- ТОТ КТО ЭТО ПРОЧИТАЕТ ДОЛЖЕН ОТПРАВИТЬ ЭТО 5 СВОИМ ДРУЗЬЯМ
+        -- ИНАЧЕ ЕГО ПОСТИГНЕТ СТРАШНОЕ ПРОКЛЯТЬЕ!!! А ЕСЛИ ОТПРАВИТЕ
+        -- 5 (!) ДРУЗЬЯМ 👨 И ХЛОПНИТЕ 3 (!) РАЗА В ЛАДОШИ 👏 И ПОТОМ ПОСМОТРИТЕ
+        -- 1 (!) РАЗ ПОД ПОДУШКУ 💊, ТО НАЙДЕТЕ НОВЫЙ АЙФОН 🍎0ww.
+        --local tx, ty = game.camera:transform_coordinates(p.x, p.y)
+		--if (tx<0 or tx>240 or ty<0 or ty>136) then
+        --    trace("FUCK ME")
+		--	dead = true
+		--end
 
 		if (timenow>=p.deathtime) then
 			dead = true

@@ -47,7 +47,9 @@ KEY_J = 10
 GAME_STATE_LANGUAGE_SELECTION = 1
 GAME_STATE_GAMEPLAY = 2
 GAME_STATE_RIDING_BIKE = 3
-GAME_STATE_PAUSED = 4
+GAME_STATE_TRIGGERED = 4
+GAME_STATE_CLICKERMINIGAME = 5
+GAME_STATE_PAUSED = 6
 
 
 -- Это то, что в тике на F3
@@ -98,8 +100,8 @@ SPECIAL_TILES = {
 
 --]]
 
-PLAYER_SPAWNPOINT_X = 18*8                                      -- пиксели
-PLAYER_SPAWNPOINT_Y = 9*8                                     -- пиксели
+PLAYER_SPAWNPOINT_X = 192*8                                      -- пиксели
+PLAYER_SPAWNPOINT_Y = 12*8                                     -- пиксели
 
 --
 -- Всё что связано с движением 🏎️
@@ -520,8 +522,8 @@ data.cactus = {}
 
 data.bike = {}
 data.bike.sprite = {
-    horny = Sprite:new({488}, 1, 2, 2),
-    saddled = Sprite:new({490}, 1, 2, 2),
+    horny = Sprite:new({178}, 1, 2, 2),
+    saddled = Sprite:new({180}, 1, 2, 2),
 }
 
 data.idle = {

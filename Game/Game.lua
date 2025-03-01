@@ -3,6 +3,7 @@ game = {
     language = 'ru',
     CRUTCH_dialog_window = {},
     animated_tiles = {},
+    triggers = {},
 }
 
 if DEV_MODE_ENABLED then
@@ -37,7 +38,6 @@ function game.collect_entity_spawn_information_from_tiles()
                 table.insert(game.entity_spawn_info, {type = PANDA_TYPE.chilling, x = x, y = y})
                 mset(col, row, 0)
             elseif tile_id == SPECIAL_TILES.agro_panda_spawn then
-                trace('nonono!')
                 table.insert(game.entity_spawn_info, {type = PANDA_TYPE.agro, x = x, y = y})
                 mset(col, row, 0)
             else
@@ -70,9 +70,8 @@ function game.restart()
 
     -- TODO: Это работает с рестартом?
     -- TriggerTiles.add(TriggerTile:new(24,88,8,8, TriggerActions.dialogue))
-    game.bike = Bike:new(193*8, 113*8)
-    TriggerTiles.add(game.bike)
-    game.triggers = TriggerTiles.Tiles
+    game.bike = Bike:new(190*8, 12*8)
+    table.insert(game.triggers, game.bike)
 
     game.camera = Camera:new(game.player)
 end
@@ -95,14 +94,21 @@ function game.update()
         game.dialog_window:draw()
     elseif game.state == GAME_STATE_RIDING_BIKE then
         game.draw_map()
+        game.bike:init_go_away()
+        game.bike:go_away()
+        game.bike:draw()
+    elseif game.state == GAME_STATE_TRIGGERED then
+        game.draw_map()
         --for _, dialog_window in ipairs(game.CRUTCH_dialog_window) do
         --    dialog_window:update()
         --end
         for _, dialog_window in ipairs(game.CRUTCH_dialog_window) do
             dialog_window:draw()
         end
-        game.bike:update()
-        game.bike:draw()
+    elseif game.state == GAME_STATE_CLICKERMINIGAME then
+        trace('clickerd')
+        ClickerMinigame:update()
+        ClickerMinigame:draw()
     elseif game.state == GAME_STATE_GAMEPLAY then
         game.dialog_window:update()
         game.player:update()

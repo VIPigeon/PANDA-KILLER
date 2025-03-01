@@ -25,10 +25,11 @@
 
 ClickerMinigame = {}
 
-MAX_PLAYER_FORCE = 2
+MAX_PLAYER_FORCE = 8
 MIN_PLAYER_FORCE = 0
+MAGIC_MULTIPLIER = 16
 
-CONSTANT_PANDA_FORCE = 1
+CONSTANT_PANDA_FORCE = 4
 MAX_PROGRESS = 100
 MIN_PROGRESS = 0
 START_PROGRESS = 50
@@ -38,19 +39,23 @@ current_panda_force = CONSTANT_PANDA_FORCE
 progress = START_PROGRESS
 is_game_over = false
 is_player_win = false
+trigger_panda = nil
 
 function ClickerMinigame:init(panda)
     -- наверное придётся поменять у панды её выражение лица, жесты, позу, самочувствие.
     -- TODO so
-
-    game.status = false
+    trigger_panda = panda
+    trigger_panda:draw()
+    
+    --trace('init')
+    --trace(panda)
     -- я сделаю обёртку триггером, чтобы работало медленнее. Не люблю, когда больше 60 fps.
-    game.state = GAME_STATE_RIDING_BIKE
-    trigger = {panda= panda, text_progress= ClickerMinigame:update_progress_for_visual()}
-    local __dx_dw = DialogWindow:new(0, 0, 'hi')
-    __dx_dw.is_closed = false
-    __dx_dw:draw_tugologue(trigger)
-    table.insert(game.CRUTCH_dialog_window, __dx_dw)
+    game.state = GAME_STATE_CLICKERMINIGAME
+    --trigger = {panda= panda, text_progress= ClickerMinigame:update_progress_for_visual()}
+    --local __dx_dw = DialogWindow:new(0, 0, 'hi')
+    --__dx_dw.is_closed = false
+    --__dx_dw:draw_tugologue(trigger)
+    --table.insert(game.CRUTCH_dialog_window, __dx_dw)
 
     ClickerMinigame:reset_local_var()
 
@@ -58,31 +63,42 @@ end
 
 function ClickerMinigame:gameover()
     -- надо выйти в игру нормально и все следы миниигры уничтожить
-    --game.status = true
+    if is_player_win then
+        trace('you win')
+        trigger_panda:set_dieable_state()
+        trigger_panda.kantugging_friend_panda = false
+        -- trigger_panda:take_damage()
+
+        -- viewership awkward or other gift for player
+    else
+        game.player:die()
+    end
+    game.state = GAME_STATE_GAMEPLAY
 end
 
 function ClickerMinigame:update_progress_for_visual()
     res = ''
     
     -- haha мне лень гуглить, как умножать строки или сделать проще
-    for i = 1, progress / 10 do
+    for i = 0, progress / 10 do
         res = res..'A'
     end
 
-    return res
+    return res..'\n'
 end
 
 function ClickerMinigame:update()
     if not is_game_over then
 
         -- сделаем проверку на нажатие буквы Х
-        if BUTTON_X then
+        if btnp(BUTTON_X) then
             -- или добавим более сложную логику(не добавим, это никому не будет интересно)
+            trace('button pressed')
             current_player_force = MAX_PLAYER_FORCE
         end
 
         -- Обновление прогресса - спасибо, я бы не понял сам
-        progress = progress + (current_player_force - current_panda_force) * Time.dt()
+        progress = progress + (MAGIC_MULTIPLIER*current_player_force - current_panda_force) * Time.dt()
         trace(progress)
 
         -- Ограничение прогресса - прямо best practices массонов.
@@ -144,6 +160,23 @@ function ClickerMinigame:draw()
     -- Best wishes,
     -- код-каваи
     --
+
+
+    --dayly routine
+    game.draw_map()
+    -- for _, dialog_window in ipairs(game.CRUTCH_dialog_window) do
+    --         dialog_window:update()
+    -- end
+    -- for _, dialog_window in ipairs(game.CRUTCH_dialog_window) do
+    --         dialog_window:draw()
+    -- end
+
+    -- self.tugologue = true
+    -- да, если у dialogwindow не будет синглтоном или что-то будет происходить с triggerом,
+    -- то возможно не unопределённое behaveдение
+    -- self.trigger = trigger
+    
+    DialogWindow:draw_tugologue()
 
     -- тут стоит подумать, может стоит символично оставить только одну панду
     for _, panda in ipairs(game.pandas) do

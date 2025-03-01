@@ -112,24 +112,20 @@ function DialogWindow:draw_bikelogue(trigger)
     trigger.wrapper:draw()
 end
 
-function DialogWindow:draw_tugologue(trigger)
+function DialogWindow:draw_tugologue()
     -- я не думмаю, что это сильно плохая практика для такого небольшого количества механик,
     -- как раз, ровно столько, сколько есть у нас
-    self.tugologue = true
+    --self.tugologue = true
     -- да, если у dialogwindow не будет синглтоном или что-то будет происходить с triggerом,
     -- то возможно не unопределённое behaveдение
-    self.trigger = trigger
-    self.trigger.text_progress = ClickerMinigame.update_progress_for_visual()
+    self.text_progress = ClickerMinigame.update_progress_for_visual()
 
-    self.text = 'PROG'..self.trigger.text_progress
+    self.text = 'PROG'..self.text_progress
     -- 'BANBOOK GAME. LIFE OR DEATH?'
     self.x = 0
     self.y = 0
     rect(self.x, self.y, 50, 50, 0)
     self:draw_dialog()
-
-    ClickerMinigame:update()
-    ClickerMinigame:draw()
 end
 
 function DialogWindow:close()
@@ -139,7 +135,11 @@ function DialogWindow:close()
         self.is_closed = true
         self.text = ""
         self:draw_dialog()
+
+        -- Отзыв от **сотрудник**@sisyphus.jam (2025.02.25)
+        -- Если триггер должен быть реализован через рисовать диалог, то ниже несусветный bad design
         game.restart()
+
         game.state = GAME_STATE_GAMEPLAY
     end
 end
