@@ -77,6 +77,7 @@ function Panda:new(x, y, panda_type, can_tug)
         type = panda_type,
         state = default_state,
 
+        stun_animation = AnimationController:new(SPRITES.panda_stun_effect),
         animation_controller = AnimationController:new(SPRITES.panda[PANDA_TYPE.basic].rest),
         look_direction = math.coin_flip() and 1 or -1,
 
@@ -85,7 +86,7 @@ function Panda:new(x, y, panda_type, can_tug)
 
         -- Как же я обожаю таймеры 😍
         time_of_most_recent_hit = 0.0,
-        count_of_recent_hits = 0.0,
+        count_of_recent_hits = 0,
 
         time_after_which_we_should_attack = 0.0,
         time_since_dashing = 0.0,
@@ -149,15 +150,24 @@ function Panda:take_damage(hit_x, hit_y)
     end
 
     if self.state == PANDA_STATE.stunned then
-        self:die()
-        return
-    end
+        --
+        -- ААХХАХАХАХА Я СОШЁЛ С УМА 🥶 😷
+        --
+        self.count_of_recent_hits = self.count_of_recent_hits + 1
+        self.time_of_most_recent_hit = Time.now()
+        self.stun_time_left = PANDA_STUN_DURATION
 
-    self.count_of_recent_hits = self.count_of_recent_hits + 1
-    self.time_of_most_recent_hit = Time.now()
-
-    local panda_should_get_stunned = self.count_of_recent_hits >= PANDA_HITS_NEEDED_TO_GET_STUNNED
-    if panda_should_get_stunned then
+        if hit_x < 0 then
+            self.velocity.x = -1 * PANDA_KNOCKBACK_HORIZONTAL
+        elseif hit_x > 0 then
+            self.velocity.x = PANDA_KNOCKBACK_HORIZONTAL
+        end
+        if hit_y < 0 then
+            self.velocity.y = PANDA_KNOCKBACK_VERTICAL_FROM_VERTICAL_ATTACK
+        else
+            self.velocity.y = PANDA_KNOCKBACK_VERTICAL
+        end
+    else
         if hit_x < 0 then
             self.velocity.x = -1 * PANDA_STUN_KNOCKBACK_HORIZONTAL
         elseif hit_x > 0 then
@@ -169,25 +179,14 @@ function Panda:take_damage(hit_x, hit_y)
             self.velocity.y = PANDA_STUN_KNOCKBACK_VERTICAL
         end
 
-        self.rest_time = 0.0
-        self.count_of_recent_hits = 0
-
         self.state = PANDA_STATE.stunned
         self.stun_time_left = PANDA_STUN_DURATION
-    else
-        if hit_x < 0 then
-            self.velocity.x = -1 * PANDA_KNOCKBACK_HORIZONTAL
-        else
-            self.velocity.x = PANDA_KNOCKBACK_HORIZONTAL
-        end
-        if hit_y < 0 then
-            self.velocity.y = PANDA_KNOCKBACK_VERTICAL_FROM_VERTICAL_ATTACK
-        else
-            self.velocity.y = PANDA_KNOCKBACK_VERTICAL
-        end
+    end
 
-        self.state = PANDA_STATE.staggered
-        self.stagger_time_left = PANDA_STAGGER_DURATION
+    local panda_should_die = self.count_of_recent_hits >= PANDA_HITS_NEEDED_TO_DIE
+    if panda_should_die then
+        self.count_of_recent_hits = 0
+        self:die()
     end
 end
 
@@ -587,6 +586,11 @@ function Panda:draw()
     -- else
     --     rect(tx + 4, ty + 2, 3, 2, PANDA_STATE_COLORS[self.state])
     -- end
+
+    if self.state == PANDA_STATE.stunned then
+        self.stun_animation:draw(tx, ty - 8, flip)
+        self.stun_animation:next_frame()
+    end
 
     if self.attack_effect_time > 0.0 then
         self.attack_effect:draw()
