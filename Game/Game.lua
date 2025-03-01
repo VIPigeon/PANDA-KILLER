@@ -70,7 +70,7 @@ function game.restart()
 
     -- TODO: Это работает с рестартом?
     -- TriggerTiles.add(TriggerTile:new(24,88,8,8, TriggerActions.dialogue))
-    game.bike = Bike:new(193*8, 13*8)
+    game.bike = Bike:new(193*8, 113*8)
     TriggerTiles.add(game.bike)
     game.triggers = TriggerTiles.Tiles
 
