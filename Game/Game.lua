@@ -24,15 +24,15 @@ function game.restart()
     game.player = Player:new(PLAYER_SPAWNPOINT_X, PLAYER_SPAWNPOINT_Y)
 
     game.pandas = {
-        Panda:new(60, 95, true),
-        Panda:new(130, 95, false),
+        --Panda:new(60, 95, true),
+        --Panda:new(130, 95, false),
         Panda:new(150, 48, false),
     }
 
     -- TODO: Это работает с рестартом?
     -- TriggerTiles.add(TriggerTile:new(24,88,8,8, TriggerActions.dialogue))
-    --game.bike = Bike:new(60-8, 95-8)
-    -- TriggerTiles.add(game.bike)
+    game.bike = Bike:new(60-8, 95-8)
+    TriggerTiles.add(game.bike)
     game.triggers = TriggerTiles.Tiles
 
     game.camera = Camera:new(game.player)
@@ -57,12 +57,9 @@ function game.update()
     elseif game.state == GAME_STATE_RIDING_BIKE then
         trace('bikeini')
         game.draw_map()
-        for _, dialog_window in ipairs(game.CRUTCH_dialog_window) do
-            dialog_window:update()
-        end
-        for _, dialog_window in ipairs(game.CRUTCH_dialog_window) do
-            dialog_window:draw()
-        end
+        game.bike:init_go_away()
+        game.bike:go_away()
+        game.bike:draw()
     elseif game.state == GAME_STATE_TRIGGERED then
         trace('triggered')
         game.draw_map()

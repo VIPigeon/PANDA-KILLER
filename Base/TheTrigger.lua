@@ -118,12 +118,12 @@ function TriggerActions.bike(triggerTile)
     if true then --triggerTile.button_pressed then
         triggerTile.wrapper.sprite = data.bike.sprite.saddled
 
-        TriggerTiles.__is_active__ = {status = true, trigger = triggerTile, type = 'BIKE'}
+        --TriggerTiles.__is_active__ = {status = true, trigger = triggerTile, type = 'BIKE'}
         -- Если после сцены с байком будет что-то кроме титров(например сцена после титров), то всё сломается
         game.player.hide = true
-        local __dx_dw = DialogWindow:new(0, 0, 0, 0, '')
-        __dx_dw.is_closed = false
-        table.insert(game.CRUTCH_dialog_window, __dx_dw)
+        --local __dx_dw = DialogWindow:new(0, 0, 0, 0, '')
+        --__dx_dw.is_closed = false
+        --table.insert(game.CRUTCH_dialog_window, __dx_dw)
         game.state = GAME_STATE_RIDING_BIKE
         triggerTile:untrigger()
     end
