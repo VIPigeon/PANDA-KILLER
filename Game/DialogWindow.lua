@@ -135,7 +135,7 @@ end
 function DialogWindow:close()
     -- Я убрал отсюда проверку на BUTTON_A, потому что перестаёт работать диалог по триггеру.
     --Если это действительно нужно, потом разберёмся
-    if btnp(BUTTON_S) or btnp(BUTTON_X) or btnp(BUTTON_Z) then
+    if Basic.is_any_key_pressed() then
         self.is_closed = true
         self.text = ""
         self:draw_dialog()

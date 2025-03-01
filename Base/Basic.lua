@@ -42,3 +42,11 @@ function Basic.play_sound(sound)
     local speed = sound.speed or 0
     sfx(sound.id, sound.note, duration, channel, volume, speed)
 end
+
+-- ААА -> Capslock <- 👿
+-- Всё ломает
+function Basic.is_any_key_pressed()
+    local keyboard1 = peek(0xFF88)
+    local keyboard2 = peek(0xFFA0)
+    return keyboard1 ~= 0 or keyboard2 ~= 0
+end
