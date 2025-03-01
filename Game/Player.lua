@@ -364,7 +364,19 @@ function Player:update()
         local attack_height = 8 + 4 * math.abs(attack_direction_y)
         local attack_x = player_rect:center_x() - attack_width / 2 + attack_direction_x * 8
         local attack_y = player_rect:center_y() - attack_height / 2 + attack_direction_y * 8
+
+        -- Смотреть issue #39
+        if self.velocity.x < 0 then
+            attack_x = attack_x - 2
+        elseif self.velocity.x > 0 then
+            attack_x = attack_x + 2
+        end
+        if not is_on_ground and looking_down then
+            attack_y = attack_y + 2
+        end
+
         local attack_rect = Rect:new(attack_x, attack_y, attack_width, attack_height)
+
 
         -- Выделение памяти 🤮
         self.attack_rects = {attack_rect, player_rect}
@@ -501,9 +513,9 @@ function Player:draw()
         self.hat:draw()
     end
 
-    -- for _, attack_rect in ipairs(self.attack_rects) do
-    --    attack_rect:draw(2)
-    -- end
+    for _, attack_rect in ipairs(self.attack_rects) do
+       attack_rect:draw(2)
+    end
 end
 
 Player.__index = Player
