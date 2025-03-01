@@ -513,9 +513,9 @@ function Player:draw()
         self.hat:draw()
     end
 
-    for _, attack_rect in ipairs(self.attack_rects) do
-       attack_rect:draw(2)
-    end
+    --for _, attack_rect in ipairs(self.attack_rects) do
+    --   attack_rect:draw(2)
+    --end
 end
 
 Player.__index = Player
