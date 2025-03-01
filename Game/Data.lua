@@ -395,6 +395,11 @@ PLAYER_ATTACK_SPRITES = {
     SPRITES.player.attack_air_downward,
 }
 
+ANIMATED_TILES = {
+    Animation:new({32, 48}, 24):to_sprite(),
+    Animation:new({33, 34}, 24):to_sprite(),
+}
+
 --
 -- Звуки (sfx🤪)! 🔊
 -- 

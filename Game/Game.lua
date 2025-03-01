@@ -2,6 +2,7 @@ game = {
     state = GAME_STATE_LANGUAGE_SELECTION,
     language = 'ru',
     CRUTCH_dialog_window = {},
+    animated_tiles = {},
 }
 
 if DEV_MODE_ENABLED then
@@ -26,18 +27,25 @@ function game.collect_entity_spawn_information_from_tiles()
 
     for row = 0, WORLD_TILEMAP_WIDTH do
         for col = 0, WORLD_TILEMAP_HEIGHT do
-            local x, y = Basic.tile_to_world(row, col)
+            local x, y = Basic.tile_to_world(col, row)
 
-            local tile_id = mget(row, col)
+            local tile_id = mget(col, row)
             if tile_id == SPECIAL_TILES.panda_spawn then
                 table.insert(game.entity_spawn_info, {type = PANDA_TYPE.basic, x = x, y = y})
-                mset(row, col, 0)
+                mset(col, row, 0)
             elseif tile_id == SPECIAL_TILES.chilling_panda_spawn then
                 table.insert(game.entity_spawn_info, {type = PANDA_TYPE.chilling, x = x, y = y})
-                mset(row, col, 0)
+                mset(col, row, 0)
             elseif tile_id == SPECIAL_TILES.agro_panda_spawn then
                 table.insert(game.entity_spawn_info, {type = PANDA_TYPE.agro, x = x, y = y})
-                mset(row, col, 0)
+                mset(col, row, 0)
+            else
+                for _, tile_sprite in ipairs(ANIMATED_TILES) do
+                    local animation = tile_sprite.animation_sequence[1]
+                    if table.contains(animation.frames, tile_id) then
+                        table.insert(game.animated_tiles, {x = col, y = row, animation_controller = AnimationController:new(tile_sprite) })
+                    end
+                end
             end
         end
     end
@@ -115,12 +123,21 @@ function game.update()
         TriggerTiles.draw()
         game.dialog_window:draw()
         draw_psystems()
+        game.animate_tiles()
         Debug.draw()
     else
         error('Invalid game state!')
     end
 
     Time.update()
+end
+
+function game.animate_tiles()
+    for _, animated_tile in ipairs(game.animated_tiles) do
+        local animation = animated_tile.animation_controller
+        animation:next_frame()
+        mset(animated_tile.x, animated_tile.y, animation:current_frame())
+    end
 end
 
 function game.draw_map()
