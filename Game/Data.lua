@@ -184,6 +184,7 @@ PLAYER_DEATH_KNOCKBACK_VERTICAL = 80
 PLAYER_JUMP_BY_HIT = PLAYER_JUMP_STRENGTH * 1
 PLAYER_ATTACK_COOLDOWN = 0.2                  -- секунды
 
+PLAYER_SLOWDOWN_IN_WATER_PERCENTAGE = 0.8
 
 
 --[[
@@ -454,33 +455,42 @@ CONTROLS = {
 }
 
 function was_just_pressed(control)
-    local pressed = false
     for _, keyboard_key in ipairs(control.keys) do
         if keyp(keyboard_key) then
-            pressed = true
+            return true
         end
     end
     for _, button in ipairs(control.buttons) do
         if btnp(button) then
-            pressed = true
+            return true
         end
     end
-    return pressed
+    return false
 end
 
 function is_held_down(control)
-    local held_down = false
     for _, keyboard_key in ipairs(control.keys) do
         if key(keyboard_key) then
-            held_down = true
+            return true
         end
     end
     for _, button in ipairs(control.buttons) do
         if btn(button) then
-            held_down = true
+            return true
         end
     end
-    return held_down
+    return false
+end
+
+-- Это всё нужно убрать в какие-нибудь файлы, но эта задача
+-- для clean coder-ов 🧹
+function is_bad_tile(tile_id)
+    for _, bad_tile in ipairs(data.bad_tile) do
+        if tile_id == bad_tile then
+            return true
+        end
+    end
+    return false
 end
 
 
@@ -609,10 +619,7 @@ data.run = {
     --run_tile6 = {394,2}
 }
 
-data.bad_tile = {
-	bad_tile1 = 32,
-    bad_tile2 = 48
-}
+data.bad_tile = { 32, 33, 34, 48 }
 
 function is_tile_solid(tile_id)
     -- 2024-09-??

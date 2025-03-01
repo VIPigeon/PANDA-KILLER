@@ -131,6 +131,11 @@ function Panda:view_cone_shape()
     return Shape:new({look_ahead_rect, a_bit_behind_rect})
 end
 
+function Panda:die()
+    Basic.play_sound(SOUNDS.PANDA_DEAD)
+    table.remove_element(game.pandas, self)
+end
+
 function Panda:take_damage(hit_x, hit_y)
     Basic.play_sound(SOUNDS.PANDA_HIT)
 
@@ -144,9 +149,7 @@ function Panda:take_damage(hit_x, hit_y)
     end
 
     if self.state == PANDA_STATE.stunned then
-        -- Умираем 💀
-        Basic.play_sound(SOUNDS.PANDA_DEAD)
-        table.remove_element(game.pandas, self)
+        self:die()
         return
     end
 
@@ -500,6 +503,17 @@ function Panda:update()
     end
 
     Physics.update(self)
+
+
+    local tile_ids = Physics.tile_ids_that_intersect_with_rect(our_rect)
+    for _, collision in ipairs(tile_ids) do
+        if is_bad_tile(collision.id) then
+            create_blood(self.x, self.y, -1)
+            create_blood(self.x, self.y, 1)
+            self:die()
+            return
+        end
+    end
 
     if Time.now() - self.time_of_most_recent_hit > PANDA_TIME_INTERVAL_BETWEEN_HITS_FROM_PLAYER then
         self.count_of_recent_hits = 0

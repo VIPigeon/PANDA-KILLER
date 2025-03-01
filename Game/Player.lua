@@ -156,12 +156,12 @@ function Player:update()
     -- Этот код с плохими тайлами не мой. Так что не жалуйтесь на него! 😠
     --
     local tiles_that_we_collide_with = Physics.tile_ids_that_intersect_with_rect(self.hitbox:to_rect(self.x,self.y))
+    local are_we_in_water = false
     for _, collision in ipairs(tiles_that_we_collide_with) do
-        for _, bad_tile in ipairs(data.bad_tile) do
-            if collision.id == bad_tile then
-                self:die(0, 50)
-                return
-            end
+        if is_bad_tile(collision.id) then
+            --self:die(0, 50)
+            --return
+            are_we_in_water = true
         end
     end
 
@@ -249,7 +249,11 @@ function Player:update()
     local should_jump = self.jump_buffer_time > 0.0
     if should_jump then
         if is_on_ground and self.velocity.y <= 0 then
-            self.velocity.y = PLAYER_JUMP_STRENGTH
+            if are_we_in_water then
+                self.velocity.y = PLAYER_SLOWDOWN_IN_WATER_PERCENTAGE * PLAYER_JUMP_STRENGTH
+            else
+                self.velocity.y = PLAYER_JUMP_STRENGTH
+            end
             has_jumped = true
         elseif hugging_left_wall and not is_on_ground then
             self.velocity.y = PLAYER_WALL_JUMP_VERTICAL_STRENGTH
@@ -321,6 +325,10 @@ function Player:update()
         self.looking_left = true
     end
 
+
+    if are_we_in_water then
+        self.velocity.x = self.velocity.x * PLAYER_SLOWDOWN_IN_WATER_PERCENTAGE
+    end
 
     -- 3. Проверка коллизий. Уже не так впечатляюще, потому что я вынес код в Physics
     local horizontal_collision = Physics.move_x(self)

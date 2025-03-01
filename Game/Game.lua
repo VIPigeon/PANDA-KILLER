@@ -61,7 +61,7 @@ function game.restart()
 
     -- TODO: Это работает с рестартом?
     -- TriggerTiles.add(TriggerTile:new(24,88,8,8, TriggerActions.dialogue))
-    --game.bike = Bike:new(60-8, 95-8)
+    game.bike = Bike:new(193*8, 13*8)
     -- TriggerTiles.add(game.bike)
     game.triggers = TriggerTiles.Tiles
 
@@ -96,6 +96,7 @@ function game.update()
         game.dialog_window:update()
         --game.bike:update()
         game.player:update()
+        game.bike:update()
         TriggerTiles.update()
         game.camera:update()
         for _, panda in ipairs(game.pandas) do
@@ -110,10 +111,9 @@ function game.update()
         Effects.draw()
         --game.bike:draw()
         game.player:draw()
+        game.bike:draw()
         TriggerTiles.draw()
         game.dialog_window:draw()
-        local bx, by = game.camera:transform_coordinates(game.player.x, game.player.y)
-        draw_blood(bx, by, -1)
         draw_psystems()
         Debug.draw()
     else
