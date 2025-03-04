@@ -497,6 +497,7 @@ function is_bad_tile(tile_id)
     return false
 end
 
+data.STANDART_SCALE = 1
 
 data.bad_tile = {}
 data.panda = {}

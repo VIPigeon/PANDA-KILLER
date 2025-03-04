@@ -2,17 +2,31 @@
 
 Читайте документацию в Sprite.lua
 
+-- MakiaTrevozhin@sysithus.jam
+Не читал документацию, все фичи, что добавил работают🥰
+
 --]]
 
 
 AnimationController = {}
 
-function AnimationController:new(first_sprite)
+function AnimationController:new(first_sprite, need_custom_scale, scale)
+    need_custom_scale = need_custom_scale or false
+    
+    -- idk how game inits game.scale must be below
+    scale = scale or data.STANDART_SCALE
+    local custom_scale = nil
+
+    if need_custom_scale then
+        custom_scale = scale
+    end
+
     local object =  {
         sprite = first_sprite,
         current_animation_index = 1,
         current_frame_index = 1,
         current_frame_duration = 1,
+        custom_scale = custom_scale,
     }
 
     setmetatable(object, self)
@@ -74,7 +88,12 @@ end
 
 function AnimationController:draw(x, y, flip, rotate)
     local animation = self:current_animation()
-    spr(self:current_frame(), x, y, C0, 1, flip, rotate, animation.width, animation.height)
+    local current_scale = self.custom_scale or game.scale
+    local crutching_coordinate_addition = 8 * (current_scale - 1)
+
+    local spr_x = x - crutching_coordinate_addition
+    local spr_y = y - 1.5 * crutching_coordinate_addition
+    spr(self:current_frame(), spr_x, spr_y, C0, current_scale, flip, rotate, animation.width, animation.height)
 end
 
 AnimationController.__index = AnimationController

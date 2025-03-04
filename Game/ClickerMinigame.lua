@@ -25,6 +25,9 @@
 
 ClickerMinigame = {}
 
+MINIGAME_SCALING_CONST = 5
+INITIAL_SCALE = 1
+
 MAX_PLAYER_FORCE = 8
 MIN_PLAYER_FORCE = 0
 MAGIC_MULTIPLIER = 16
@@ -57,8 +60,24 @@ function ClickerMinigame:init(panda)
     --__dx_dw:draw_tugologue(trigger)
     --table.insert(game.CRUTCH_dialog_window, __dx_dw)
 
+    INITIAL_SCALE = game.scale
+
+    ClickerMinigame:rescale_game(true)
+
     ClickerMinigame:reset_local_var()
 
+end
+
+function ClickerMinigame:rescale_game(upscale)
+    local scale = MINIGAME_SCALING_CONST
+    if not upscale then
+        scale = INITIAL_SCALE
+    end
+
+    game.scale = scale
+
+    game.camera.scale = scale
+    game.camera:rescale(scale)
 end
 
 function ClickerMinigame:gameover()
@@ -73,6 +92,11 @@ function ClickerMinigame:gameover()
     else
         game.player:die()
     end
+    
+    -- may be some animations
+
+    ClickerMinigame:rescale_game(false)
+
     game.state = GAME_STATE_GAMEPLAY
 end
 
