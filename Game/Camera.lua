@@ -27,7 +27,7 @@ function Camera:new(player)
         shake_time_left = 0,
 
         time_since_player_changed_direction = 0.0,
-        scale = 1,
+        --scale = 1,
     }
 
     setmetatable(object, self)
@@ -62,10 +62,10 @@ function Camera:update()
     local line_left_x = self.center_x - CAMERA_LINES_DISTANCE_FROM_CENTER
     local line_right_x = self.center_x + CAMERA_LINES_DISTANCE_FROM_CENTER
 
-    if self.scale ~= 1 then
-        trace('hahahahahhahahah')
-        self:rescale(self.scale)
-    end
+    -- if self.scale ~= 1 then
+    --     trace('hahahahahhahahah')
+    --     self:rescale(self.scale)
+    -- end
 
     if self.horizontal_pan_state == CAMERA_NO_HORIZONTAL_PAN then
         self.time_since_player_changed_direction = 0.0
