@@ -4,6 +4,7 @@ game = {
     CRUTCH_dialog_window = {},
     animated_tiles = {},
     triggers = {},
+    scale = 1,
 }
 
 if DEV_MODE_ENABLED then
@@ -58,7 +59,7 @@ function game.restart()
     game.pandas = {}
     for _, entity_info in ipairs(game.entity_spawn_info) do
         if entity_info.type == PANDA_TYPE.basic then
-            table.insert(game.pandas, Panda:new(entity_info.x, entity_info.y, PANDA_TYPE.basic, false))
+            table.insert(game.pandas, Panda:new(entity_info.x, entity_info.y, PANDA_TYPE.basic, true))
         elseif entity_info.type == PANDA_TYPE.chilling then
             table.insert(game.pandas, Panda:new(entity_info.x, entity_info.y, PANDA_TYPE.chilling, false))
         elseif entity_info.type == PANDA_TYPE.agro then
@@ -107,6 +108,8 @@ function game.update()
         end
     elseif game.state == GAME_STATE_CLICKERMINIGAME then
         trace('clickerd')
+        game.camera:update()
+        -- если хотим чтобы игрок и все остальные не зависали, надо сделать для них особых update
         ClickerMinigame:update()
         ClickerMinigame:draw()
     elseif game.state == GAME_STATE_GAMEPLAY then

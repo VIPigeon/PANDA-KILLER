@@ -100,7 +100,7 @@ SPECIAL_TILES = {
 
 --]]
 
-PLAYER_SPAWNPOINT_X = 192*8                                      -- пиксели
+PLAYER_SPAWNPOINT_X = 26*8                                      -- пиксели
 PLAYER_SPAWNPOINT_Y = 12*8                                     -- пиксели
 
 --
