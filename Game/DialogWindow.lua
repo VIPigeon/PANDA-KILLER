@@ -112,6 +112,7 @@ function DialogWindow:draw_bikelogue(trigger)
     trigger.wrapper:draw()
 end
 
+-- аварийная функция. Просьба забрать все ценные вещи до 12.03.25
 function DialogWindow:draw_tugologue()
     -- я не думмаю, что это сильно плохая практика для такого небольшого количества механик,
     -- как раз, ровно столько, сколько есть у нас

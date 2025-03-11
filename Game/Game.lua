@@ -8,7 +8,7 @@ game = {
 }
 
 if DEV_MODE_ENABLED then
-    game.state = GAME_STATE_GAMEPLAY
+    game.state = GAME_STATE_CUTSCENE
 end
 
 function game.init()
@@ -80,7 +80,7 @@ end
 function game.update()
     if game.state == GAME_STATE_LANGUAGE_SELECTION then
         if btnp(BUTTON_Z) then
-            game.state = GAME_STATE_GAMEPLAY
+            game.state = GAME_STATE_CUTSCENE
         end
         if btnp(BUTTON_RIGHT) or btnp(BUTTON_LEFT) then
             if game.language == 'ru' then
@@ -106,8 +106,13 @@ function game.update()
         for _, dialog_window in ipairs(game.CRUTCH_dialog_window) do
             dialog_window:draw()
         end
+    elseif game.state == GAME_STATE_CUTSCENE then
+        trace('cutscene')
+        -- панда сама набрасывается на игрока
+        -- ...
+        -- начинается миниигра.
     elseif game.state == GAME_STATE_CLICKERMINIGAME then
-        trace('clickerd')
+        --trace('clickerd')
         game.draw_map()
         game.camera:update()
         -- если хотим чтобы игрок и все остальные не зависали, надо сделать для них особых update
@@ -160,16 +165,50 @@ function game.draw_map()
     
     -- а потрогать реликвию видимо придётся...
 
-
     local cx = game.camera.x
     local cy = game.camera.y
-    local tx = math.floor(cx/8)
-    local ty = math.floor(cy/8)
 
-    local gmx = tx - math.floor(SCREEN_WIDTH / 16)
-    local gmsx = 8 * tx - cx
-    local gmy = ty - math.floor(SCREEN_HEIGHT / 16)
-    local gmsy = math.floor(8 * ty - cy)
-    -- cls(13)
-    map(gmx, gmy, 31, 18, gmsx, gmsy)
+    -- Да, в целом, это можно унести обратно в миниигру и выиграть 1 if of iffectiveness
+    if game.scale == 1 then
+        local tx = math.floor(cx / 8)
+        local ty = math.floor(cy / 8)
+        local gmx = tx - math.floor(SCREEN_WIDTH / 16)
+        local gmsx = 8 * tx - cx
+        
+        local gmy = ty - math.floor(SCREEN_HEIGHT / 16)
+        local gmsy = math.floor(8 * ty - cy)
+        
+        -- cls(13)
+        
+        map(gmx, gmy, 31, 18, gmsx, gmsy)
+        return
+    end
+
+    -- Меньше тайлов - меньше fps!
+    -- Да, при движении это работать не будет, надо будет масштабировать и координаты камеры
+    -- но для статичной картинки всё работает нормально. Так что сидите и не возмущайтесь
+    local tx = math.floor(cx / (8))
+    local ty = math.floor(cy / (8))
+
+    local gmx = tx - math.floor((SCREEN_WIDTH / (16 * game.scale) ))
+    local gmsx = 0 --math.floor((8 * tx - cx * game.scale) )
+
+    local gmy = ty - math.floor((SCREEN_HEIGHT / (16 * game.scale) ))
+    local gmsy = 0 --math.floor((8 * ty - cy * game.scale) )
+    
+    map(gmx, gmy, math.floor(30 / game.scale) + 1, math.floor(17 / game.scale) + 1, gmsx, gmsy, -1, game.scale)
+
+    -- for x = gmx, gmx + math.floor(30 / game.scale) + 1 do
+    --     for y = gmy, gmy + math.floor(17 / game.scale) + 1 do
+    --         local tile_id = mget(x, y)
+    --         -- trace(tile_id)
+
+    --         local screen_x = (x * 8 - cx) * game.scale + SCREEN_WIDTH / 2
+    --         local screen_y = (y * 8 - cy) * game.scale + SCREEN_HEIGHT / 2
+    --         --cls()
+
+    --         -- Отрисовка тайла с масштабом
+    --         spr(tile_id, screen_x, screen_y, 0, game.scale)
+    --     end
+    -- end
 end
