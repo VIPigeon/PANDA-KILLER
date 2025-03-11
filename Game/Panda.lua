@@ -77,6 +77,8 @@ function Panda:new(x, y, panda_type, can_tug)
         type = panda_type,
         state = default_state,
 
+        health = PANDA_SETTINGS[panda_type].health,
+
         stun_animation = AnimationController:new(SPRITES.panda_stun_effect),
         animation_controller = AnimationController:new(SPRITES.panda[PANDA_TYPE.basic].rest),
         look_direction = math.coin_flip() and 1 or -1,
@@ -143,6 +145,7 @@ function Panda:set_dieable_state()
 end
 
 function Panda:take_damage(hit_x, hit_y)
+    self.health = self.health - 1
 
     -- if death by grief for the lost bamboo
     hit_x = hit_x or 0
@@ -193,7 +196,7 @@ function Panda:take_damage(hit_x, hit_y)
         self.stun_time_left = PANDA_STUN_DURATION
     end
 
-    local panda_should_die = self.count_of_recent_hits >= PANDA_HITS_NEEDED_TO_DIE
+    local panda_should_die = self.health == 0 or self.count_of_recent_hits >= PANDA_HITS_NEEDED_TO_DIE
     if panda_should_die then
         self.count_of_recent_hits = 0
         self:die()
@@ -514,6 +517,7 @@ function Panda:update()
 
         self.stun_time_left = Basic.tick_timer(self.stun_time_left)
         if self.stun_time_left == 0.0 then
+            self.count_of_recent_hits = 0
             self.state = PANDA_STATE.patrol
         end
 
@@ -543,11 +547,6 @@ function Panda:update()
             return
         end
     end
-
-    if Time.now() - self.time_of_most_recent_hit > PANDA_TIME_INTERVAL_BETWEEN_HITS_FROM_PLAYER then
-        self.count_of_recent_hits = 0
-    end
-
 
     local sprites = SPRITES.panda[self.type]
 

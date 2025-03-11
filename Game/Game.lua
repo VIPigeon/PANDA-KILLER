@@ -59,7 +59,7 @@ function game.restart()
     game.pandas = {}
     for _, entity_info in ipairs(game.entity_spawn_info) do
         if entity_info.type == PANDA_TYPE.basic then
-            table.insert(game.pandas, Panda:new(entity_info.x, entity_info.y, PANDA_TYPE.basic, true))
+            table.insert(game.pandas, Panda:new(entity_info.x, entity_info.y, PANDA_TYPE.basic, false))
         elseif entity_info.type == PANDA_TYPE.chilling then
             table.insert(game.pandas, Panda:new(entity_info.x, entity_info.y, PANDA_TYPE.chilling, false))
         elseif entity_info.type == PANDA_TYPE.agro then

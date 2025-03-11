@@ -232,6 +232,8 @@ PANDA_PHYSICS_SETTINGS = {
 -- Настройки, которые меняются в зависимости от типа панды
 PANDA_SETTINGS = {
     [PANDA_TYPE.basic] = {
+        health = 6,
+
         patrol_speed = 8,
         chase_speed  = 2.5 * 8,
         dash_charge_duration = 0.8,  -- 1.5
@@ -248,6 +250,8 @@ PANDA_SETTINGS = {
         chase_duration = 3.0,
     },
     [PANDA_TYPE.chilling] = {
+        health = 6,
+
         patrol_speed = 6,
         chase_speed  = 2.0 * 6,
         dash_charge_duration = 0.7,
@@ -258,6 +262,8 @@ PANDA_SETTINGS = {
         chase_duration = 2.0,
     },
     [PANDA_TYPE.agro] = {
+        health = 6,
+
         patrol_speed = 9,
         chase_speed  = 2.7 * 8,
         dash_charge_duration = 0.35,  -- 1.5
