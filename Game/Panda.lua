@@ -166,7 +166,6 @@ function Panda:take_damage(hit_x, hit_y)
         --
         -- ААХХАХАХАХА Я СОШЁЛ С УМА 🥶 😷
         --
-        self.count_of_recent_hits = self.count_of_recent_hits + 1
         self.time_of_most_recent_hit = Time.now()
         self.stun_time_left = PANDA_STUN_DURATION
 
@@ -196,9 +195,8 @@ function Panda:take_damage(hit_x, hit_y)
         self.stun_time_left = PANDA_STUN_DURATION
     end
 
-    local panda_should_die = self.health == 0 or self.count_of_recent_hits >= PANDA_HITS_NEEDED_TO_DIE
+    local panda_should_die = self.health == 0
     if panda_should_die then
-        self.count_of_recent_hits = 0
         self:die()
     end
 end
@@ -517,7 +515,6 @@ function Panda:update()
 
         self.stun_time_left = Basic.tick_timer(self.stun_time_left)
         if self.stun_time_left == 0.0 then
-            self.count_of_recent_hits = 0
             self.state = PANDA_STATE.patrol
         end
 
