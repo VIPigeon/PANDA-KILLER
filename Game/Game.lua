@@ -75,6 +75,7 @@ function game.restart()
     table.insert(game.triggers, game.bike)
 
     game.camera = Camera:new(game.player)
+    game.parallaxscrolling = ParallaxScrolling:new()
 end
 
 function game.update()
@@ -122,6 +123,7 @@ function game.update()
         for _, panda in ipairs(game.pandas) do
             panda:update()
         end
+        game.parallaxscrolling:update()
         update_psystems()
 
         game.draw_map()
@@ -170,6 +172,7 @@ function game.draw_map()
     local gmsx = 8 * tx - cx
     local gmy = ty - math.floor(SCREEN_HEIGHT / 16)
     local gmsy = math.floor(8 * ty - cy)
-    -- cls(13)
-    map(gmx, gmy, 31, 18, gmsx, gmsy)
+    cls(0)
+    game.parallaxscrolling:draw()
+    map(gmx, gmy, 31, 18, gmsx, gmsy,0)
 end

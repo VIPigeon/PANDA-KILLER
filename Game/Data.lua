@@ -320,6 +320,11 @@ PANDA_STUN_KNOCKBACK_HORIZONTAL = 75.0
 PANDA_STUN_KNOCKBACK_VERTICAL = 40.0
 PANDA_STUN_KNOCKBACK_VERTICAL_FROM_VERTICAL_ATTACK = 80.0
 
+-- Поля для параллакс скроллинга
+PARALLAX_LAYER_SPEED = 0.2
+PARALLAX_LAYER_TILE_ID = 64
+PARALLAX_TILE_HEIGHT = 4
+
 -- константная функция 📛
 PANDA_REST_TIME_BEFORE_DIRECTION_CHANGE = function()
     return 1 + 1.0 * math.random()

@@ -28,6 +28,7 @@ require 'Game/Hat'
 require 'Game/LanguageSelection'
 require 'Game/Panda'
 require 'Game/Player'
+require 'Game/ParallaxScrolling'
 
 require 'Libraries/pslib'
 
