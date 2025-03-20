@@ -83,12 +83,6 @@ CAMERA_SMOOTH_TIME = 0.26
 CAMERA_DIRECTION_CHANGE_TIME = 0.3
 
 
-SPECIAL_TILES = {
-    panda_spawn = 38,
-    chilling_panda_spawn = 39,
-    agro_panda_spawn = 37,
-}
-
 
 --[[
 
@@ -221,6 +215,14 @@ PANDA_TYPE = {
     basic = 0,
     chilling = 1,
     agro = 2,
+}
+
+-- Возможно их стоит объединить с panda type. Иначе получается излишнее
+-- обобщение. Блин, вместо этого комментария я мог бы просто это сделать 😡
+SPECIAL_TILES = {
+    {id = 38, type = PANDA_TYPE.basic},
+    {id = 39, type = PANDA_TYPE.chilling},
+    {id = 37, type = PANDA_TYPE.agro},
 }
 
 PANDA_PHYSICS_SETTINGS = {

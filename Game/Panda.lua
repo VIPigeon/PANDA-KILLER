@@ -136,7 +136,7 @@ end
 
 function Panda:die()
     Basic.play_sound(SOUNDS.PANDA_DEAD)
-    table.remove_element(game.pandas, self)
+    table.remove_element(game.current_level.pandas, self)
 end
 
 -- кто уберет, тот сам будет переписывать код миниигры

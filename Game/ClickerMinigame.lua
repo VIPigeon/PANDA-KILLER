@@ -203,7 +203,7 @@ function ClickerMinigame:draw()
     DialogWindow:draw_tugologue()
 
     -- тут стоит подумать, может стоит символично оставить только одну панду
-    for _, panda in ipairs(game.pandas) do
+    for _, panda in ipairs(game.current_level.pandas) do
         panda:draw()
     end
     game.player:draw()

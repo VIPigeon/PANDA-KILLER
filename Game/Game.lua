@@ -1,3 +1,4 @@
+-- В game есть ещё много полей, они создаются в game.init, game.restart, т.д.
 game = {
     state = GAME_STATE_LANGUAGE_SELECTION,
     language = 'ru',
@@ -5,6 +6,9 @@ game = {
     animated_tiles = {},
     triggers = {},
     scale = 1,
+
+    tile_info = {},
+    coordinates_to_tile_info = {},
 }
 
 if DEV_MODE_ENABLED then
@@ -20,54 +24,97 @@ function game.init()
     -- тика. 🤓
 
     game.dialog_window = DialogWindow:new(100,50,"dcs")
-    game.collect_entity_spawn_information_from_tiles()
+
+    game.save_special_tile_information()
+
     game.restart()
 end
 
-function game.collect_entity_spawn_information_from_tiles()
-    game.entity_spawn_info = {}
-
+function game.save_special_tile_information()
     for row = 0, WORLD_TILEMAP_HEIGHT do
         for col = 0, WORLD_TILEMAP_WIDTH do
-            local x, y = Basic.tile_to_world(col, row)
+            local x, y = Basic.tile_to_world(col, row) -- Кто проходит мимо, обратите внимание, сначала col, потом row! ☝️
 
             local tile_id = mget(col, row)
-            if tile_id == SPECIAL_TILES.panda_spawn then
-                table.insert(game.entity_spawn_info, {type = PANDA_TYPE.basic, x = x, y = y})
+
+            local this_tile_info = nil
+
+            for _, special_tile in ipairs(SPECIAL_TILES) do
+                if special_tile.id == tile_id then
+                    this_tile_info = {type = special_tile.type, x = x, y = y}
+                end
+            end
+
+            for _, tile_sprite in ipairs(ANIMATED_TILES) do
+                local animation = tile_sprite.animation_sequence[1]
+                if table.contains(animation.frames, tile_id) then
+                    table.insert(game.animated_tiles, {x = col, y = row, animation_controller = AnimationController:new(tile_sprite) })
+                end
+            end
+
+            if this_tile_info ~= nil then
+                table.insert(game.tile_info, this_tile_info)
+
+                if game.coordinates_to_tile_info[col] == nil then
+                    game.coordinates_to_tile_info[col] = {}
+                end
+                game.coordinates_to_tile_info[col][row] = #game.tile_info
+
+                -- Вот с этим конечно всё грустно. Нужно убрать этот тайл, иначе
+                -- он торчит некрасиво на карте, это не дело. Но если мы его уберем,
+                -- мы потеряем информацию, о том, что тут должна спавнится панда.
+                -- Поэтому нужно сохранить эту инфу в game.tile_info. Удобно для
+                -- дизайнера, неудобно для программиста! Какой выбор сделать?
+                --
+                -- 🤔 Оставляйте свои мысли в этом комментарии!
                 mset(col, row, 0)
-            elseif tile_id == SPECIAL_TILES.chilling_panda_spawn then
-                table.insert(game.entity_spawn_info, {type = PANDA_TYPE.chilling, x = x, y = y})
-                mset(col, row, 0)
-            elseif tile_id == SPECIAL_TILES.agro_panda_spawn then
-                table.insert(game.entity_spawn_info, {type = PANDA_TYPE.agro, x = x, y = y})
-                mset(col, row, 0)
-            else
-                for _, tile_sprite in ipairs(ANIMATED_TILES) do
-                    local animation = tile_sprite.animation_sequence[1]
-                    if table.contains(animation.frames, tile_id) then
-                        table.insert(game.animated_tiles, {x = col, y = row, animation_controller = AnimationController:new(tile_sprite) })
-                    end
+            end
+        end
+    end
+end
+
+-- Превращает спавн-тайлы в игровые объекты в указанной области,
+-- (x1, y1) - левый верхний угол, (x2, y2) - правый нижний угол
+-- Оба угла включительно.
+--
+-- Осторожно, это n^3! Не вызывайте это слишком часто!
+function game.restart_in_area(tile_x1, tile_y1, tile_x2, tile_y2)
+    -- Зачистим предыдущий уровень
+    game.current_level = {
+        pandas = {},
+    }
+
+    spawned_things = {}
+
+    for col = tile_x1, tile_x2 do
+        for row = tile_y1, tile_y2 do
+            if game.coordinates_to_tile_info[col] ~= nil then
+                local idx = game.coordinates_to_tile_info[col][row]
+                if idx ~= nil then
+                    game.spawn_object_by_tile_info(game.tile_info[idx])
                 end
             end
         end
+    end
+
+    return spawned_things
+end
+
+function game.spawn_object_by_tile_info(tile_info)
+    if table.contains(PANDA_TYPE, tile_info.type) then
+        table.insert(game.current_level.pandas, Panda:new(tile_info.x, tile_info.y, tile_info.type, false))
+    else
+        error('Invalid entity type: ' .. entity_info.type)
     end
 end
 
 function game.restart()
     game.player = Player:new()
 
-    game.pandas = {}
-    for _, entity_info in ipairs(game.entity_spawn_info) do
-        if entity_info.type == PANDA_TYPE.basic then
-            table.insert(game.pandas, Panda:new(entity_info.x, entity_info.y, PANDA_TYPE.basic, false))
-        elseif entity_info.type == PANDA_TYPE.chilling then
-            table.insert(game.pandas, Panda:new(entity_info.x, entity_info.y, PANDA_TYPE.chilling, false))
-        elseif entity_info.type == PANDA_TYPE.agro then
-            table.insert(game.pandas, Panda:new(entity_info.x, entity_info.y, PANDA_TYPE.agro, false))
-        else
-            error('Invalid entity type: ' .. entity_info.type)
-        end
-    end
+    game.restart_in_area(0, 0, 30, 20)
+    --for _, tile_info in ipairs(game.tile_info) do
+    --    game.spawn_object_by_tile_info(tile_info)
+    --end
 
     -- TODO: Это работает с рестартом?
     -- TriggerTiles.add(TriggerTile:new(24,88,8,8, TriggerActions.dialogue))
@@ -120,14 +167,14 @@ function game.update()
         game.bike:update()
         TriggerTiles.update()
         game.camera:update()
-        for _, panda in ipairs(game.pandas) do
+        for _, panda in ipairs(game.current_level.pandas) do
             panda:update()
         end
         game.parallaxscrolling:update()
         update_psystems()
 
         game.draw_map()
-        for _, panda in ipairs(game.pandas) do
+        for _, panda in ipairs(game.current_level.pandas) do
             panda:draw()
         end
         Effects.draw()

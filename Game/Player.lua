@@ -386,7 +386,7 @@ function Player:update()
         self.attack_rects = {attack_rect, player_rect}
 
         local hit_pandas = {}
-        for _, panda in ipairs(game.pandas) do
+        for _, panda in ipairs(game.current_level.pandas) do
             local panda_rect = Hitbox.rect_of(panda)
             for _, rect in ipairs(self.attack_rects) do
                 if Physics.check_collision_rect_rect(rect, panda_rect) then
@@ -404,7 +404,6 @@ function Player:update()
             end
 
             for _, panda in ipairs(hit_pandas) do
-                
                 -- Я положу здесь новую механику, каваи-гоплит не заметит грязный код,
                 -- потому что он окружен обширным комментарием с смайликами😉
                 -- да и монолитность не пропала, тут действительно не к чему придраться😎
