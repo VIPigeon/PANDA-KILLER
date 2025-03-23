@@ -93,14 +93,6 @@ function game.save_special_tile_information()
             ::continue::
         end
     end
-
-    for i, house in ipairs(game.houses) do
-        trace('House #' .. i)
-        trace(house.min_x)
-        trace(house.max_x)
-        trace(house.min_y)
-        trace(house.max_y)
-    end
 end
 
 -- Превращает спавн-тайлы в игровые объекты в указанной области,
@@ -183,7 +175,6 @@ function game.update()
             dialog_window:draw()
         end
     elseif game.state == GAME_STATE_CLICKERMINIGAME then
-        trace('clickerd')
         game.draw_map()
         game.camera:update()
         -- если хотим чтобы игрок и все остальные не зависали, надо сделать для них особых update
@@ -211,6 +202,9 @@ function game.update()
         game.bike:draw()
         TriggerTiles.draw()
         game.dialog_window:draw()
+        for _, house in ipairs(game.houses) do
+            house:draw()
+        end
         draw_psystems()
         game.animate_tiles()
         Debug.draw()

@@ -1,4 +1,39 @@
--- Здесь пока что нету класса, ведь зачем?
+House = {}
+
+function House:new(min_x, min_y, max_x, max_y, tiles)
+    local object = {
+        min_x = min_x,
+        max_x = max_x,
+        min_y = min_y,
+        max_y = max_y,
+        tiles = tiles,
+        revealed = false,
+    }
+
+    setmetatable(object, self)
+    return object
+end
+
+function House:hide()
+    self.revealed = false
+end
+
+function House:reveal()
+    self.revealed = true
+end
+
+function House:draw()
+    if not self.revealed then
+        for x = self.min_x, self.max_x do
+            for y = self.min_y, self.max_y do
+                local inside_tile = mget(x, y)
+                local outside_tile = house_inside_tile_to_outside_tile(inside_tile)
+                local tx, ty = game.camera:transform_coordinates(x*8, y*8)
+                spr(outside_tile, tx, ty)
+            end
+        end
+    end
+end
 
 function create_a_house_by_bfs_from(tile_x, tile_y)
     local new_house = {
@@ -43,16 +78,16 @@ function create_a_house_by_bfs_from(tile_x, tile_y)
         ::bfs_continue::
     end
 
-    return new_house
+    return House:new(new_house.min_x, new_house.min_y, new_house.max_x, new_house.max_y, new_house.tiles)
 end
 
 function is_tile_a_house(tile_x, tile_y)
-    return table.contains(HOUSE_OUTSIDE_TILES, mget(tile_x, tile_y))
+    return table.contains(HOUSE_INSIDE_TILES, mget(tile_x, tile_y))
 end
 
 function hide_all_houses()
     for _, house in ipairs(game.houses) do
-        hide_house(house)
+        house:hide()
     end
 end
 
@@ -65,34 +100,6 @@ function get_house_at(tile_x, tile_y)
     return nil
 end
 
-function hide_house(house)
-    if not house.revealed then
-        return
-    end
-    house.revealed = false
-    for x = house.min_x, house.max_x do
-        for y = house.min_y, house.max_y do
-            local inside_tile_id = mget(x, y)
-            local outside_tile_id = house_inside_tile_to_outside_tile(inside_tile_id)
-            mset(x, y, outside_tile_id)
-        end
-    end
-end
-
-function reveal_house_insides(house)
-    if house.revealed then
-        return
-    end
-    house.revealed = true
-    for x = house.min_x, house.max_x do
-        for y = house.min_y, house.max_y do
-            local outside_tile_id = mget(x, y)
-            local inside_tile_id = house_outside_tile_to_inside_tile(outside_tile_id)
-            mset(x, y, inside_tile_id)
-        end
-    end
-end
-
 function house_inside_tile_to_outside_tile(tile_id)
     return tile_id + 9 * 16
 end
@@ -100,3 +107,5 @@ end
 function house_outside_tile_to_inside_tile(tile_id)
     return tile_id - 9 * 16
 end
+
+House.__index = House

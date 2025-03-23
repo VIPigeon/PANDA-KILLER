@@ -349,7 +349,7 @@ function Player:update()
     local function reveal_any_house_at(tile_x, tile_y)
         local house = get_house_at(tile_x, tile_y)
         if house ~= nil then
-            reveal_house_insides(house)
+            house:reveal()
         end
     end
     hide_all_houses()
