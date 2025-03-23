@@ -345,6 +345,21 @@ function Player:update()
         self.velocity.y = 0
     end
 
+    -- Теперь проверим, вошли ли мы в дом. Какая сложная механика с этими домами!
+    local function reveal_any_house_at(tile_x, tile_y)
+        local house = get_house_at(tile_x, tile_y)
+        if house ~= nil then
+            reveal_house_insides(house)
+        end
+    end
+    hide_all_houses()
+    local tile_x, tile_y = Basic.world_to_tile(player_rect:center_x(), player_rect:center_y())
+    reveal_any_house_at(tile_x, tile_y)
+    reveal_any_house_at(tile_x - 1, tile_y)
+    reveal_any_house_at(tile_x + 1, tile_y)
+    reveal_any_house_at(tile_x, tile_y - 1)
+    reveal_any_house_at(tile_x, tile_y + 1)
+
     -- Атака
     if self.attack_timer > 0 and
            table.contains(PLAYER_ATTACK_SPRITES, self.animation_controller.sprite) and

@@ -639,6 +639,21 @@ data.run = {
 
 data.bad_tile = { 32, 33, 34, 48 }
 
+-- 🛖
+HOUSE_INSIDE_TILES = {}
+for x = 8, 15 do
+    for y = 2, 5 do
+        table.insert(HOUSE_INSIDE_TILES, y*16 + x)
+    end
+end
+HOUSE_OUTSIDE_TILES = {}
+for x = 8, 15 do
+    for y = 11, 14 do
+        table.insert(HOUSE_OUTSIDE_TILES, y*16 + x)
+    end
+end
+HOUSE_DOORS_OUTSIDE = {216, 232, 223, 239}
+
 function is_tile_solid(tile_id)
     -- 2024-09-??
     -- XD Это кому-то исправлять 😆😂😂
@@ -655,7 +670,10 @@ function is_tile_solid(tile_id)
         35 <= tile_id and tile_id <= 35 or
         48 < tile_id and tile_id <= 52 or
               tile_id == 80 or
-              tile_id == 81
+              tile_id == 81 or
+        (table.contains(HOUSE_OUTSIDE_TILES, tile_id) and not table.contains(HOUSE_DOORS_OUTSIDE, tile_id)) or
+        tile_id == 40 or tile_id == 56 or tile_id == 47 or tile_id == 63 or -- Внутренние стенки в доме
+        24 <= tile_id and tile_id <= 31 -- Тайлы крыши дома
 end
 
 

@@ -18,7 +18,7 @@ function Camera:new(player)
         pan_y_velocity = 0.0,
 
         horizontal_pan_state = CAMERA_NO_HORIZONTAL_PAN,
-        vertical_pan_state = CAMERA_NO_VERTICAL_PAN,
+        --vertical_pan_state = CAMERA_NO_VERTICAL_PAN,
 
         player = player,
 

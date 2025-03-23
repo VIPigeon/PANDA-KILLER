@@ -4,6 +4,7 @@ game = {
     language = 'ru',
     CRUTCH_dialog_window = {},
     animated_tiles = {},
+    houses = {},
     triggers = {},
     scale = 1,
 
@@ -37,18 +38,37 @@ function game.save_special_tile_information()
 
             local tile_id = mget(col, row)
 
+            for _, tile_sprite in ipairs(ANIMATED_TILES) do
+                local animation = tile_sprite.animation_sequence[1]
+                if table.contains(animation.frames, tile_id) then
+                    table.insert(game.animated_tiles, {x = col, y = row, animation_controller = AnimationController:new(tile_sprite) })
+                    goto continue
+                end
+            end
+
+            if is_tile_a_house(col, row) then
+                local already_saved_this_house = false
+                for _, house in ipairs(game.houses) do
+                    if house.tiles[col] ~= nil and house.tiles[col][row] then
+                        already_saved_this_house = true
+                        break
+                    end
+                end
+                if already_saved_this_house then
+                    -- 2025 still no continue 😭
+                    goto continue
+                end
+
+                local new_house = create_a_house_by_bfs_from(col, row)
+                table.insert(game.houses, new_house)
+                goto continue
+            end
+
             local this_tile_info = nil
 
             for _, special_tile in ipairs(SPECIAL_TILES) do
                 if special_tile.id == tile_id then
                     this_tile_info = {type = special_tile.type, x = x, y = y}
-                end
-            end
-
-            for _, tile_sprite in ipairs(ANIMATED_TILES) do
-                local animation = tile_sprite.animation_sequence[1]
-                if table.contains(animation.frames, tile_id) then
-                    table.insert(game.animated_tiles, {x = col, y = row, animation_controller = AnimationController:new(tile_sprite) })
                 end
             end
 
@@ -69,15 +89,23 @@ function game.save_special_tile_information()
                 -- 🤔 Оставляйте свои мысли в этом комментарии!
                 mset(col, row, 0)
             end
+
+            ::continue::
         end
+    end
+
+    for i, house in ipairs(game.houses) do
+        trace('House #' .. i)
+        trace(house.min_x)
+        trace(house.max_x)
+        trace(house.min_y)
+        trace(house.max_y)
     end
 end
 
 -- Превращает спавн-тайлы в игровые объекты в указанной области,
 -- (x1, y1) - левый верхний угол, (x2, y2) - правый нижний угол
 -- Оба угла включительно.
---
--- Осторожно, это n^3! Не вызывайте это слишком часто!
 function game.restart_in_area(tile_x1, tile_y1, tile_x2, tile_y2)
     -- Зачистим предыдущий уровень
     game.current_level = {
@@ -104,7 +132,7 @@ function game.spawn_object_by_tile_info(tile_info)
     if table.contains(PANDA_TYPE, tile_info.type) then
         table.insert(game.current_level.pandas, Panda:new(tile_info.x, tile_info.y, tile_info.type, false))
     else
-        error('Invalid entity type: ' .. entity_info.type)
+        error('Invalid tile info type: ' .. tile_info.type)
     end
 end
 
