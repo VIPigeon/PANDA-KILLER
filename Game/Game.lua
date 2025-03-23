@@ -42,7 +42,7 @@ function game.save_special_tile_information()
                 local animation = tile_sprite.animation_sequence[1]
                 if table.contains(animation.frames, tile_id) then
                     table.insert(game.animated_tiles, {x = col, y = row, animation_controller = AnimationController:new(tile_sprite) })
-                    goto continue
+                    goto skip_loop
                 end
             end
 
@@ -56,12 +56,15 @@ function game.save_special_tile_information()
                 end
                 if already_saved_this_house then
                     -- 2025 still no continue 😭
-                    goto continue
+                    -- Короче, очень интересная история, это называлось continue, но, видимо,
+                    -- в новых версиях lua действительно появилось continue, поскольку парсер
+                    -- сломался на этом.
+                    goto skip_loop
                 end
 
                 local new_house = create_a_house_by_bfs_from(col, row)
                 table.insert(game.houses, new_house)
-                goto continue
+                goto skip_loop
             end
 
             local this_tile_info = nil
@@ -90,7 +93,7 @@ function game.save_special_tile_information()
                 mset(col, row, 0)
             end
 
-            ::continue::
+            ::skip_loop::
         end
     end
 end

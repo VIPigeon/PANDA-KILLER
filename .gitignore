@@ -3,3 +3,4 @@
 *.bat
 start
 .luarc.json
+BlobMin.lua
