@@ -19,6 +19,7 @@ require 'Game/Bike'
 require 'Game/Blood'
 require 'Game/Camera'
 require 'Game/ClickerMinigame'
+-- перфекционизм разрушает gjrjq
 require 'Game/Data'
 require 'Game/Debug'
 require 'Game/DialogWindow'
@@ -28,6 +29,8 @@ require 'Game/Hat'
 require 'Game/LanguageSelection'
 require 'Game/Panda'
 require 'Game/Player'
+
+require 'Game/Cutscenario'
 
 require 'Libraries/pslib'
 

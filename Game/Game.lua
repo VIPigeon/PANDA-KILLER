@@ -59,11 +59,11 @@ function game.restart()
     game.pandas = {}
     for _, entity_info in ipairs(game.entity_spawn_info) do
         if entity_info.type == PANDA_TYPE.basic then
-            table.insert(game.pandas, Panda:new(entity_info.x, entity_info.y, PANDA_TYPE.basic, true))
+            table.insert(game.pandas, Panda:new(entity_info.x, entity_info.y, PANDA_TYPE.basic))
         elseif entity_info.type == PANDA_TYPE.chilling then
-            table.insert(game.pandas, Panda:new(entity_info.x, entity_info.y, PANDA_TYPE.chilling, false))
+            table.insert(game.pandas, Panda:new(entity_info.x, entity_info.y, PANDA_TYPE.chilling))
         elseif entity_info.type == PANDA_TYPE.agro then
-            table.insert(game.pandas, Panda:new(entity_info.x, entity_info.y, PANDA_TYPE.agro, false))
+            table.insert(game.pandas, Panda:new(entity_info.x, entity_info.y, PANDA_TYPE.agro))
         else
             error('Invalid entity type: ' .. entity_info.type)
         end
@@ -75,9 +75,14 @@ function game.restart()
     table.insert(game.triggers, game.bike)
 
     game.camera = Camera:new(game.player)
+
+    game.state = GAME_STATE_CUTSCENE
+    cutscene:init()
+    trace('RETARD')
 end
 
 function game.update()
+    trace(game.state)
     if game.state == GAME_STATE_LANGUAGE_SELECTION then
         if btnp(BUTTON_Z) then
             game.state = GAME_STATE_CUTSCENE
@@ -108,12 +113,15 @@ function game.update()
         end
     elseif game.state == GAME_STATE_CUTSCENE then
         trace('cutscene')
+        game.camera:update()
+        cutscene:update()
+        cutscene:draw()
         -- панда сама набрасывается на игрока
         -- ...
         -- начинается миниигра.
     elseif game.state == GAME_STATE_CLICKERMINIGAME then
         --trace('clickerd')
-        game.draw_map()
+        -- game.draw_map()
         game.camera:update()
         -- если хотим чтобы игрок и все остальные не зависали, надо сделать для них особых update
         ClickerMinigame:update()
@@ -196,19 +204,6 @@ function game.draw_map()
     local gmy = ty - math.floor((SCREEN_HEIGHT / (16 * game.scale) ))
     local gmsy = 0 --math.floor((8 * ty - cy * game.scale) )
     
-    map(gmx, gmy, math.floor(30 / game.scale) + 1, math.floor(17 / game.scale) + 1, gmsx, gmsy, -1, game.scale)
+    map(gmx, gmy, math.floor(30 / game.scale) , math.floor(17 / game.scale) + 1, gmsx, gmsy, -1, game.scale)
 
-    -- for x = gmx, gmx + math.floor(30 / game.scale) + 1 do
-    --     for y = gmy, gmy + math.floor(17 / game.scale) + 1 do
-    --         local tile_id = mget(x, y)
-    --         -- trace(tile_id)
-
-    --         local screen_x = (x * 8 - cx) * game.scale + SCREEN_WIDTH / 2
-    --         local screen_y = (y * 8 - cy) * game.scale + SCREEN_HEIGHT / 2
-    --         --cls()
-
-    --         -- Отрисовка тайла с масштабом
-    --         spr(tile_id, screen_x, screen_y, 0, game.scale)
-    --     end
-    -- end
 end

@@ -141,7 +141,8 @@ function DialogWindow:close()
         -- Если триггер должен быть реализован через рисовать диалог, то ниже несусветный bad design
         game.restart()
 
-        game.state = GAME_STATE_GAMEPLAY
+        -- Памятка о EXCLUSIVE DIRTY PROCEDURE DISIGN
+        -- game.state = GAME_STATE_GAMEPLAY
     end
 end
 

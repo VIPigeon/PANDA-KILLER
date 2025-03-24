@@ -90,11 +90,11 @@ function AnimationController:draw(x, y, flip, rotate)
     local animation = self:current_animation()
     local current_scale = self.custom_scale or game.scale
     
-    local crutching_coordinate_addition = 4 * math.floor(current_scale / 2)
+    local crutching_coordinate_addition = math.floor(current_scale / 2)
 
     -- тут произошла математика, надо пофиксить
-    local spr_x = x + crutching_coordinate_addition 
-    local spr_y = y - math.ceil((current_scale * 1.6) * crutching_coordinate_addition)
+    local spr_x = x -- + crutching_coordinate_addition -- * 1.67
+    local spr_y = y -- - math.ceil((current_scale) * crutching_coordinate_addition)
     spr(self:current_frame(), spr_x, spr_y, C0, current_scale, flip, rotate, animation.width, animation.height)
 end
 

@@ -91,10 +91,12 @@ function ClickerMinigame:rescale_game(upscale)
 end
 
 function ClickerMinigame:gameover()
+    game.state = GAME_STATE_GAMEPLAY
+
     -- надо выйти в игру нормально и все следы миниигры уничтожить
     if is_player_win then
         trace('you win')
-        trigger_panda:set_dieable_state()
+        trigger_panda:take_damage()
         trigger_panda.kantugging_friend_panda = false
         -- trigger_panda:take_damage()
 
@@ -103,11 +105,9 @@ function ClickerMinigame:gameover()
         game.player:die()
     end
     
+    ClickerMinigame:rescale_game(false)
     -- may be some animations
 
-    ClickerMinigame:rescale_game(false)
-
-    game.state = GAME_STATE_GAMEPLAY
 end
 
 -- Аварийная функция будет удалена 12.03.25
