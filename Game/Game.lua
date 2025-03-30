@@ -134,7 +134,9 @@ end
 function game.restart()
     game.player = Player:new()
 
-    game.restart_in_area(0, 0, 30, 20)
+    -- Вся карта: 240 x 136
+    game.restart_in_area(0, 0, 240, 136)
+
     --for _, tile_info in ipairs(game.tile_info) do
     --    game.spawn_object_by_tile_info(tile_info)
     --end
