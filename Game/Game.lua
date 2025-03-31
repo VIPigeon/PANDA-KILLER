@@ -203,13 +203,13 @@ function game.update()
         end
         Effects.draw()
         --game.bike:draw()
+        for _, house in ipairs(game.houses) do
+            house:draw()
+        end
         game.player:draw()
         game.bike:draw()
         TriggerTiles.draw()
         game.dialog_window:draw()
-        for _, house in ipairs(game.houses) do
-            house:draw()
-        end
         draw_psystems()
         game.animate_tiles()
         Debug.draw()
