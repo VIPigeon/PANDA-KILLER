@@ -254,6 +254,19 @@ function game.update()
         error('Invalid game state!')
     end
 
+    if game.player.x >= game.cur_level.tile_x2 * 8 and not game.all_pandas_dead() then
+        game.player.x = game.cur_level.tile_x2 * 8 - 1
+    end
+
+    local level = game.levels[game.current_level_index]
+
+    if game.cur_level and game.all_pandas_dead() and game.player.x >= game.cur_level.tile_x2 * 8 then
+        game.current_level_index = game.current_level_index + 1
+        if game.current_level_index <= #game.levels then
+            game.next_level()
+        end
+    end
+
     Time.update()
 end
 
