@@ -91,6 +91,9 @@ function AnimationController:draw(x, y, flip, rotate)
     local current_scale = self.custom_scale or game.scale
     local crutching_coordinate_addition = 8 * (current_scale - 1)
 
+    x = x-- - 4 * (self:current_animation().width - 1)
+    y = y - 8 * (self:current_animation().height - 1)
+
     local spr_x = x - crutching_coordinate_addition
     local spr_y = y - 1.5 * crutching_coordinate_addition
     spr(self:current_frame(), spr_x, spr_y, C0, current_scale, flip, rotate, animation.width, animation.height)

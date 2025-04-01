@@ -71,7 +71,7 @@ function Panda:new(x, y, panda_type, can_tug)
             x = 0,
             y = 0,
         },
-        hitbox = Hitbox:new(2, 0, 4, 8),
+        hitbox = Hitbox:new(1, 0, 6, 8),
         physics_settings = PANDA_PHYSICS_SETTINGS,
 
         type = panda_type,
@@ -625,8 +625,8 @@ function Panda:draw()
     -- Ну тип ладно. Вообще довольно дурацкий костыль, не знаю как это лучше сделать.
     -- Это для правильного позиционирования спрайтов, у которых несколько анимаций
     -- с разными размерами.
-    tx = tx - 4 * (self.animation_controller:current_animation().width - 1)
-    ty = ty - 8 * (self.animation_controller:current_animation().height - 1)
+    --tx = tx - 4 * (self.animation_controller:current_animation().width - 1)
+    --ty = ty - 8 * (self.animation_controller:current_animation().height - 1)
     self.animation_controller:draw(tx, ty, flip)
 end
 
