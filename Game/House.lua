@@ -8,6 +8,10 @@ function House:new(min_x, min_y, max_x, max_y, tiles)
         max_y = max_y,
         tiles = tiles,
         revealed = false,
+
+        reveal_time = 0.0,
+        entered_tile_x = 0,
+        entered_tile_y = 0,
     }
 
     setmetatable(object, self)
@@ -18,20 +22,38 @@ function House:hide()
     self.revealed = false
 end
 
-function House:reveal()
+function House:reveal(door_tile_x, door_tile_y)
     self.revealed = true
+    if self.reveal_time > 0.0 then
+        return
+    end
+    self.entered_tile_x = door_tile_x
+    self.entered_tile_y = door_tile_y
 end
 
 function House:draw()
-    if not self.revealed then
-        for x = self.min_x, self.max_x do
-            for y = self.min_y, self.max_y do
-                local inside_tile = mget(x, y)
-                local outside_tile = house_inside_tile_to_outside_tile(inside_tile)
-                local tx, ty = game.camera:transform_coordinates(x*8, y*8)
-                spr(outside_tile, tx, ty)
+    for x = self.min_x, self.max_x do
+        for y = self.min_y, self.max_y do
+            local dist = math.abs(x - self.entered_tile_x) + math.abs(y - self.entered_tile_y)
+            if self.reveal_time > 0.0 and dist < math.sqr(1 + HOUSE_REVEAL_SPEED * self.reveal_time) then
+                goto next_iter
             end
+
+            local inside_tile = mget(x, y)
+            local outside_tile = house_inside_tile_to_outside_tile(inside_tile)
+
+            local tx, ty = game.camera:transform_coordinates(x*8, y*8)
+            spr(outside_tile, tx, ty)
+
+            ::next_iter::
         end
+    end
+
+    if self.revealed then
+        self.reveal_time = self.reveal_time + Time.dt()
+        self.reveal_time = math.min(HOUSE_HIDE_DELAY, self.reveal_time)
+    else
+        self.reveal_time = Basic.tick_timer(self.reveal_time)
     end
 end
 

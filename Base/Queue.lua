@@ -12,12 +12,12 @@ function Queue:new()
     return obj
 end
 
-function Queue:count() --additional +1
+function Queue:size() --additional +1
     return self.head - self.tail + 1 - 1
 end
 
 function Queue:empty()
-    return self:count() == 0
+    return self:size() == 0
 end
 
 function Queue:enqueue(item)
@@ -26,7 +26,7 @@ function Queue:enqueue(item)
 end
 
 function Queue:dequeue()
-    if self:count() == 0 then
+    if self:size() == 0 then
         error('Queue has no elements!')
     end
 
