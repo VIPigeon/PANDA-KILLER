@@ -104,6 +104,10 @@ end
 function game.restart_in_area(tile_x1, tile_y1, tile_x2, tile_y2)
     -- Зачистим предыдущий уровень
     game.current_level = {
+        min_x = tile_x1,
+        min_y = tile_y1,
+        max_x = tile_x2,
+        max_y = tile_y2,
         pandas = {},
     }
 

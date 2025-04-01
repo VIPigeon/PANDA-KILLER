@@ -56,6 +56,33 @@ function Camera:shake(magnitude, duration)
     self.shake_time_left = duration
 end
 
+function Camera:trap_inside_borders(min_x, max_x, min_y, max_y)
+    local tile_x = math.floor(self.x / 8)
+    local camera_tile_width = math.floor(SCREEN_WIDTH / 16)
+
+    local left_border = tile_x - camera_tile_width
+    if left_border < min_x then
+        self.x = 8 * (min_x + camera_tile_width)
+    end
+    local right_border = tile_x + camera_tile_width
+    if right_border > max_x then
+        self.x = 8 * (max_x - camera_tile_width)
+    end
+
+
+    local tile_y = math.floor(self.y / 8)
+    local camera_tile_height = math.floor(SCREEN_HEIGHT / 16)
+
+    local upper_border = tile_y - camera_tile_height
+    if upper_border < min_y then
+        self.y = 8 * (min_y + camera_tile_height)
+    end
+    local bottom_border = tile_y + camera_tile_height
+    if bottom_border > max_y then
+        self.y = 8 * (max_y - camera_tile_height)
+    end
+end
+
 function Camera:update()
     local player = self.player
     local player_x = (player.x + 8)
@@ -127,6 +154,8 @@ function Camera:update()
         self.y = self.y + math.random_sign() * self.shake_magnitude
         self.shake_time_left = Basic.tick_timer(self.shake_time_left)
     end
+
+    self:trap_inside_borders(game.current_level.min_x, game.current_level.max_x, game.current_level.min_y, game.current_level.max_y)
 
     -- Дебаг, рисует линии, управляющие камерой 🕷️
     --
