@@ -10,8 +10,6 @@ game = {
 
     tile_info = {},
     coordinates_to_tile_info = {},
-<<<<<<< Updated upstream
-=======
     cur_level = {},
     current_level_index = 1,
     levels = {
@@ -24,7 +22,6 @@ game = {
         {tile_x1 = 0, tile_y1 = 97, tile_x2 = 100, tile_y2 = 112},
         {tile_x1 = 0, tile_y1 = 113, tile_x2 = 100, tile_y2 = 128},
     },
->>>>>>> Stashed changes
 }
 
 if DEV_MODE_ENABLED then
@@ -150,14 +147,6 @@ function game.spawn_object_by_tile_info(tile_info)
     end
 end
 
-<<<<<<< Updated upstream
-function game.restart()
-    game.player = Player:new()
-
-    -- Вся карта: 240 x 136
-    game.restart_in_area(0, 0, 240, 136)
-
-=======
 function game.all_pandas_dead()
     if not game.cur_level or not game.current_level.pandas then
         return false 
@@ -185,7 +174,6 @@ function game.restart()
 
     game:next_level()
     game.cur_level = game.levels[game.current_level_index]
->>>>>>> Stashed changes
     --for _, tile_info in ipairs(game.tile_info) do
     --    game.spawn_object_by_tile_info(tile_info)
     --end
