@@ -347,18 +347,25 @@ function Player:update()
 
     -- Теперь проверим, вошли ли мы в дом. Какая сложная механика с этими домами!
     local function reveal_any_house_at(tile_x, tile_y)
-        local house = get_house_at(tile_x, tile_y)
-        if house ~= nil then
-            house:reveal()
+        if table.contains(HOUSE_DOORS_INSIDE, mget(tile_x, tile_y)) then
+            local house = get_house_at(tile_x, tile_y)
+            if house ~= nil then
+                house:reveal(tile_x, tile_y)
+            end
+            return true
         end
+        return false
     end
-    hide_all_houses()
     local tile_x, tile_y = Basic.world_to_tile(player_rect:center_x(), player_rect:center_y())
+    local we_are_inside_of_a_house = get_house_at(tile_x, tile_y) ~= nil
+    if not we_are_inside_of_a_house then
+        hide_all_houses()
+    end
     reveal_any_house_at(tile_x, tile_y)
     reveal_any_house_at(tile_x - 1, tile_y)
     reveal_any_house_at(tile_x + 1, tile_y)
-    reveal_any_house_at(tile_x, tile_y - 1)
-    reveal_any_house_at(tile_x, tile_y + 1)
+    reveal_any_house_at(tile_x - 2, tile_y)
+    reveal_any_house_at(tile_x + 2, tile_y)
 
     -- Атака
     if self.attack_timer > 0 and

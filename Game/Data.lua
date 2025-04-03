@@ -642,6 +642,10 @@ data.run = {
 data.bad_tile = { 32, 33, 34, 48 }
 
 -- 🛖
+HOUSE_REVEAL_SPEED = 7
+-- Если некоторые тайлы не успевают поменяться, то нужно увеличить эту задержку.
+HOUSE_HIDE_DELAY = 0.4
+
 HOUSE_INSIDE_TILES = {}
 for x = 8, 15 do
     for y = 2, 5 do
@@ -654,6 +658,7 @@ for x = 8, 15 do
         table.insert(HOUSE_OUTSIDE_TILES, y*16 + x)
     end
 end
+HOUSE_DOORS_INSIDE = {72, 88, 79, 95}
 HOUSE_DOORS_OUTSIDE = {216, 232, 223, 239}
 
 function is_tile_solid(tile_id)

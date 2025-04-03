@@ -10,6 +10,18 @@ game = {
 
     tile_info = {},
     coordinates_to_tile_info = {},
+    cur_level = {},
+    current_level_index = 1,
+    levels = {
+        {tile_x1 = 0, tile_y1 = 0, tile_x2 = 60, tile_y2 = 16}, 
+        {tile_x1 = 0, tile_y1 = 17, tile_x2 = 60, tile_y2 = 32}, 
+        {tile_x1 = 0, tile_y1 = 33, tile_x2 = 100, tile_y2 = 48},
+        {tile_x1 = 0, tile_y1 = 49, tile_x2 = 100, tile_y2 = 64},
+        {tile_x1 = 0, tile_y1 = 65, tile_x2 = 100, tile_y2 = 80},
+        {tile_x1 = 0, tile_y1 = 81, tile_x2 = 100, tile_y2 = 96},
+        {tile_x1 = 0, tile_y1 = 97, tile_x2 = 100, tile_y2 = 112},
+        {tile_x1 = 0, tile_y1 = 113, tile_x2 = 100, tile_y2 = 128},
+    },
 }
 
 if DEV_MODE_ENABLED then
@@ -135,12 +147,33 @@ function game.spawn_object_by_tile_info(tile_info)
     end
 end
 
+function game.all_pandas_dead()
+    if not game.cur_level or not game.current_level.pandas then
+        return false 
+    end
+
+    for _, panda in ipairs(game.current_level.pandas) do
+        if panda.health > 0 then
+            return false
+        end
+    end
+    return true
+end
+
+function game.next_level()
+    local level = game.levels[game.current_level_index]
+    if level then
+        game.restart_in_area(level.tile_x1, level.tile_y1, level.tile_x2, level.tile_y2)
+        game.player.x = level.tile_x1 * 8 + 5 
+        game.player.y = level.tile_y1 * 8 + 40
+    end
+end
+
 function game.restart()
     game.player = Player:new()
 
-    -- Вся карта: 240 x 136
-    game.restart_in_area(0, 0, 240, 136)
-
+    game:next_level()
+    game.cur_level = game.levels[game.current_level_index]
     --for _, tile_info in ipairs(game.tile_info) do
     --    game.spawn_object_by_tile_info(tile_info)
     --end
@@ -233,6 +266,19 @@ function game.update()
         Debug.draw()
     else
         error('Invalid game state!')
+    end
+
+    if game.player.x >= game.cur_level.tile_x2 * 8 and not game.all_pandas_dead() then
+        game.player.x = game.cur_level.tile_x2 * 8 - 1
+    end
+
+    local level = game.levels[game.current_level_index]
+
+    if game.cur_level and game.all_pandas_dead() and game.player.x >= game.cur_level.tile_x2 * 8 then
+        game.current_level_index = game.current_level_index + 1
+        if game.current_level_index <= #game.levels then
+            game.next_level()
+        end
     end
 
     Time.update()
