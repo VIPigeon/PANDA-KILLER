@@ -520,7 +520,7 @@ function Player:draw()
     local flip = self.looking_left and 1 or 0
 
     local tx, ty = game.camera:transform_coordinates(self.x, self.y)
-    ty = ty - 8 * (self.animation_controller:current_animation().height - 1)
+    --ty = ty - 8 * (self.animation_controller:current_animation().height - 1)
 
     for _, attack_rect in ipairs(self.attack_rects) do
         -- Этот код не работает. Почему?

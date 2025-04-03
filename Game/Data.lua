@@ -48,8 +48,9 @@ GAME_STATE_LANGUAGE_SELECTION = 1
 GAME_STATE_GAMEPLAY = 2
 GAME_STATE_RIDING_BIKE = 3
 GAME_STATE_TRIGGERED = 4
-GAME_STATE_CLICKERMINIGAME = 5
-GAME_STATE_PAUSED = 6
+GAME_STATE_CUTSCENE = 5
+GAME_STATE_CLICKERMINIGAME = 6
+GAME_STATE_PAUSED = 7
 
 
 -- Это то, что в тике на F3
@@ -94,8 +95,9 @@ CAMERA_DIRECTION_CHANGE_TIME = 0.3
 
 --]]
 
-PLAYER_SPAWNPOINT_X = 26*8                                      -- пиксели
-PLAYER_SPAWNPOINT_Y = 12*8                                     -- пиксели
+-- кароч ещё в cutscenatio есть такое
+PLAYER_SPAWNPOINT_X = 10*8                                      -- пиксели
+PLAYER_SPAWNPOINT_Y = 11*8                                     -- пиксели
 
 --
 -- Всё что связано с движением 🏎️

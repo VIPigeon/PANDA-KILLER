@@ -25,7 +25,7 @@
 
 ClickerMinigame = {}
 
-MINIGAME_SCALING_CONST = 5
+MINIGAME_SCALING_CONST = 2
 INITIAL_SCALE = 1
 
 MAX_PLAYER_FORCE = 8
@@ -36,6 +36,16 @@ CONSTANT_PANDA_FORCE = 4
 MAX_PROGRESS = 100
 MIN_PROGRESS = 0
 START_PROGRESS = 50
+
+PROGRESS_BAR_POSITION_X = 20
+PROGRESS_BAR_POSITION_Y = 8
+PROGRESS_BAR_WIDTH = 200
+PROGRESS_BAR_HEIGHT = 20
+PROGRESS_BAR_BACKCOLOR = 3
+PROGRESS_BAR_PLAYERCOLOR = 11
+PROGRESS_BAR_PANDACOLOR = 14
+PROGRESS_BAR_PADDING_X = 2
+PROGRESS_BAR_PADDING_Y = 2
 
 current_player_force = MIN_PLAYER_FORCE
 current_panda_force = CONSTANT_PANDA_FORCE
@@ -76,15 +86,17 @@ function ClickerMinigame:rescale_game(upscale)
 
     game.scale = scale
 
-    game.camera.scale = scale
-    game.camera:rescale(scale)
+    -- game.camera.scale = scale
+    -- game.camera:rescale(scale)
 end
 
 function ClickerMinigame:gameover()
+    game.state = GAME_STATE_GAMEPLAY
+
     -- надо выйти в игру нормально и все следы миниигры уничтожить
     if is_player_win then
         trace('you win')
-        trigger_panda:set_dieable_state()
+        trigger_panda:take_damage()
         trigger_panda.kantugging_friend_panda = false
         -- trigger_panda:take_damage()
 
@@ -93,13 +105,12 @@ function ClickerMinigame:gameover()
         game.player:die()
     end
     
+    ClickerMinigame:rescale_game(false)
     -- may be some animations
 
-    ClickerMinigame:rescale_game(false)
-
-    game.state = GAME_STATE_GAMEPLAY
 end
 
+-- Аварийная функция будет удалена 12.03.25
 function ClickerMinigame:update_progress_for_visual()
     res = ''
     
@@ -109,6 +120,34 @@ function ClickerMinigame:update_progress_for_visual()
     end
 
     return res..'\n'
+end
+
+function ClickerMinigame:draw_progress_bar()
+    -- let bar separation be equal for both sides, then
+
+    -- ФОН (phone)
+    rect(PROGRESS_BAR_POSITION_X - PROGRESS_BAR_PADDING_X, PROGRESS_BAR_POSITION_Y, 
+        PROGRESS_BAR_WIDTH + PROGRESS_BAR_PADDING_X, PROGRESS_BAR_HEIGHT, 
+        PROGRESS_BAR_BACKCOLOR)
+
+    half_width = math.floor(PROGRESS_BAR_WIDTH / 2)
+
+    -- ЗАПОЛНЕНИЕ (filling)
+    if progress > START_PROGRESS then
+        local fill_width = math.floor((progress - START_PROGRESS) / MAX_PROGRESS * PROGRESS_BAR_WIDTH)
+
+        rect(PROGRESS_BAR_POSITION_X + half_width, PROGRESS_BAR_POSITION_Y + PROGRESS_BAR_PADDING_Y, 
+            fill_width, PROGRESS_BAR_HEIGHT - 2 * PROGRESS_BAR_PADDING_Y, 
+            PROGRESS_BAR_PLAYERCOLOR)
+    end
+    -- let case progress == START_PROGRESS be useless
+
+    local fill_width = math.floor((START_PROGRESS - progress) / MAX_PROGRESS * PROGRESS_BAR_WIDTH)
+
+        rect(PROGRESS_BAR_POSITION_X + half_width - fill_width, PROGRESS_BAR_POSITION_Y + PROGRESS_BAR_PADDING_Y, 
+            fill_width, PROGRESS_BAR_HEIGHT - 2 * PROGRESS_BAR_PADDING_Y, 
+            PROGRESS_BAR_PANDACOLOR)
+
 end
 
 function ClickerMinigame:update()
@@ -123,7 +162,6 @@ function ClickerMinigame:update()
 
         -- Обновление прогресса - спасибо, я бы не понял сам
         progress = progress + (MAGIC_MULTIPLIER*current_player_force - current_panda_force) * Time.dt()
-        trace(progress)
 
         -- Ограничение прогресса - прямо best practices массонов.
         if progress <= MIN_PROGRESS then
@@ -200,7 +238,9 @@ function ClickerMinigame:draw()
     -- то возможно не unопределённое behaveдение
     -- self.trigger = trigger
     
-    DialogWindow:draw_tugologue()
+    -- аварийная функция. Просьба не использовать
+    -- DialogWindow:draw_tugologue()
+    ClickerMinigame:draw_progress_bar()
 
     -- тут стоит подумать, может стоит символично оставить только одну панду
     for _, panda in ipairs(game.current_level.pandas) do

@@ -89,11 +89,16 @@ end
 function AnimationController:draw(x, y, flip, rotate)
     local animation = self:current_animation()
     local current_scale = self.custom_scale or game.scale
-    local crutching_coordinate_addition = 8 * (current_scale - 1)
 
-    local spr_x = x - crutching_coordinate_addition
-    local spr_y = y - 1.5 * crutching_coordinate_addition
-    spr(self:current_frame(), spr_x, spr_y, C0, current_scale, flip, rotate, animation.width, animation.height)
+    -- Вот здесь безумные костыли, которые созданы ТОЛЬКО для катсцены.
+    -- То есть был попорчен обычный код каким-то специальным случаем.
+    -- Поэтому я говорил, что лучше уж продублировать часть кода, чем
+    -- портить существующую штуку. Вообще в данной ситуации надо было
+    -- бы сделать draw_with_scale какой-нибудь и было бы ок. 😇
+    x = x - (current_scale - 1) * 48
+    y = y - current_scale * 8 * (self:current_animation().height - 1)
+
+    spr(self:current_frame(), x, y, C0, current_scale, flip, rotate, animation.width, animation.height)
 end
 
 AnimationController.__index = AnimationController
