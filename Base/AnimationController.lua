@@ -12,7 +12,7 @@ AnimationController = {}
 
 function AnimationController:new(first_sprite, need_custom_scale, scale)
     need_custom_scale = need_custom_scale or false
-    
+
     -- idk how game inits game.scale must be below
     scale = scale or data.STANDART_SCALE
     local custom_scale = nil
@@ -96,7 +96,7 @@ function AnimationController:draw(x, y, flip, rotate)
     -- портить существующую штуку. Вообще в данной ситуации надо было
     -- бы сделать draw_with_scale какой-нибудь и было бы ок. 😇
     x = x - (current_scale - 1) * 48
-    y = y - current_scale * 8 * (self:current_animation().height - 1)
+    y = y + 24 * (current_scale - 1) - 8 * current_scale * (self:current_animation().height - 1)
 
     spr(self:current_frame(), x, y, C0, current_scale, flip, rotate, animation.width, animation.height)
 end

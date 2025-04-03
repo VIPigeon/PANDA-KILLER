@@ -95,7 +95,6 @@ function ClickerMinigame:gameover()
 
     -- надо выйти в игру нормально и все следы миниигры уничтожить
     if is_player_win then
-        trace('you win')
         trigger_panda:take_damage()
         trigger_panda.kantugging_friend_panda = false
         -- trigger_panda:take_damage()
@@ -156,7 +155,6 @@ function ClickerMinigame:update()
         -- сделаем проверку на нажатие буквы Х
         if btnp(BUTTON_X) then
             -- или добавим более сложную логику(не добавим, это никому не будет интересно)
-            trace('button pressed')
             current_player_force = MAX_PLAYER_FORCE
         end
 
