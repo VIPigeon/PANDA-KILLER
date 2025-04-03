@@ -164,8 +164,8 @@ function game.next_level()
     local level = game.levels[game.current_level_index]
     if level then
         game.restart_in_area(level.tile_x1, level.tile_y1, level.tile_x2, level.tile_y2)
-        game.player.x = level.tile_x1 * 8 + 5 
-        game.player.y = level.tile_y1 * 8 + 40
+        game.player.x = 10*8
+        game.player.y = 11*8
     end
 end
 
@@ -186,13 +186,10 @@ function game.restart()
     game.camera = Camera:new(game.player)
     game.parallaxscrolling = ParallaxScrolling:new()
 
-    game.state = GAME_STATE_CUTSCENE
     cutscene:init()
-    trace('RETARD')
 end
 
 function game.update()
-    trace(game.state)
     if game.state == GAME_STATE_LANGUAGE_SELECTION then
         if btnp(BUTTON_Z) then
             game.state = GAME_STATE_CUTSCENE
@@ -222,7 +219,6 @@ function game.update()
             dialog_window:draw()
         end
     elseif game.state == GAME_STATE_CUTSCENE then
-        trace('cutscene')
         game.camera:update()
         cutscene:update()
         cutscene:draw()
@@ -230,7 +226,6 @@ function game.update()
         -- ...
         -- начинается миниигра.
     elseif game.state == GAME_STATE_CLICKERMINIGAME then
-        --trace('clickerd')
         -- game.draw_map()
         game.camera:update()
         -- если хотим чтобы игрок и все остальные не зависали, надо сделать для них особых update
