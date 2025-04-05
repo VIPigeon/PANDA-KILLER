@@ -25,7 +25,7 @@ game = {
 }
 
 if DEV_MODE_ENABLED then
-    game.state = GAME_STATE_CUTSCENE
+    game.state = GAME_STATE_GAMEPLAY
 end
 
 function game.init()
