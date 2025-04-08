@@ -417,7 +417,7 @@ SPRITES = {
             rest = Animation:new({304, 320}, 20):to_sprite(),
             dashing = Animation:new({312, 313}, 3):with_size(1, 1):at_end_goto_last_frame():to_sprite(),
             charging_basic_attack = Sprite:new_complex({
-                Animation:new({282}, 4),
+                Animation:new({330}, 4),
                 Animation:new({328,329}, 3):with_size(1, 1):at_end_goto_last_frame()
             }),
             charging_dash = Animation:new({327}, 1):to_sprite(),
