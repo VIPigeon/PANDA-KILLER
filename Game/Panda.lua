@@ -63,7 +63,7 @@ local PANDA_STATE_COLORS = {0, 9, 0, 0, 0, 0, 0, 0}
 function Panda:new(x, y, panda_type, can_tug)
     panda_type = panda_type or PANDA_TYPE.basic
     can_tug = can_tug or false
-    local default_state = panda_type == PANDA_TYPE.basic and PANDA_STATE.patrol or PANDA_STATE.sleeping
+    local default_state = (panda_type == PANDA_TYPE.basic or panda_type == PANDA_TYPE.stickless) and PANDA_STATE.patrol or PANDA_STATE.sleeping
     local object = {
         x = x,
         y = y,
@@ -434,14 +434,17 @@ function Panda:update()
                 Basic.play_sound(SOUNDS.PANDA_BASIC_ATTACK)
 
                 local flip = (self.look_direction < 0) and 1 or 0
-                self.attack_effect = ChildBody:new(
-                    self,
-                    8 * (self.look_direction - flip),
-                    -8 * (self.animation_controller:current_animation().height - 1),
-                    SPRITES.particle_effects.horizontal_attack,
-                    flip
-                )
-                self.attack_effect_time = PANDA_BASIC_ATTACK_EFFECT_DURATION
+                if self.type ~= PANDA_TYPE.stickless then
+                    self.attack_effect = ChildBody:new(
+                        self,
+                        8 * (self.look_direction - flip),
+                        -8 * (self.animation_controller:current_animation().height - 1),
+                        SPRITES.particle_effects.horizontal_attack,
+                        flip
+                    )
+                    self.attack_effect_time = PANDA_BASIC_ATTACK_EFFECT_DURATION
+                end
+                
                 self.basic_attack_time_left = PANDA_BASIC_ATTACK_DURATION
             else
                 self.basic_attack_time_left = Basic.tick_timer(self.basic_attack_time_left)
@@ -451,19 +454,23 @@ function Panda:update()
             end
         end
 
+        -- ::skipanimations::
+
     elseif self.state == PANDA_STATE.dashing then
 
         if self.animation_controller:is_at_last_frame() then
             if self.basic_attack_time_left == 0.0 then
                 local flip = (self.look_direction < 0) and 1 or 0
-                self.attack_effect = ChildBody:new(
-                    self,
-                    8 * (self.look_direction - flip),
-                    -8 * (self.animation_controller:current_animation().height - 1),
-                    SPRITES.particle_effects.horizontal_attack,
-                    flip
-                )
-                self.attack_effect_time = PANDA_BASIC_ATTACK_EFFECT_DURATION
+                if self.type ~= PANDA_TYPE.stickless then
+                    self.attack_effect = ChildBody:new(
+                        self,
+                        8 * (self.look_direction - flip),
+                        -8 * (self.animation_controller:current_animation().height - 1),
+                        SPRITES.particle_effects.horizontal_attack,
+                        flip
+                    )
+                    self.attack_effect_time = PANDA_BASIC_ATTACK_EFFECT_DURATION
+                end
                 self.basic_attack_time_left = PANDA_BASIC_ATTACK_DURATION
             else
                 local attack_width = 22

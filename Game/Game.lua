@@ -25,7 +25,7 @@ game = {
 }
 
 if DEV_MODE_ENABLED then
-    game.state = GAME_STATE_CUTSCENE
+    game.state = GAME_STATE_GAMEPLAY
 end
 
 function game.init()
@@ -102,6 +102,10 @@ function game.save_special_tile_information()
                 -- дизайнера, неудобно для программиста! Какой выбор сделать?
                 --
                 -- 🤔 Оставляйте свои мысли в этом комментарии!
+                --
+                -- 
+                -- Я не чёрт, но тоже тут ногу сломал. Долой дизайнеров и манагеров. Анон
+
                 mset(col, row, 0)
             end
 
@@ -186,7 +190,9 @@ function game.restart()
     game.camera = Camera:new(game.player)
     game.parallaxscrolling = ParallaxScrolling:new()
 
-    cutscene:init()
+    if not DEV_MODE_ENABLED then
+        cutscene:init()
+    end
 end
 
 function game.update()
@@ -219,12 +225,16 @@ function game.update()
             dialog_window:draw()
         end
     elseif game.state == GAME_STATE_CUTSCENE then
-        game.camera:update()
-        cutscene:update()
-        cutscene:draw()
-        -- панда сама набрасывается на игрока
-        -- ...
-        -- начинается миниигра.
+        if DEV_MODE_ENABLED then
+           game.state = GAME_STATE_GAMEPLAY 
+        else
+            game.camera:update()
+            cutscene:update()
+            cutscene:draw()
+            -- панда сама набрасывается на игрока
+            -- ...
+            -- начинается миниигра.
+        end
     elseif game.state == GAME_STATE_CLICKERMINIGAME then
         -- game.draw_map()
         game.camera:update()

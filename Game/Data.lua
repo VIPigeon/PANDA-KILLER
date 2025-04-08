@@ -217,6 +217,7 @@ PANDA_TYPE = {
     basic = 0,
     chilling = 1,
     agro = 2,
+    stickless = 3,
 }
 
 -- Возможно их стоит объединить с panda type. Иначе получается излишнее
@@ -225,6 +226,7 @@ SPECIAL_TILES = {
     {id = 38, type = PANDA_TYPE.basic},
     {id = 39, type = PANDA_TYPE.chilling},
     {id = 37, type = PANDA_TYPE.agro},
+    {id = 36, type = PANDA_TYPE.stickless},
 }
 
 PANDA_PHYSICS_SETTINGS = {
@@ -282,6 +284,24 @@ PANDA_SETTINGS = {
         -- Время, после которого панда устанет гоняться за игроком.
         -- Это при условии, что она игрока не видит.
         chase_duration = 4.0,
+    },
+    [PANDA_TYPE.stickless] = {
+        health = 6,
+
+        patrol_speed = 8,
+        chase_speed  = 2.5 * 8,
+        dash_charge_duration = 0.8,  -- 1.5
+        dash_duration = 0.6, -- 1.0
+        dash_strength = 170,
+
+        -- Это отсчет до того как панда сможет атаковать после
+        -- того как начала гнаться за игроком. Да, я просто перевел
+        -- название переменной с английского и назвал это документацией.
+        delay_after_starting_chase_before_attacking = 0.3,
+
+        -- Время, после которого панда устанет гоняться за игроком.
+        -- Это при условии, что она игрока не видит.
+        chase_duration = 3.0,
     },
 }
 
@@ -389,6 +409,19 @@ SPRITES = {
             }),
             charging_dash = Animation:new({263}, 1):to_sprite(),
             dash = Animation:new({263}, 1):to_sprite(),
+            sleeping = Animation:new({264}, 1):with_size(2, 1):to_sprite(),
+        },
+        [PANDA_TYPE.stickless] = {
+            walk = Animation:new({304, 305}, 22):to_sprite(),
+            chase = Animation:new({307, 308}, 10):to_sprite(),
+            rest = Animation:new({304, 320}, 20):to_sprite(),
+            dashing = Animation:new({312, 313}, 3):with_size(1, 1):at_end_goto_last_frame():to_sprite(),
+            charging_basic_attack = Sprite:new_complex({
+                Animation:new({282}, 4),
+                Animation:new({328,329}, 3):with_size(1, 1):at_end_goto_last_frame()
+            }),
+            charging_dash = Animation:new({327}, 1):to_sprite(),
+            dash = Animation:new({327}, 1):to_sprite(),
             sleeping = Animation:new({264}, 1):with_size(2, 1):to_sprite(),
         },
         -- [PANDA_TYPE.chilling] и т.д. смотреть снизу
