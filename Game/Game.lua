@@ -160,7 +160,8 @@ function game.all_pandas_dead()
     return true
 end
 
-function game.next_level()
+function game.load_current_level()
+    game.cur_level = game.levels[game.current_level_index]
     local level = game.levels[game.current_level_index]
     if level then
         game.restart_in_area(level.tile_x1, level.tile_y1, level.tile_x2, level.tile_y2)
@@ -172,8 +173,9 @@ end
 function game.restart()
     game.player = Player:new()
 
-    game:next_level()
-    game.cur_level = game.levels[game.current_level_index]
+    game.current_level_index = 1
+    game.load_current_level()
+
     --for _, tile_info in ipairs(game.tile_info) do
     --    game.spawn_object_by_tile_info(tile_info)
     --end
@@ -253,7 +255,9 @@ function game.update()
         if game.cur_level and game.all_pandas_dead() and game.player.x >= game.cur_level.tile_x2 * 8 then
             game.current_level_index = game.current_level_index + 1
             if game.current_level_index <= #game.levels then
-                game.next_level()
+                game.load_current_level()
+            else
+                error('ALARM! NO LEVELS LEFT!')
             end
         end
 
