@@ -244,7 +244,7 @@ PANDA_SETTINGS = {
         dash_duration = 0.6, -- 1.0
         dash_strength = 170,
 
-        health_at_which_to_get_stunned = 4,
+        health_at_which_to_get_stunned = 3,
 
         eye_color = 13,
 
@@ -396,7 +396,7 @@ SPRITES = {
                 Animation:new({282}, 4),
                 Animation:new({267, 268, 269, 270}, 3):with_size(1, 2):at_end_goto_last_frame()
             }),
-            charging_dash = Animation:new({263}, 1):to_sprite(),
+            charging_dash = Animation:new({282}, 1):to_sprite(),
             dash = Animation:new({263}, 1):to_sprite(),
             sleeping = Animation:new({264}, 1):with_size(2, 1):to_sprite(),
         },

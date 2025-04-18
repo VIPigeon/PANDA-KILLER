@@ -33,16 +33,26 @@ end
 function affect_blood_collision(particle, params)
     if particle.vx == 0 and particle.vy == 0 then return end
 
-    local next_x, next_y = particle.x + particle.vx, particle.y + particle.vy
-    local tile_x, tile_y = math.floor(next_x / 8), math.floor(next_y / 8)
-    local tile_id = mget(tile_x, tile_y)
+    
 
+    local next_x = particle.x + particle.vx
+    local tile_x, tile_y = math.floor(next_x / 8), math.floor(particle.y / 8)
+    local tile_id = mget(tile_x, tile_y)
     if is_tile_solid(tile_id) then
-        particle.vx, particle.vy = 0, 0  
-        particle.fx, particle.fy = 0, 0  
-        if math.random() < 0.3 then
-            leave_blood_stain(particle.x, particle.y)
-        end
+        particle.vx = -0.1 * particle.vx
+        particle.fx = 0
+    end  
+
+    local next_y = particle.y + particle.vy
+    local tile_x, tile_y = math.floor(particle.x / 8), math.floor(next_y / 8)
+    local tile_id = mget(tile_x, tile_y)
+    if is_tile_solid(tile_id) then
+        particle.vx = particle.vx * 0.6
+        particle.vy = 0  
+        particle.fy = 0  
+        -- if math.random() < 0.3 then
+        --     leave_blood_stain(particle.x, particle.y)
+        -- end
         
         if particle.life then
             particle.life = particle.life * 0.7
@@ -85,12 +95,6 @@ function create_blood(x, y, orientation, amount_of_blood)
     {
         affectfunc = affect_force,
         params = { fx = fx, fy = fy}
-    }
-    )
-    table.insert(ps.affectors,
-    {
-        affectfunc = affect_stopzone,
-        params = { zoneminx = zoneminx, zonemaxx = zonemaxx, zoneminy = zoneminy, zonemaxy = zonemaxy }
     }
     )
      table.insert(ps.affectors, {

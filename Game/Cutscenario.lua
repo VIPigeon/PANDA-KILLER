@@ -48,9 +48,9 @@ function cutscene:init()
 	PLAYER_SPAWNPOINT_X = 10*8
 	PLAYER_SPAWNPOINT_Y = 11*8
 
-	cutscene.something_in_the_shape_of_panda = Panda:new(23 * 8, 11 * 8, PANDA_TYPE.basic, true)
-	cutscene.something_in_the_shape_of_panda.special_update = special_panda_update
-	table.insert(game.current_level.pandas, cutscene.something_in_the_shape_of_panda)
+	-- cutscene.something_in_the_shape_of_panda = Panda:new(23 * 8, 11 * 8, PANDA_TYPE.basic, true)
+	-- cutscene.something_in_the_shape_of_panda.special_update = special_panda_update
+	-- table.insert(game.current_level.pandas, cutscene.something_in_the_shape_of_panda)
 end
 
 
