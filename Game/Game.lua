@@ -13,9 +13,9 @@ game = {
     cur_level = {},
     current_level_index = 1,
     levels = {
-        {tile_x1 = 0, tile_y1 = 0, tile_x2 = 60, tile_y2 = 16}, 
-        {tile_x1 = 0, tile_y1 = 17, tile_x2 = 60, tile_y2 = 32}, 
-        {tile_x1 = 0, tile_y1 = 33, tile_x2 = 100, tile_y2 = 48},
+        {tile_x1 = 0, tile_y1 = 0, tile_x2 = 30, tile_y2 = 16, player_x = 10*8, player_y = 11*8},
+        {tile_x1 = 0, tile_y1 = 17, tile_x2 = 200, tile_y2 = 32, player_x = 10*8, player_y = 20*8}, 
+        {tile_x1 = 0, tile_y1 = 33, tile_x2 = 100, tile_y2 = 48, player_x = 10*8, player_y = 20*8},
         {tile_x1 = 0, tile_y1 = 49, tile_x2 = 100, tile_y2 = 64},
         {tile_x1 = 0, tile_y1 = 65, tile_x2 = 100, tile_y2 = 80},
         {tile_x1 = 0, tile_y1 = 81, tile_x2 = 100, tile_y2 = 96},
@@ -164,8 +164,8 @@ function game.next_level()
     local level = game.levels[game.current_level_index]
     if level then
         game.restart_in_area(level.tile_x1, level.tile_y1, level.tile_x2, level.tile_y2)
-        game.player.x = 10*8
-        game.player.y = 11*8
+        game.player.x = level.player_x
+        game.player.y = level.player_y
     end
 end
 
