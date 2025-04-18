@@ -146,6 +146,8 @@ function Panda:set_dieable_state()
 end
 
 function Panda:take_damage(hit_x, hit_y)
+    local blood_count = math.lerp(100, 10, self.health / PANDA_SETTINGS[self.type].health)
+
     self.health = self.health - 1
 
     -- if death by grief for the lost bamboo
@@ -155,12 +157,12 @@ function Panda:take_damage(hit_x, hit_y)
     Basic.play_sound(SOUNDS.PANDA_HIT)
 
     if hit_x < 0 then
-        create_blood(self.x, self.y, -1)
+        create_blood(self.x, self.y, -1, blood_count)
     elseif hit_x > 0 then
-        create_blood(self.x, self.y, 1)
+        create_blood(self.x, self.y, 1, blood_count)
     else
-        create_blood(self.x, self.y, -1)
-        create_blood(self.x, self.y, 1)
+        create_blood(self.x, self.y, -1, blood_count)
+        create_blood(self.x, self.y, 1, blood_count)
     end
 
     local stun_knockback_direction_x = hit_x < 0 and -1 or 1

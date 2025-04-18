@@ -52,6 +52,10 @@ function math.in_range_inclusive(num, left_border, right_border)
     return num >= left_border and num <= right_border
 end
 
+function math.lerp(a, b, t)
+    return a + (b - a) * t
+end
+
 -- Украдено из юнити
 -- https://stackoverflow.com/questions/61372498/how-does-mathf-smoothdamp-work-what-is-it-algorithm
 function math.smooth_damp(current, target, velocity, smooth_time)

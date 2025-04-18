@@ -8,12 +8,12 @@ local maxstartsize = 2
 local minendsize = 0.5
 local maxendsize = 0.5
 
-local num = 100
-
 local minstartvx = 1
 local maxstartvx = 3
 local minstartvy = -3
 local maxstartvy = -2
+
+local default_blood_amount = 100
 
 local fx = 0
 local fy = 0.15
@@ -50,13 +50,14 @@ function affect_blood_collision(particle, params)
     end
 end
 
-function create_blood(x, y, orientation)
+function create_blood(x, y, orientation, amount_of_blood)
+    amount_of_blood = amount_of_blood or default_blood_amount
     local ps =  make_psystem(minlife, maxlife, minstartsize, maxstartsize, minendsize, maxendsize)
 
     table.insert(ps.emittimers,
     {
         timerfunc = emittimer_burst,
-        params = { num = num}
+        params = { num = amount_of_blood}
     }
     )
     if orientation == 1 then
