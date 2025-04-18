@@ -250,7 +250,7 @@ function game.update()
 
         local level = game.levels[game.current_level_index]
 
-        if game.cur_level and game.all_pandas_dead() and game.player.x >= game.cur_level.tile_x2 * 8 then
+        if game.cur_level and game.all_pandas_dead() and game.player.x >= game.cur_level.tile_x2 * 8 or btnp(BUTTON_A) then
             game.current_level_index = game.current_level_index + 1
             if game.current_level_index <= #game.levels then
                 game.load_current_level()
