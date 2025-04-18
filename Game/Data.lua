@@ -255,7 +255,7 @@ PANDA_SETTINGS = {
 
         -- Время, после которого панда устанет гоняться за игроком.
         -- Это при условии, что она игрока не видит.
-        chase_duration = 3.0,
+        chase_duration = 4.0,
     },
     [PANDA_TYPE.orange_eyes] = {
         health = 6,
