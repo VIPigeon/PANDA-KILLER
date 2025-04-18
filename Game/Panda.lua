@@ -620,9 +620,9 @@ function Panda:draw()
             rect(tx + 8, ty + 4, 4, 3, eye_color)
         end
     elseif self.animation_controller:current_frame() == 279 then
-        rect(eye_start, ty + 6, 4, 2, eye_color)
+        rect(eye_start, ty + 6, 3, 2, eye_color)
     else
-        rect(eye_start, ty + 2, 4, 2, eye_color)
+        rect(eye_start, ty + 2, 3, 2, eye_color)
     end
 
     local sprites = SPRITES.panda[self.type]
