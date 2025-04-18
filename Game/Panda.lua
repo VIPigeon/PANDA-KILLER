@@ -603,10 +603,26 @@ function Panda:draw()
     if self.type == PANDA_TYPE.chilling then
         -- spr(294, tx + 4, ty - 6, 0)
     end
-    if self.look_direction == 1 then
-        rect(tx + 1, ty + 2, 4, 2, PANDA_SETTINGS[self.type].eye_color)
+
+    local eye_start = tx + 1
+    if self.look_direction ~= 1 then
+        eye_start = tx + 3
+    end
+    local eye_color = PANDA_SETTINGS[self.type].eye_color
+
+    -- ННННННЕЕЕЕЕЕЕЕЕЕЕТТТТТТТ
+    if self.animation_controller:current_frame() == 282 then
+        rect(eye_start, ty + 5, 4, 1, eye_color)
+    elseif self.animation_controller:current_frame() == 264 then
+        if self.look_direction == 1 then
+            rect(tx + 5, ty + 4, 4, 3, eye_color)
+        else
+            rect(tx + 8, ty + 4, 4, 3, eye_color)
+        end
+    elseif self.animation_controller:current_frame() == 279 then
+        rect(eye_start, ty + 6, 4, 2, eye_color)
     else
-        rect(tx + 3, ty + 2, 4, 2, PANDA_SETTINGS[self.type].eye_color)
+        rect(eye_start, ty + 2, 4, 2, eye_color)
     end
 
     local sprites = SPRITES.panda[self.type]
