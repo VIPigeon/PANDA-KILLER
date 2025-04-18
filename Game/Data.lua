@@ -26,6 +26,8 @@ KEY_E = 5
 KEY_F = 6
 KEY_J = 10
 
+KEY_P = 16
+
 --[[
 
 Таблица переводов кнопок контроллеров.
@@ -262,10 +264,10 @@ PANDA_SETTINGS = {
 
         patrol_speed = 9,
         chase_speed  = 2.7 * 8,
-        dash_charge_duration = 0.35,  -- 1.5
-        dash_duration = 0.7, -- 1.0
-        dash_strength = 180,
-        health_at_which_to_get_stunned = 4,
+        dash_charge_duration = 0.5,  -- 1.5
+        dash_duration = 0.6, -- 1.0
+        dash_strength = 200,
+        health_at_which_to_get_stunned = 3,
 
         eye_color = 9,
 
@@ -325,12 +327,12 @@ PANDA_STUN_DURATION = 2.3
 PANDA_SMALL_STUN_DURATION = 0.7
 
 -- Отбрасывание панды от игрока при обычном стаггере
-PANDA_SMALL_STUN_KNOCKBACK_HORIZONTAL = 30.0
---PANDA_SMALL_STUN_KNOCKBACK_VERTICAL = 10.0
+PANDA_SMALL_STUN_KNOCKBACK_HORIZONTAL = 20.0
+-- PANDA_SMALL_STUN_KNOCKBACK_VERTICAL = 10.0
 --PANDA_SMALL_STUN_KNOCKBACK_VERTICAL_FROM_VERTICAL_ATTACK = 60.0
 -- Когда мы впервые бьём и станим панду
 PANDA_STUN_KNOCKBACK_HORIZONTAL = 75.0
-PANDA_STUN_KNOCKBACK_VERTICAL = 40.0
+PANDA_STUN_KNOCKBACK_VERTICAL = 10.0
 PANDA_STUN_KNOCKBACK_VERTICAL_FROM_VERTICAL_ATTACK = 80.0
 
 -- Поля для параллакс скроллинга

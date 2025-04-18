@@ -14,13 +14,9 @@ game = {
     current_level_index = 1,
     levels = {
         {tile_x1 = 0, tile_y1 = 0, tile_x2 = 119, tile_y2 = 16, player_x = 10*8, player_y = 11*8},
-        {tile_x1 = 0, tile_y1 = 17, tile_x2 = 200, tile_y2 = 32, player_x = 0, player_y = 30*8}, 
-        {tile_x1 = 0, tile_y1 = 33, tile_x2 = 52, tile_y2 = 48, player_x = 10*8, player_y = 20*8},
-        {tile_x1 = 0, tile_y1 = 49, tile_x2 = 100, tile_y2 = 64},
-        {tile_x1 = 0, tile_y1 = 65, tile_x2 = 100, tile_y2 = 80},
-        {tile_x1 = 0, tile_y1 = 81, tile_x2 = 100, tile_y2 = 96},
-        {tile_x1 = 0, tile_y1 = 97, tile_x2 = 100, tile_y2 = 112},
-        {tile_x1 = 0, tile_y1 = 113, tile_x2 = 100, tile_y2 = 128},
+        {tile_x1 = 0, tile_y1 = 17, tile_x2 = 46, tile_y2 = 32, player_x = 0, player_y = 30*8}, 
+        {tile_x1 = 0, tile_y1 = 34, tile_x2 = 62, tile_y2 = 49, player_x = 0, player_y = 46*8},
+        {tile_x1 = 0, tile_y1 = 51, tile_x2 = 62, tile_y2 = 101, player_x = 0, player_y = 97*8},
     },
 }
 
@@ -250,12 +246,13 @@ function game.update()
 
         local level = game.levels[game.current_level_index]
 
-        if game.cur_level and game.all_pandas_dead() and game.player.x >= game.cur_level.tile_x2 * 8 or btnp(BUTTON_A) then
+        if game.cur_level and game.all_pandas_dead() and game.player.x >= game.cur_level.tile_x2 * 8 or keyp(KEY_P) then
             game.current_level_index = game.current_level_index + 1
             if game.current_level_index <= #game.levels then
                 game.load_current_level()
             else
-                error('ALARM! NO LEVELS LEFT!')
+                -- error('ALARM! NO LEVELS LEFT!')
+                error('You WIN the game! Congragulations <3 <3 <3')
             end
         end
 
