@@ -163,41 +163,30 @@ function Panda:take_damage(hit_x, hit_y)
         create_blood(self.x, self.y, 1)
     end
 
-    if self.state == PANDA_STATE.stunned then
+    local stun_knockback_direction_x = hit_x < 0 and -1 or 1
+    local stun_knockback_direction_y = hit_y < 0 and PANDA_STUN_KNOCKBACK_VERTICAL_FROM_VERTICAL_ATTACK or PANDA_STUN_KNOCKBACK_VERTICAL
+
+    if self.health == PANDA_SETTINGS[self.type].health_at_which_to_get_stunned then
+        self.state = PANDA_STATE.stunned
+        self.stun_time_left = PANDA_STUN_DURATION
+
         --
         -- ААХХАХАХАХА Я СОШЁЛ С УМА 🥶 😷
         --
         self.time_of_most_recent_hit = Time.now()
         self.stun_time_left = PANDA_STUN_DURATION
 
-        if hit_x < 0 then
-            self.velocity.x = -1 * PANDA_KNOCKBACK_HORIZONTAL
-        elseif hit_x > 0 then
-            self.velocity.x = PANDA_KNOCKBACK_HORIZONTAL
-        end
-        if hit_y < 0 then
-            self.velocity.y = PANDA_KNOCKBACK_VERTICAL_FROM_VERTICAL_ATTACK
-        else
-            self.velocity.y = PANDA_KNOCKBACK_VERTICAL
-        end
+        self.velocity.x = stun_knockback_direction_x * PANDA_STUN_KNOCKBACK_HORIZONTAL
+        self.velocity.y = stun_knockback_direction_y
     else
-        if hit_x < 0 then
-            self.velocity.x = -1 * PANDA_STUN_KNOCKBACK_HORIZONTAL
-        elseif hit_x > 0 then
-            self.velocity.x = PANDA_STUN_KNOCKBACK_HORIZONTAL
-        end
-        if hit_y < 0 then
-            self.velocity.y = PANDA_STUN_KNOCKBACK_VERTICAL_FROM_VERTICAL_ATTACK
-        else
-            self.velocity.y = PANDA_STUN_KNOCKBACK_VERTICAL
-        end
-
         self.state = PANDA_STATE.stunned
-        self.stun_time_left = PANDA_STUN_DURATION
+        self.stun_time_left = self.stun_time_left + PANDA_SMALL_STUN_DURATION
+
+        self.velocity.x = stun_knockback_direction_x * PANDA_SMALL_STUN_KNOCKBACK_HORIZONTAL
+        self.velocity.y = stun_knockback_direction_y
     end
 
-    local panda_should_die = self.health == 0
-    if panda_should_die then
+    if self.health <= 0 then
         self:die()
     end
 end
@@ -552,8 +541,12 @@ function Panda:update()
     if self.state == PANDA_STATE.stunned or
        self.state == PANDA_STATE.staggered
     then
-        -- goto 😎
-        goto hitlocked
+        if self.stun_time_left > PANDA_SMALL_STUN_DURATION then
+            self.animation_controller:set_sprite(sprites.sleeping)
+        else
+            -- goto 😎
+            goto hitlocked
+        end
     end
 
     if self.state == PANDA_STATE.patrol then

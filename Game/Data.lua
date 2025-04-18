@@ -244,6 +244,8 @@ PANDA_SETTINGS = {
         dash_duration = 0.6, -- 1.0
         dash_strength = 170,
 
+        health_at_which_to_get_stunned = 4,
+
         -- Это отсчет до того как панда сможет атаковать после
         -- того как начала гнаться за игроком. Да, я просто перевел
         -- название переменной с английского и назвал это документацией.
@@ -261,6 +263,7 @@ PANDA_SETTINGS = {
         dash_charge_duration = 0.7,
         dash_duration = 0.6,
         dash_strength = 100,
+        health_at_which_to_get_stunned = 4,
 
         delay_after_starting_chase_before_attacking = 0.3,
         chase_duration = 2.0,
@@ -273,6 +276,7 @@ PANDA_SETTINGS = {
         dash_charge_duration = 0.35,  -- 1.5
         dash_duration = 0.7, -- 1.0
         dash_strength = 180,
+        health_at_which_to_get_stunned = 4,
 
         -- Это отсчет до того как панда сможет атаковать после
         -- того как начала гнаться за игроком. Да, я просто перевел
@@ -311,14 +315,13 @@ PANDA_VIEW_CONE_HEIGHT = 32
 
 -- Панда отлетает в стан, после этого её нужно быстро ударить
 -- несколько раз, чтобы она умерла.
-PANDA_TIME_INTERVAL_BETWEEN_HITS_FROM_PLAYER = 1.0
-PANDA_HITS_NEEDED_TO_DIE = 3
 PANDA_STUN_DURATION = 2.1
+PANDA_SMALL_STUN_DURATION = 0.3
 
 -- Отбрасывание панды от игрока при обычном стаггере
-PANDA_KNOCKBACK_HORIZONTAL = 20.0
-PANDA_KNOCKBACK_VERTICAL = 10.0
-PANDA_KNOCKBACK_VERTICAL_FROM_VERTICAL_ATTACK = 60.0
+PANDA_SMALL_STUN_KNOCKBACK_HORIZONTAL = 20.0
+--PANDA_SMALL_STUN_KNOCKBACK_VERTICAL = 10.0
+--PANDA_SMALL_STUN_KNOCKBACK_VERTICAL_FROM_VERTICAL_ATTACK = 60.0
 -- Когда мы впервые бьём и станим панду
 PANDA_STUN_KNOCKBACK_HORIZONTAL = 75.0
 PANDA_STUN_KNOCKBACK_VERTICAL = 40.0
