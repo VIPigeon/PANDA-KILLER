@@ -394,7 +394,7 @@ SPRITES = {
         -- [PANDA_TYPE.chilling] и т.д. смотреть снизу
     },
 
-    panda_stun_effect = Animation:new({84, 85, 86, 87}, 8):to_sprite(),
+    panda_stun_effect = Animation:new({9, 10, 11, 12}, 8):to_sprite(),
 }
 -- Специальные переделки для чилящей панды.
 -- Жаль что это всё нельзя сделать внутри одной таблицы.

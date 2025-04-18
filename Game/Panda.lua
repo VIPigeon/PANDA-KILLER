@@ -101,7 +101,8 @@ function Panda:new(x, y, panda_type, can_tug)
         change_look_direction_cooldown = 0.0,
 
         -- Хотите ли вы потягаться с такой пандой?🙄 Ответ был дан выше
-        kantugging_friend_panda = can_tug,
+        --kantugging_friend_panda = can_tug,
+        kantugging_friend_panda = false,
     }
 
     setmetatable(object, self)

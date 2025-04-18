@@ -192,7 +192,8 @@ end
 function game.update()
     if game.state == GAME_STATE_LANGUAGE_SELECTION then
         if btnp(BUTTON_Z) then
-            game.state = GAME_STATE_CUTSCENE
+            game.state = GAME_STATE_GAMEPLAY
+            --game.state = GAME_STATE_CUTSCENE
         end
         if btnp(BUTTON_RIGHT) or btnp(BUTTON_LEFT) then
             if game.language == 'ru' then
