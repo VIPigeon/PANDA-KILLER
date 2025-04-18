@@ -319,7 +319,7 @@ PANDA_STUN_DURATION = 2.1
 PANDA_SMALL_STUN_DURATION = 0.3
 
 -- Отбрасывание панды от игрока при обычном стаггере
-PANDA_SMALL_STUN_KNOCKBACK_HORIZONTAL = 20.0
+PANDA_SMALL_STUN_KNOCKBACK_HORIZONTAL = 30.0
 --PANDA_SMALL_STUN_KNOCKBACK_VERTICAL = 10.0
 --PANDA_SMALL_STUN_KNOCKBACK_VERTICAL_FROM_VERTICAL_ATTACK = 60.0
 -- Когда мы впервые бьём и станим панду
@@ -649,7 +649,7 @@ data.run = {
 data.bad_tile = { 32, 33, 34, 48 }
 
 -- 🛖
-HOUSE_REVEAL_SPEED = 7
+HOUSE_REVEAL_SPEED = 12
 -- Если некоторые тайлы не успевают поменяться, то нужно увеличить эту задержку.
 HOUSE_HIDE_DELAY = 0.4
 
