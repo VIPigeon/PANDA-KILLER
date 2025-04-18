@@ -244,6 +244,19 @@ function game.update()
         game.parallaxscrolling:update()
         update_psystems()
 
+        if game.player.x >= game.cur_level.tile_x2 * 8 and not game.all_pandas_dead() then
+            game.player.x = game.cur_level.tile_x2 * 8 - 1
+        end
+
+        local level = game.levels[game.current_level_index]
+
+        if game.cur_level and game.all_pandas_dead() and game.player.x >= game.cur_level.tile_x2 * 8 then
+            game.current_level_index = game.current_level_index + 1
+            if game.current_level_index <= #game.levels then
+                game.next_level()
+            end
+        end
+
         game.draw_map()
         for _, panda in ipairs(game.current_level.pandas) do
             panda:draw()
@@ -260,21 +273,15 @@ function game.update()
         draw_psystems()
         game.animate_tiles()
         Debug.draw()
+
+        if game.all_pandas_dead() then
+            local char_width = 8
+            local char_height = 5
+            local text_len = string.len(localize(TEXT.GO))
+            draw_text_centered_at_x(localize(TEXT.GO), SCREEN_WIDTH - text_len * char_width, 0, char_width, char_height, true, 2)
+        end
     else
         error('Invalid game state!')
-    end
-
-    if game.player.x >= game.cur_level.tile_x2 * 8 and not game.all_pandas_dead() then
-        game.player.x = game.cur_level.tile_x2 * 8 - 1
-    end
-
-    local level = game.levels[game.current_level_index]
-
-    if game.cur_level and game.all_pandas_dead() and game.player.x >= game.cur_level.tile_x2 * 8 then
-        game.current_level_index = game.current_level_index + 1
-        if game.current_level_index <= #game.levels then
-            game.next_level()
-        end
     end
 
     Time.update()

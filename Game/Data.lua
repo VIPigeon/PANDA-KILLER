@@ -461,7 +461,11 @@ TEXT = {
     PRESS_ANY_BUTTON_TO_RESPAWN = {
         ['ru'] = '\n\n\n\n\n\n    НАЖМИ ЛЮБУЮ КНОПКУ\n     ЧТОБЫ ВОЗРОДИТЬСЯ',
         ['en'] = '\n\n\n\n\n\n  PRESS ANY BUTTON\n   TO RESPAWN',
-    }
+    },
+    GO = {
+        ['ru'] = 'ВПЕРЕД)',
+        ['en'] = 'GO)',
+    },
 }
 
 --
