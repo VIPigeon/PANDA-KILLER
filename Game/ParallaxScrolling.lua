@@ -27,9 +27,9 @@ function ParallaxScrolling:update()
 end
 
 function ParallaxScrolling:draw()
-    local y = 0
+    local y = 8 * game.cur_level.tile_y1
     local tx, ty = game.camera:transform_coordinates(0, y)
-    --while ty < 136 do 
+    --while ty < 136 do
         spr(self.tileId, self.offset,  ty + 50, 1, 4, 0, 0, 8, 2) 
         spr(self.tileId, self.offset - 240,  ty + 50, 1, 4, 0, 0, 8, 2) 
         --ty =  ty + self.tileHeight 
