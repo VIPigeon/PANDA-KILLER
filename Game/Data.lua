@@ -216,7 +216,7 @@ PLAYER_SLOWDOWN_IN_WATER_PERCENTAGE = 0.8
 PANDA_TYPE = {
     basic = 0,
     chilling = 1,
-    agro = 2,
+    orange_eyes = 2,
 }
 
 -- Возможно их стоит объединить с panda type. Иначе получается излишнее
@@ -224,7 +224,7 @@ PANDA_TYPE = {
 SPECIAL_TILES = {
     {id = 38, type = PANDA_TYPE.basic},
     {id = 39, type = PANDA_TYPE.chilling},
-    {id = 37, type = PANDA_TYPE.agro},
+    {id = 37, type = PANDA_TYPE.orange_eyes},
 }
 
 PANDA_PHYSICS_SETTINGS = {
@@ -246,6 +246,8 @@ PANDA_SETTINGS = {
 
         health_at_which_to_get_stunned = 4,
 
+        eye_color = 13,
+
         -- Это отсчет до того как панда сможет атаковать после
         -- того как начала гнаться за игроком. Да, я просто перевел
         -- название переменной с английского и назвал это документацией.
@@ -254,6 +256,27 @@ PANDA_SETTINGS = {
         -- Время, после которого панда устанет гоняться за игроком.
         -- Это при условии, что она игрока не видит.
         chase_duration = 3.0,
+    },
+    [PANDA_TYPE.orange_eyes] = {
+        health = 6,
+
+        patrol_speed = 9,
+        chase_speed  = 2.7 * 8,
+        dash_charge_duration = 0.35,  -- 1.5
+        dash_duration = 0.7, -- 1.0
+        dash_strength = 180,
+        health_at_which_to_get_stunned = 4,
+
+        eye_color = 9,
+
+        -- Это отсчет до того как панда сможет атаковать после
+        -- того как начала гнаться за игроком. Да, я просто перевел
+        -- название переменной с английского и назвал это документацией.
+        delay_after_starting_chase_before_attacking = 0.3,
+
+        -- Время, после которого панда устанет гоняться за игроком.
+        -- Это при условии, что она игрока не видит.
+        chase_duration = 4.0,
     },
     [PANDA_TYPE.chilling] = {
         health = 6,
@@ -265,27 +288,10 @@ PANDA_SETTINGS = {
         dash_strength = 100,
         health_at_which_to_get_stunned = 4,
 
+        eye_color = 13,
+
         delay_after_starting_chase_before_attacking = 0.3,
         chase_duration = 2.0,
-    },
-    [PANDA_TYPE.agro] = {
-        health = 6,
-
-        patrol_speed = 9,
-        chase_speed  = 2.7 * 8,
-        dash_charge_duration = 0.35,  -- 1.5
-        dash_duration = 0.7, -- 1.0
-        dash_strength = 180,
-        health_at_which_to_get_stunned = 4,
-
-        -- Это отсчет до того как панда сможет атаковать после
-        -- того как начала гнаться за игроком. Да, я просто перевел
-        -- название переменной с английского и назвал это документацией.
-        delay_after_starting_chase_before_attacking = 0.3,
-
-        -- Время, после которого панда устанет гоняться за игроком.
-        -- Это при условии, что она игрока не видит.
-        chase_duration = 4.0,
     },
 }
 
@@ -401,7 +407,7 @@ SPRITES = {
 }
 -- Специальные переделки для чилящей панды.
 -- Жаль что это всё нельзя сделать внутри одной таблицы.
-SPRITES.panda[PANDA_TYPE.agro] = table.copy(SPRITES.panda[PANDA_TYPE.basic])
+SPRITES.panda[PANDA_TYPE.orange_eyes] = table.copy(SPRITES.panda[PANDA_TYPE.basic])
 SPRITES.panda[PANDA_TYPE.chilling] = table.copy(SPRITES.panda[PANDA_TYPE.basic])
 SPRITES.panda[PANDA_TYPE.chilling].charging_basic_attack = Sprite:new_complex({
     Animation:new({282}, 20),

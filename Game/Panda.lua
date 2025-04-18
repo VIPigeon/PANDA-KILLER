@@ -513,7 +513,7 @@ function Panda:update()
     elseif self.state == PANDA_STATE.sleeping then
 
         -- Спим :)
-        if self.type == PANDA_TYPE.agro then
+        if self.type == PANDA_TYPE.orange_eyes then
             self.state = PANDA_STATE.patrol
             -- Не спим >:(
         end
@@ -603,11 +603,11 @@ function Panda:draw()
     if self.type == PANDA_TYPE.chilling then
         -- spr(294, tx + 4, ty - 6, 0)
     end
-    -- if self.look_direction == 1 then
-    --     rect(tx + 1, ty + 2, 3, 2, PANDA_STATE_COLORS[self.state])
-    -- else
-    --     rect(tx + 4, ty + 2, 3, 2, PANDA_STATE_COLORS[self.state])
-    -- end
+    if self.look_direction == 1 then
+        rect(tx + 1, ty + 2, 4, 2, PANDA_SETTINGS[self.type].eye_color)
+    else
+        rect(tx + 3, ty + 2, 4, 2, PANDA_SETTINGS[self.type].eye_color)
+    end
 
     local sprites = SPRITES.panda[self.type]
     if self.state == PANDA_STATE.stunned and self.animation_controller.sprite ~= sprites.sleeping then
