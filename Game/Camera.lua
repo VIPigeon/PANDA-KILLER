@@ -83,6 +83,13 @@ function Camera:trap_inside_borders(min_x, max_x, min_y, max_y)
     end
 end
 
+function Camera:set_position(x, y)
+    self.center_x = x
+    self.center_y = y
+    self.x = x
+    self.y = y
+end
+
 function Camera:update()
     local player = self.player
     local player_x = (player.x + 8)

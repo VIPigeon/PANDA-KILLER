@@ -13,7 +13,7 @@ game = {
     cur_level = {},
     current_level_index = 1,
     levels = {
-        {tile_x1 = 0, tile_y1 = 0, tile_x2 = 30, tile_y2 = 16, player_x = 10*8, player_y = 11*8},
+        {tile_x1 = 0, tile_y1 = 0, tile_x2 = 40, tile_y2 = 16, player_x = 10*8, player_y = 11*8},
         {tile_x1 = 0, tile_y1 = 17, tile_x2 = 200, tile_y2 = 32, player_x = 10*8, player_y = 20*8}, 
         {tile_x1 = 0, tile_y1 = 33, tile_x2 = 100, tile_y2 = 48, player_x = 10*8, player_y = 20*8},
         {tile_x1 = 0, tile_y1 = 49, tile_x2 = 100, tile_y2 = 64},
@@ -163,15 +163,16 @@ end
 function game.load_current_level()
     game.cur_level = game.levels[game.current_level_index]
     local level = game.levels[game.current_level_index]
-    if level then
-        game.restart_in_area(level.tile_x1, level.tile_y1, level.tile_x2, level.tile_y2)
-        game.player.x = level.player_x
-        game.player.y = level.player_y
-    end
+    game.restart_in_area(level.tile_x1, level.tile_y1, level.tile_x2, level.tile_y2)
+    game.player.x = level.player_x
+    game.player.y = level.player_y
+    game.camera:set_position(game.player.x, game.player.y)
 end
 
 function game.restart()
     game.player = Player:new()
+    game.camera = Camera:new(game.player)
+    game.parallaxscrolling = ParallaxScrolling:new()
 
     game.current_level_index = 1
     game.load_current_level()
@@ -184,9 +185,6 @@ function game.restart()
     -- TriggerTiles.add(TriggerTile:new(24,88,8,8, TriggerActions.dialogue))
     game.bike = Bike:new(190*8, 12*8)
     table.insert(game.triggers, game.bike)
-
-    game.camera = Camera:new(game.player)
-    game.parallaxscrolling = ParallaxScrolling:new()
 
     cutscene:init()
 end
