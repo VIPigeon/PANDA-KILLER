@@ -609,7 +609,8 @@ function Panda:draw()
     --     rect(tx + 4, ty + 2, 3, 2, PANDA_STATE_COLORS[self.state])
     -- end
 
-    if self.state == PANDA_STATE.stunned then
+    local sprites = SPRITES.panda[self.type]
+    if self.state == PANDA_STATE.stunned and self.animation_controller.sprite ~= sprites.sleeping then
         self.stun_animation:draw(tx, ty - 8, flip)
         self.stun_animation:next_frame()
     end
