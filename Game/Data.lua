@@ -246,7 +246,7 @@ PANDA_SETTINGS = {
         dash_duration = 0.9, -- 1.0
         dash_strength = 170,
 
-        health_at_which_to_get_stunned = 3,
+        health_at_which_to_get_stunned = 2,
 
         eye_color = 13,
 
@@ -267,7 +267,7 @@ PANDA_SETTINGS = {
         dash_charge_duration = 0.5,  -- 1.5
         dash_duration = 0.6, -- 1.0
         dash_strength = 200,
-        health_at_which_to_get_stunned = 3,
+        health_at_which_to_get_stunned = 2,
 
         eye_color = 9,
 
