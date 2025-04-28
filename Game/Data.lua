@@ -26,6 +26,8 @@ KEY_E = 5
 KEY_F = 6
 KEY_J = 10
 
+KEY_P = 16
+
 --[[
 
 Таблица переводов кнопок контроллеров.
@@ -216,7 +218,7 @@ PLAYER_SLOWDOWN_IN_WATER_PERCENTAGE = 0.8
 PANDA_TYPE = {
     basic = 0,
     chilling = 1,
-    agro = 2,
+    orange_eyes = 2,
     stickless = 3,
 }
 
@@ -225,7 +227,7 @@ PANDA_TYPE = {
 SPECIAL_TILES = {
     {id = 38, type = PANDA_TYPE.basic},
     {id = 39, type = PANDA_TYPE.chilling},
-    {id = 37, type = PANDA_TYPE.agro},
+    {id = 37, type = PANDA_TYPE.orange_eyes},
     {id = 36, type = PANDA_TYPE.stickless},
 }
 
@@ -242,39 +244,13 @@ PANDA_SETTINGS = {
 
         patrol_speed = 8,
         chase_speed  = 2.5 * 8,
-        dash_charge_duration = 0.8,  -- 1.5
-        dash_duration = 0.6, -- 1.0
+        dash_charge_duration = 1.4,  -- 1.5
+        dash_duration = 0.9, -- 1.0
         dash_strength = 170,
 
-        -- Это отсчет до того как панда сможет атаковать после
-        -- того как начала гнаться за игроком. Да, я просто перевел
-        -- название переменной с английского и назвал это документацией.
-        delay_after_starting_chase_before_attacking = 0.3,
+        health_at_which_to_get_stunned = 2,
 
-        -- Время, после которого панда устанет гоняться за игроком.
-        -- Это при условии, что она игрока не видит.
-        chase_duration = 3.0,
-    },
-    [PANDA_TYPE.chilling] = {
-        health = 6,
-
-        patrol_speed = 6,
-        chase_speed  = 2.0 * 6,
-        dash_charge_duration = 0.7,
-        dash_duration = 0.6,
-        dash_strength = 100,
-
-        delay_after_starting_chase_before_attacking = 0.3,
-        chase_duration = 2.0,
-    },
-    [PANDA_TYPE.agro] = {
-        health = 6,
-
-        patrol_speed = 9,
-        chase_speed  = 2.7 * 8,
-        dash_charge_duration = 0.35,  -- 1.5
-        dash_duration = 0.7, -- 1.0
-        dash_strength = 180,
+        eye_color = 13,
 
         -- Это отсчет до того как панда сможет атаковать после
         -- того как начала гнаться за игроком. Да, я просто перевел
@@ -293,7 +269,6 @@ PANDA_SETTINGS = {
         dash_charge_duration = 0.8,  -- 1.5
         dash_duration = 0.6, -- 1.0
         dash_strength = 170,
-
         -- Это отсчет до того как панда сможет атаковать после
         -- того как начала гнаться за игроком. Да, я просто перевел
         -- название переменной с английского и назвал это документацией.
@@ -302,6 +277,42 @@ PANDA_SETTINGS = {
         -- Время, после которого панда устанет гоняться за игроком.
         -- Это при условии, что она игрока не видит.
         chase_duration = 3.0,
+    },
+    [PANDA_TYPE.orange_eyes] = {
+        health = 6,
+
+        patrol_speed = 9,
+        chase_speed  = 2.7 * 8,
+        dash_charge_duration = 0.5,  -- 1.5
+        dash_duration = 0.6, -- 1.0
+        dash_strength = 200,
+        health_at_which_to_get_stunned = 2,
+
+        eye_color = 9,
+
+        -- Это отсчет до того как панда сможет атаковать после
+        -- того как начала гнаться за игроком. Да, я просто перевел
+        -- название переменной с английского и назвал это документацией.
+        delay_after_starting_chase_before_attacking = 0.3,
+
+        -- Время, после которого панда устанет гоняться за игроком.
+        -- Это при условии, что она игрока не видит.
+        chase_duration = 4.0,
+    },
+    [PANDA_TYPE.chilling] = {
+        health = 6,
+
+        patrol_speed = 6,
+        chase_speed  = 2.0 * 6,
+        dash_charge_duration = 0.7,
+        dash_duration = 0.6,
+        dash_strength = 100,
+        health_at_which_to_get_stunned = 4,
+
+        eye_color = 13,
+
+        delay_after_starting_chase_before_attacking = 0.3,
+        chase_duration = 2.0,
     },
 }
 
@@ -331,17 +342,16 @@ PANDA_VIEW_CONE_HEIGHT = 32
 
 -- Панда отлетает в стан, после этого её нужно быстро ударить
 -- несколько раз, чтобы она умерла.
-PANDA_TIME_INTERVAL_BETWEEN_HITS_FROM_PLAYER = 1.0
-PANDA_HITS_NEEDED_TO_DIE = 3
-PANDA_STUN_DURATION = 2.1
+PANDA_STUN_DURATION = 2.3
+PANDA_SMALL_STUN_DURATION = 0.7
 
 -- Отбрасывание панды от игрока при обычном стаггере
-PANDA_KNOCKBACK_HORIZONTAL = 20.0
-PANDA_KNOCKBACK_VERTICAL = 10.0
-PANDA_KNOCKBACK_VERTICAL_FROM_VERTICAL_ATTACK = 60.0
+PANDA_SMALL_STUN_KNOCKBACK_HORIZONTAL = 20.0
+-- PANDA_SMALL_STUN_KNOCKBACK_VERTICAL = 10.0
+--PANDA_SMALL_STUN_KNOCKBACK_VERTICAL_FROM_VERTICAL_ATTACK = 60.0
 -- Когда мы впервые бьём и станим панду
 PANDA_STUN_KNOCKBACK_HORIZONTAL = 75.0
-PANDA_STUN_KNOCKBACK_VERTICAL = 40.0
+PANDA_STUN_KNOCKBACK_VERTICAL = 10.0
 PANDA_STUN_KNOCKBACK_VERTICAL_FROM_VERTICAL_ATTACK = 80.0
 
 -- Поля для параллакс скроллинга
@@ -404,10 +414,10 @@ SPRITES = {
             rest = Animation:new({256, 272}, 20):to_sprite(),
             dashing = Animation:new({267, 268, 269, 270}, 3):with_size(1, 2):at_end_goto_last_frame():to_sprite(),
             charging_basic_attack = Sprite:new_complex({
-                Animation:new({282}, 4),
-                Animation:new({267, 268, 269, 270}, 3):with_size(1, 2):at_end_goto_last_frame()
+                -- Animation:new({267}, 10),
+                Animation:new({267, 267, 267, 267, 268, 269, 270}, 3):with_size(1, 2):at_end_goto_last_frame()
             }),
-            charging_dash = Animation:new({263}, 1):to_sprite(),
+            charging_dash = Animation:new({282}, 1):to_sprite(),
             dash = Animation:new({263}, 1):to_sprite(),
             sleeping = Animation:new({264}, 1):with_size(2, 1):to_sprite(),
         },
@@ -427,11 +437,11 @@ SPRITES = {
         -- [PANDA_TYPE.chilling] и т.д. смотреть снизу
     },
 
-    panda_stun_effect = Animation:new({84, 85, 86, 87}, 8):to_sprite(),
+    panda_stun_effect = Animation:new({8, 9, 10, 11}, 8):to_sprite(),
 }
 -- Специальные переделки для чилящей панды.
 -- Жаль что это всё нельзя сделать внутри одной таблицы.
-SPRITES.panda[PANDA_TYPE.agro] = table.copy(SPRITES.panda[PANDA_TYPE.basic])
+SPRITES.panda[PANDA_TYPE.orange_eyes] = table.copy(SPRITES.panda[PANDA_TYPE.basic])
 SPRITES.panda[PANDA_TYPE.chilling] = table.copy(SPRITES.panda[PANDA_TYPE.basic])
 SPRITES.panda[PANDA_TYPE.chilling].charging_basic_attack = Sprite:new_complex({
     Animation:new({282}, 20),
@@ -491,7 +501,11 @@ TEXT = {
     PRESS_ANY_BUTTON_TO_RESPAWN = {
         ['ru'] = '\n\n\n\n\n\n    НАЖМИ ЛЮБУЮ КНОПКУ\n     ЧТОБЫ ВОЗРОДИТЬСЯ',
         ['en'] = '\n\n\n\n\n\n  PRESS ANY BUTTON\n   TO RESPAWN',
-    }
+    },
+    GO = {
+        ['ru'] = 'ВПЕРЕД)',
+        ['en'] = 'GO)',
+    },
 }
 
 --
@@ -675,7 +689,7 @@ data.run = {
 data.bad_tile = { 32, 33, 34, 48 }
 
 -- 🛖
-HOUSE_REVEAL_SPEED = 7
+HOUSE_REVEAL_SPEED = 12
 -- Если некоторые тайлы не успевают поменяться, то нужно увеличить эту задержку.
 HOUSE_HIDE_DELAY = 0.4
 
@@ -715,6 +729,50 @@ function is_tile_solid(tile_id)
         tile_id == 40 or tile_id == 56 or tile_id == 47 or tile_id == 63 or -- Внутренние стенки в доме
         24 <= tile_id and tile_id <= 31 -- Тайлы крыши дома
 end
+
+-- Далее документация у cat-сцене😸
+
+--[[
+    
+    Тайлы для панды:
+        1) 268, 281 (8,16) 
+        2) 269, 282 (8,16)
+        - Эти два спрайта надо отзеркалить
+        -С 3 по 13 (кроме 9,13) нужно дорисовать палку
+        3) 271 (8,8) 
+        4) 281 (8,8)
+        5) 314 (8,8)
+        6) 316 (8,8)
+        7) 314 (8,8)
+        8) 281 (8,8)
+        9) 317 (8,8)
+        10) 314 (8,8)
+        11) 281 (8,8)
+        12) 314 (8,8)
+        13) 317 (8,8)
+        - Далее уже панда отбирает палку или умирает и палка у игрока
+        14) 271 (8,8) (дорисовать палку)
+        15) 287 (8,8) (отзеркалить) (дорисовать палку)
+    
+    Тайлы для игрока:
+        1) 480 (8,8) 
+        2) 481 (8,8)
+        - Эти два спрайта (1,2) без палки, дальше борьба
+        3) 482 (8,8) 
+        4) 483 (8,8)
+        5) 482 (8,8)
+        6) 484 (8,8) (сместить на 1 пиксель влево)
+        7) 482 (8,8)
+        8) 483 (8,8) (сместить на 1 пиксель вправо)
+        9) 485 (8,8) (сместить на 2 пикселя влево)
+        10) 482 (8,8)
+        11) 483 (8,8) (сместить на 1 пиксель вправо)
+        12) 482 (8,8)
+        13) 485 (8,8) (сместить на 2 пикселя влево)
+        - Далее уже панда отбирает палку или умирает и палка у игрока
+        14) 208 (16,16) (с палкой)
+        15) 208 (16,16)
+--]]
 
 
 --[[

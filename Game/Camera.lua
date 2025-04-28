@@ -66,7 +66,7 @@ function Camera:trap_inside_borders(min_x, max_x, min_y, max_y)
     end
     local right_border = tile_x + camera_tile_width
     if right_border > max_x then
-        self.x = 8 * (max_x - camera_tile_width)
+        self.x = 8 * (max_x - camera_tile_width + 1)
     end
 
 
@@ -79,8 +79,15 @@ function Camera:trap_inside_borders(min_x, max_x, min_y, max_y)
     end
     local bottom_border = tile_y + camera_tile_height
     if bottom_border > max_y then
-        self.y = 8 * (max_y - camera_tile_height)
+        self.y = 8 * (max_y - camera_tile_height + 1)
     end
+end
+
+function Camera:set_position(x, y)
+    self.center_x = x
+    self.center_y = y
+    self.x = x
+    self.y = y
 end
 
 function Camera:update()

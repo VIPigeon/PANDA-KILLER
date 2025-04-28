@@ -13,14 +13,10 @@ game = {
     cur_level = {},
     current_level_index = 1,
     levels = {
-        {tile_x1 = 0, tile_y1 = 0, tile_x2 = 60, tile_y2 = 16}, 
-        {tile_x1 = 0, tile_y1 = 17, tile_x2 = 60, tile_y2 = 32}, 
-        {tile_x1 = 0, tile_y1 = 33, tile_x2 = 100, tile_y2 = 48},
-        {tile_x1 = 0, tile_y1 = 49, tile_x2 = 100, tile_y2 = 64},
-        {tile_x1 = 0, tile_y1 = 65, tile_x2 = 100, tile_y2 = 80},
-        {tile_x1 = 0, tile_y1 = 81, tile_x2 = 100, tile_y2 = 96},
-        {tile_x1 = 0, tile_y1 = 97, tile_x2 = 100, tile_y2 = 112},
-        {tile_x1 = 0, tile_y1 = 113, tile_x2 = 100, tile_y2 = 128},
+        {tile_x1 = 0, tile_y1 = 0, tile_x2 = 119, tile_y2 = 16, player_x = 10*8, player_y = 11*8},
+        {tile_x1 = 0, tile_y1 = 17, tile_x2 = 46, tile_y2 = 32, player_x = 0, player_y = 30*8}, 
+        {tile_x1 = 0, tile_y1 = 34, tile_x2 = 62, tile_y2 = 49, player_x = 0, player_y = 46*8},
+        {tile_x1 = 0, tile_y1 = 51, tile_x2 = 62, tile_y2 = 101, player_x = 0, player_y = 97*8},
     },
 }
 
@@ -164,20 +160,23 @@ function game.all_pandas_dead()
     return true
 end
 
-function game.next_level()
+function game.load_current_level()
+    game.cur_level = game.levels[game.current_level_index]
     local level = game.levels[game.current_level_index]
-    if level then
-        game.restart_in_area(level.tile_x1, level.tile_y1, level.tile_x2, level.tile_y2)
-        game.player.x = 10*8
-        game.player.y = 11*8
-    end
+    game.restart_in_area(level.tile_x1, level.tile_y1, level.tile_x2, level.tile_y2)
+    game.player.x = level.player_x
+    game.player.y = level.player_y
+    game.camera:set_position(game.player.x, game.player.y)
 end
 
 function game.restart()
     game.player = Player:new()
+    game.camera = Camera:new(game.player)
+    game.parallaxscrolling = ParallaxScrolling:new()
 
-    game:next_level()
-    game.cur_level = game.levels[game.current_level_index]
+    game.current_level_index = 1
+    game.load_current_level()
+
     --for _, tile_info in ipairs(game.tile_info) do
     --    game.spawn_object_by_tile_info(tile_info)
     --end
@@ -187,9 +186,6 @@ function game.restart()
     game.bike = Bike:new(190*8, 12*8)
     table.insert(game.triggers, game.bike)
 
-    game.camera = Camera:new(game.player)
-    game.parallaxscrolling = ParallaxScrolling:new()
-
     if not DEV_MODE_ENABLED then
         cutscene:init()
     end
@@ -198,7 +194,8 @@ end
 function game.update()
     if game.state == GAME_STATE_LANGUAGE_SELECTION then
         if btnp(BUTTON_Z) then
-            game.state = GAME_STATE_CUTSCENE
+            game.state = GAME_STATE_GAMEPLAY
+            --game.state = GAME_STATE_CUTSCENE
         end
         if btnp(BUTTON_RIGHT) or btnp(BUTTON_LEFT) then
             if game.language == 'ru' then
@@ -253,6 +250,22 @@ function game.update()
         game.parallaxscrolling:update()
         update_psystems()
 
+        if game.player.x >= game.cur_level.tile_x2 * 8 and not game.all_pandas_dead() then
+            game.player.x = game.cur_level.tile_x2 * 8 - 1
+        end
+
+        local level = game.levels[game.current_level_index]
+
+        if game.cur_level and game.all_pandas_dead() and game.player.x >= game.cur_level.tile_x2 * 8 or keyp(KEY_P) then
+            game.current_level_index = game.current_level_index + 1
+            if game.current_level_index <= #game.levels then
+                game.load_current_level()
+            else
+                -- error('ALARM! NO LEVELS LEFT!')
+                error('You WIN the game! Congragulations <3 <3 <3')
+            end
+        end
+
         game.draw_map()
         for _, panda in ipairs(game.current_level.pandas) do
             panda:draw()
@@ -269,21 +282,15 @@ function game.update()
         draw_psystems()
         game.animate_tiles()
         Debug.draw()
+
+        if game.all_pandas_dead() then
+            local char_width = 8
+            local char_height = 5
+            local text_len = string.len(localize(TEXT.GO))
+            draw_text_centered_at_x(localize(TEXT.GO), SCREEN_WIDTH - text_len * char_width, 0, char_width, char_height, true, 2)
+        end
     else
         error('Invalid game state!')
-    end
-
-    if game.player.x >= game.cur_level.tile_x2 * 8 and not game.all_pandas_dead() then
-        game.player.x = game.cur_level.tile_x2 * 8 - 1
-    end
-
-    local level = game.levels[game.current_level_index]
-
-    if game.cur_level and game.all_pandas_dead() and game.player.x >= game.cur_level.tile_x2 * 8 then
-        game.current_level_index = game.current_level_index + 1
-        if game.current_level_index <= #game.levels then
-            game.next_level()
-        end
     end
 
     Time.update()
@@ -322,9 +329,9 @@ function game.draw_map()
         local gmy = ty - math.floor(SCREEN_HEIGHT / 16)
         local gmsy = math.floor(8 * ty - cy)
         
-        -- cls(13)
-        
-        map(gmx, gmy, 31, 18, gmsx, gmsy)
+        cls(0)
+        game.parallaxscrolling:draw()
+        map(gmx, gmy, 31, 18, gmsx, gmsy, 0)
         return
     end
 
@@ -341,6 +348,6 @@ function game.draw_map()
     local gmsy = 0 --math.floor((8 * ty - cy * game.scale) )
     
     cls(0)
-    game.parallaxscrolling:draw()
     map(gmx, gmy, math.floor(30 / game.scale) , math.floor(17 / game.scale) + 1, gmsx, gmsy, -1, game.scale)
+    game.parallaxscrolling:draw()
 end

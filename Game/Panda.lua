@@ -101,7 +101,8 @@ function Panda:new(x, y, panda_type, can_tug)
         change_look_direction_cooldown = 0.0,
 
         -- Хотите ли вы потягаться с такой пандой?🙄 Ответ был дан выше
-        kantugging_friend_panda = can_tug,
+        --kantugging_friend_panda = can_tug,
+        kantugging_friend_panda = false,
     }
 
     setmetatable(object, self)
@@ -145,6 +146,8 @@ function Panda:set_dieable_state()
 end
 
 function Panda:take_damage(hit_x, hit_y)
+    local blood_count = math.lerp(100, 10, self.health / PANDA_SETTINGS[self.type].health)
+
     self.health = self.health - 1
 
     -- if death by grief for the lost bamboo
@@ -154,49 +157,38 @@ function Panda:take_damage(hit_x, hit_y)
     Basic.play_sound(SOUNDS.PANDA_HIT)
 
     if hit_x < 0 then
-        create_blood(self.x, self.y, -1)
+        create_blood(self.x, self.y, -1, blood_count)
     elseif hit_x > 0 then
-        create_blood(self.x, self.y, 1)
+        create_blood(self.x, self.y, 1, blood_count)
     else
-        create_blood(self.x, self.y, -1)
-        create_blood(self.x, self.y, 1)
+        create_blood(self.x, self.y, -1, blood_count)
+        create_blood(self.x, self.y, 1, blood_count)
     end
 
-    if self.state == PANDA_STATE.stunned then
+    local stun_knockback_direction_x = hit_x < 0 and -1 or 1
+    local stun_knockback_direction_y = hit_y < 0 and PANDA_STUN_KNOCKBACK_VERTICAL_FROM_VERTICAL_ATTACK or PANDA_STUN_KNOCKBACK_VERTICAL
+
+    if self.health == PANDA_SETTINGS[self.type].health_at_which_to_get_stunned then
+        self.state = PANDA_STATE.stunned
+        self.stun_time_left = PANDA_STUN_DURATION
+
         --
         -- ААХХАХАХАХА Я СОШЁЛ С УМА 🥶 😷
         --
         self.time_of_most_recent_hit = Time.now()
         self.stun_time_left = PANDA_STUN_DURATION
 
-        if hit_x < 0 then
-            self.velocity.x = -1 * PANDA_KNOCKBACK_HORIZONTAL
-        elseif hit_x > 0 then
-            self.velocity.x = PANDA_KNOCKBACK_HORIZONTAL
-        end
-        if hit_y < 0 then
-            self.velocity.y = PANDA_KNOCKBACK_VERTICAL_FROM_VERTICAL_ATTACK
-        else
-            self.velocity.y = PANDA_KNOCKBACK_VERTICAL
-        end
+        self.velocity.x = stun_knockback_direction_x * PANDA_STUN_KNOCKBACK_HORIZONTAL
+        self.velocity.y = stun_knockback_direction_y
     else
-        if hit_x < 0 then
-            self.velocity.x = -1 * PANDA_STUN_KNOCKBACK_HORIZONTAL
-        elseif hit_x > 0 then
-            self.velocity.x = PANDA_STUN_KNOCKBACK_HORIZONTAL
-        end
-        if hit_y < 0 then
-            self.velocity.y = PANDA_STUN_KNOCKBACK_VERTICAL_FROM_VERTICAL_ATTACK
-        else
-            self.velocity.y = PANDA_STUN_KNOCKBACK_VERTICAL
-        end
-
         self.state = PANDA_STATE.stunned
-        self.stun_time_left = PANDA_STUN_DURATION
+        self.stun_time_left = self.stun_time_left + PANDA_SMALL_STUN_DURATION
+
+        self.velocity.x = stun_knockback_direction_x * PANDA_SMALL_STUN_KNOCKBACK_HORIZONTAL
+        self.velocity.y = stun_knockback_direction_y
     end
 
-    local panda_should_die = self.health == 0
-    if panda_should_die then
+    if self.health <= 0 then
         self:die()
     end
 end
@@ -528,7 +520,7 @@ function Panda:update()
     elseif self.state == PANDA_STATE.sleeping then
 
         -- Спим :)
-        if self.type == PANDA_TYPE.agro then
+        if self.type == PANDA_TYPE.orange_eyes then
             self.state = PANDA_STATE.patrol
             -- Не спим >:(
         end
@@ -558,8 +550,12 @@ function Panda:update()
     if self.state == PANDA_STATE.stunned or
        self.state == PANDA_STATE.staggered
     then
-        -- goto 😎
-        goto hitlocked
+        if self.stun_time_left > PANDA_SMALL_STUN_DURATION then
+            self.animation_controller:set_sprite(sprites.sleeping)
+        else
+            -- goto 😎
+            goto hitlocked
+        end
     end
 
     if self.state == PANDA_STATE.patrol then
@@ -614,13 +610,31 @@ function Panda:draw()
     if self.type == PANDA_TYPE.chilling then
         -- spr(294, tx + 4, ty - 6, 0)
     end
-    -- if self.look_direction == 1 then
-    --     rect(tx + 1, ty + 2, 3, 2, PANDA_STATE_COLORS[self.state])
-    -- else
-    --     rect(tx + 4, ty + 2, 3, 2, PANDA_STATE_COLORS[self.state])
-    -- end
 
-    if self.state == PANDA_STATE.stunned then
+    local eye_start = tx + 2
+    if self.look_direction ~= 1 then
+        -- Налево
+        eye_start = tx + 3
+    end
+    local eye_color = PANDA_SETTINGS[self.type].eye_color
+
+    -- ННННННЕЕЕЕЕЕЕЕЕЕЕТТТТТТТ
+    if self.animation_controller:current_frame() == 282 then
+        rect(eye_start, ty + 5, 4, 1, eye_color)
+    elseif self.animation_controller:current_frame() == 264 then
+        if self.look_direction == 1 then
+            rect(tx + 5, ty + 4, 3, 3, eye_color)
+        else
+            rect(tx + 8, ty + 4, 3, 3, eye_color)
+        end
+    elseif self.animation_controller:current_frame() == 279 then
+        rect(eye_start, ty + 6, 3, 2, eye_color)
+    else
+        rect(eye_start, ty + 2, 3, 3, eye_color)
+    end
+
+    local sprites = SPRITES.panda[self.type]
+    if self.state == PANDA_STATE.stunned and self.animation_controller.sprite ~= sprites.sleeping then
         self.stun_animation:draw(tx, ty - 8, flip)
         self.stun_animation:next_frame()
     end
