@@ -110,6 +110,7 @@ PLAYER_HORIZONTAL_ACCELERATION = 900.0                       -- пиксели /
 PLAYER_FRICTION = 12.0                                       -- не знаю, просто магическое число
 PLAYER_MIN_HORIZONTAL_VELOCITY = 4.0                         -- пиксели / секунду
 PLAYER_MIN_VERTICAL_VELOCITY = 4.0                           -- пиксели / секунду
+
 PLAYER_AIR_FRICTION = 0.52 * PLAYER_FRICTION                 -- тоже не знаю
 -- http://www.thealmightyguru.com/Wiki/index.php?title=Coyote_time
 PLAYER_COYOTE_TIME = 0.12                                    -- секунды
@@ -132,6 +133,7 @@ PLAYER_GRAVITY_SCALE_WHEN_NOT_HOLDING = 1.92
 PLAYER_GRAVITY = (2 * PLAYER_JUMP_HEIGHT) / (PLAYER_TIME_TO_APEX * PLAYER_TIME_TO_APEX)
 PLAYER_GRAVITY_AFTER_WALL_JUMP = 0.75 * PLAYER_GRAVITY
 PLAYER_JUMP_STRENGTH = math.sqrt(2 * PLAYER_GRAVITY * PLAYER_JUMP_HEIGHT)
+PLAYER_DOWNWARD_ATTACK_JUMP_STRENGTH = 0.8 * PLAYER_JUMP_STRENGTH
 --[[
 Итак, объясняю как работает прыжок от стены 🤓
 
