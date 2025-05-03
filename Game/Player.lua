@@ -101,6 +101,17 @@ function Player:die(kill_velocity_x, kill_velocity_y)
     Basic.play_sound(SOUNDS.PLAYER_DEAD)
 end
 
+function Player:is_attacking_or_charging_attack()
+    return self.attack_timer > 0 and
+           table.contains(PLAYER_ATTACK_SPRITES, self.animation_controller.sprite)
+end
+
+function Player:is_attacking()
+    return self.attack_timer > 0 and
+           table.contains(PLAYER_ATTACK_SPRITES, self.animation_controller.sprite) and
+           self.animation_controller:animation_ended()
+end
+
 function Player:update()
     if self.hide then
         return
@@ -418,10 +429,7 @@ function Player:update()
     reveal_any_house_at(tile_x + 2, tile_y)
 
     -- Атака
-    if self.attack_timer > 0 and
-           table.contains(PLAYER_ATTACK_SPRITES, self.animation_controller.sprite) and
-           self.animation_controller:animation_ended()
-    then
+    if self:is_attacking() then
         local attack_direction_x = 0
         local attack_direction_y = 0
         if looking_down then
@@ -467,6 +475,7 @@ function Player:update()
                 end
             end
         end
+
         if #hit_pandas > 0 then
             game.camera:shake(PLAYER_ATTACK_SHAKE_MAGNITUDE, PLAYER_ATTACK_SHAKE_DURATION)
 
@@ -476,6 +485,10 @@ function Player:update()
             end
 
             for _, panda in ipairs(hit_pandas) do
+                if panda.state == PANDA_STATE.dashing then
+                    goto next_iteration
+                end
+
                 -- Я положу здесь новую механику, каваи-гоплит не заметит грязный код,
                 -- потому что он окружен обширным комментарием с смайликами😉
                 -- да и монолитность не пропала, тут действительно не к чему придраться😎
@@ -486,6 +499,8 @@ function Player:update()
                     return
                 end
                 panda:take_damage(attack_direction_x, attack_direction_y)
+
+                ::next_iteration::
             end
             self.attack_timer = 0
         end

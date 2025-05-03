@@ -529,6 +529,7 @@ SOUNDS = {
     PLAYER_JUMP = {id = 4, note = 'A#4'},
     PLAYER_SLIDE = {id = 8, note = 'D-1', channel = 1},
     PLAYER_DEAD = {id = 5, note = 'C-5', duration = 30, channel = 2},
+    PLAYER_PARRY = {id = 4, note = 'C-5', duration = 10, channel = 2},
 
     PANDA_DASH_CHARGE = {id = 11, note = 'G-3', duration = 20, channel = 2},
     PANDA_DASH = {id = 11, note = 'C-5', duration = 20, channel = 2},

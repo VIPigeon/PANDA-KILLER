@@ -78,7 +78,6 @@ function Panda:new(x, y, panda_type, can_tug)
         attack_effect_time = 0.0,  -- и такие...
 
         -- Как же я обожаю таймеры 😍
-        time_of_most_recent_hit = 0.0,
         count_of_recent_hits = 0,
 
         time_after_which_we_should_attack = 0.0,
@@ -94,6 +93,7 @@ function Panda:new(x, y, panda_type, can_tug)
         -- Хотите ли вы потягаться с такой пандой?🙄 Ответ был дан выше
         --kantugging_friend_panda = can_tug,
         kantugging_friend_panda = false,
+        dash_can_not_kill_player = false,
     }
 
     setmetatable(object, self)
@@ -161,12 +161,6 @@ function Panda:take_damage(hit_x, hit_y)
 
     if self.health == PANDA_SETTINGS[self.type].health_at_which_to_get_stunned then
         self.state = PANDA_STATE.stunned
-        self.stun_time_left = PANDA_STUN_DURATION
-
-        --
-        -- ААХХАХАХАХА Я СОШЁЛ С УМА 🥶 😷
-        --
-        self.time_of_most_recent_hit = Time.now()
         self.stun_time_left = PANDA_STUN_DURATION
 
         self.velocity.x = stun_knockback_direction_x * PANDA_STUN_KNOCKBACK_HORIZONTAL
@@ -470,6 +464,32 @@ function Panda:update()
 
     elseif self.state == PANDA_STATE.dashing then
 
+        if not self.dash_can_not_kill_player and player:is_attacking_or_charging_attack() then
+            local intersecting_player_attack_rect = false
+            for _, attack_rect in ipairs(player.attack_rects) do
+                if Physics.check_collision_rect_rect(our_rect, attack_rect) then
+                    intersecting_player_attack_rect = true
+                    break
+                end
+            end
+
+            if intersecting_player_attack_rect or Physics.check_collision_rect_rect(our_rect, player_rect) then
+                Basic.play_sound(SOUNDS.PLAYER_PARRY)
+
+                self.dash_can_not_kill_player = true
+
+                if self.has_stick then
+                    Effects.spawn_epic_parry_particles(self.x, self.y, -1)
+                    Effects.spawn_epic_parry_particles(self.x, self.y, 1)
+                end
+
+                if not self.has_stick then
+                    self.state = PANDA_STATE.stunned
+                    self.stun_time_left = PANDA_STUN_DURATION
+                end
+            end
+        end
+
         if self.animation_controller:is_at_last_frame() then
             if self.basic_attack_time_left == 0.0 then
 
@@ -486,26 +506,30 @@ function Panda:update()
                 --    our_rect:draw(2)
                 --end)
 
-                if Physics.check_collision_rect_rect(our_rect, player_rect) then
-                    player:die(self.look_direction, 0)
-                elseif Physics.check_collision_rect_rect(attack_rect, player_rect) then
-                    player:die(self.look_direction, 0)
+                if not self.dash_can_not_kill_player then
+                    if Physics.check_collision_rect_rect(our_rect, player_rect) then
+                        player:die(self.look_direction, 0)
+                    elseif Physics.check_collision_rect_rect(attack_rect, player_rect) then
+                        player:die(self.look_direction, 0)
+                    end
                 end
 
                 self.basic_attack_time_left = Basic.tick_timer(self.basic_attack_time_left)
                 if self.basic_attack_time_left == 0.0 then
                     self.state = PANDA_STATE.chase
+                    self.dash_can_not_kill_player = false
                 end
             end
         end
 
-        if Physics.check_collision_rect_rect(our_rect, player_rect) then
+        if Physics.check_collision_rect_rect(our_rect, player_rect) and not self.dash_can_not_kill_player then
             game.player:die(self.velocity.x, self.velocity.y)
         end
 
         self.time_since_dashing = self.time_since_dashing + Time.dt()
 
         if is_on_ground and self.time_since_dashing > PANDA_SETTINGS[self.type].dash_duration then
+            self.dash_can_not_kill_player = false
             self.state = PANDA_STATE.chase
         end
         self.chase_time_left = Basic.tick_timer(self.chase_time_left)
@@ -527,10 +551,6 @@ function Panda:update()
     elseif self.state == PANDA_STATE.sleeping then
 
         -- Спим :)
-        if self.type == PANDA_TYPE.orange_eyes then
-            self.state = PANDA_STATE.patrol
-            -- Не спим >:(
-        end
 
     else
 
