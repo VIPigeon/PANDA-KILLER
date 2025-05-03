@@ -229,6 +229,21 @@ PANDA_TYPE = {
     stick_and_dash = 8,
 }
 
+-- Когда уже в lua добавят enum-ы? 😩
+PANDA_STATE = {
+    patrol = 1,
+    chase = 2,
+    charging_dash = 3,
+    charging_basic_attack = 4,
+    doing_basic_attack = 5,
+    dashing = 6,
+    staggered = 7,
+    stunned = 8,
+    sleeping = 9,
+}
+PANDA_STATE_COLORS = {0, 9, 0, 0, 0, 0, 0, 0}
+
+
 -- Возможно их стоит объединить с panda type. Иначе получается излишнее
 -- обобщение. Блин, вместо этого комментария я мог бы просто это сделать 😡
 SPECIAL_TILES = {
@@ -267,6 +282,8 @@ PANDA_SETTINGS = {
         delay_after_starting_chase_before_attacking = 0.3,
 
         chase_duration = 4.0,
+
+        default_state = PANDA_STATE.patrol,
     },
     [PANDA_TYPE.stickless] = {
         health = 6,
@@ -320,6 +337,8 @@ PANDA_SETTINGS = {
 
         delay_after_starting_chase_before_attacking = 0.3,
         chase_duration = 2.0,
+
+        default_state = PANDA_STATE.sleeping,
     },
 }
 PANDA_SETTINGS[PANDA_TYPE.no_stick_no_dash] = table.copy(PANDA_SETTINGS[PANDA_TYPE.basic])
@@ -352,6 +371,7 @@ PANDA_WITH_STICK_ATTACK_WIDTH = 26
 PANDA_MIN_X_DISTANCE_TO_PLAYER = 8
 
 PANDA_X_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK = 20
+PANDA_X_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK_WITH_STICK = 26
 PANDA_Y_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK = 14
 -- Время, которое панда будет держать свой последний кадр
 -- анимации атаки.

@@ -45,25 +45,12 @@ SOLID, видеокартах... ️🕯️
 
 Panda = {}
 
--- Когда уже в lua добавят enum-ы? 😩
-local PANDA_STATE = {
-    patrol = 1,
-    chase = 2,
-    charging_dash = 3,
-    charging_basic_attack = 4,
-    doing_basic_attack = 5,
-    dashing = 6,
-    staggered = 7,
-    stunned = 8,
-    sleeping = 9,
-}
-
-local PANDA_STATE_COLORS = {0, 9, 0, 0, 0, 0, 0, 0}
 
 function Panda:new(x, y, panda_type, can_tug)
     panda_type = panda_type or PANDA_TYPE.basic
     can_tug = can_tug or false
-    local default_state = (panda_type == PANDA_TYPE.basic or panda_type == PANDA_TYPE.stickless) and PANDA_STATE.patrol or PANDA_STATE.sleeping
+
+    local default_state = PANDA_SETTINGS[panda_type].default_state
 
     local object = {
         x = x,
@@ -216,16 +203,19 @@ end
 
 function Panda:make_attack_effect()
     local flip = (self.look_direction < 0) and 1 or 0
+    local x = 8 * (self.look_direction - flip)
+    local y = -8 * (self.animation_controller:current_animation().height - 1)
     local sprite
     if self.has_stick then
         sprite = SPRITES.particle_effects.long_horizontal_attack
+        y = y + 8
     else
         sprite = SPRITES.particle_effects.horizontal_attack
     end
     local attack_effect = ChildBody:new(
         self,
-        8 * (self.look_direction - flip),
-        -8 * (self.animation_controller:current_animation().height - 1),
+        x,
+        y,
         sprite,
         flip
     )
@@ -380,7 +370,11 @@ function Panda:update()
 
         local should_we_chase_the_player = true
 
-        if x_distance_to_player <= PANDA_X_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK and y_distance_to_player <= PANDA_Y_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK then
+        local attack_distance = self.has_stick and
+                                PANDA_X_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK_WITH_STICK or
+                                PANDA_X_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK 
+
+        if x_distance_to_player <= attack_distance and y_distance_to_player <= PANDA_Y_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK then
             if can_attack_the_player then
                 Basic.play_sound(SOUNDS.PANDA_BASIC_ATTACK_CHARGE)
                 self.state = PANDA_STATE.charging_basic_attack
