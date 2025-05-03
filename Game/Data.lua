@@ -222,6 +222,11 @@ PANDA_TYPE = {
     chilling = 1,
     orange_eyes = 2,
     stickless = 3,
+
+    no_stick_no_dash = 5,
+    no_stick_dash = 6,
+    stick_no_dash = 7,
+    stick_and_dash = 8,
 }
 
 -- Возможно их стоит объединить с panda type. Иначе получается излишнее
@@ -231,6 +236,11 @@ SPECIAL_TILES = {
     {id = 39, type = PANDA_TYPE.chilling},
     {id = 37, type = PANDA_TYPE.orange_eyes},
     {id = 36, type = PANDA_TYPE.stickless},
+
+    {id = 8, type = PANDA_TYPE.no_stick_no_dash},
+    {id = 9, type = PANDA_TYPE.no_stick_dash},
+    {id = 10, type = PANDA_TYPE.stick_no_dash},
+    {id = 11, type = PANDA_TYPE.stick_and_dash},
 }
 
 PANDA_PHYSICS_SETTINGS = {
@@ -254,13 +264,8 @@ PANDA_SETTINGS = {
 
         eye_color = 13,
 
-        -- Это отсчет до того как панда сможет атаковать после
-        -- того как начала гнаться за игроком. Да, я просто перевел
-        -- название переменной с английского и назвал это документацией.
         delay_after_starting_chase_before_attacking = 0.3,
 
-        -- Время, после которого панда устанет гоняться за игроком.
-        -- Это при условии, что она игрока не видит.
         chase_duration = 4.0,
     },
     [PANDA_TYPE.stickless] = {
@@ -317,6 +322,31 @@ PANDA_SETTINGS = {
         chase_duration = 2.0,
     },
 }
+PANDA_SETTINGS[PANDA_TYPE.no_stick_no_dash] = table.copy(PANDA_SETTINGS[PANDA_TYPE.basic])
+PANDA_SETTINGS[PANDA_TYPE.no_stick_no_dash].health = 4
+
+PANDA_SETTINGS[PANDA_TYPE.no_stick_dash] = table.copy(PANDA_SETTINGS[PANDA_TYPE.basic])
+PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].health = 3
+PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].has_dash = true
+PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].dash_charge_duration = 0.35
+PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].dash_duration = 0.7
+PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].dash_strength = 180
+
+PANDA_SETTINGS[PANDA_TYPE.stick_no_dash] = table.copy(PANDA_SETTINGS[PANDA_TYPE.basic])
+PANDA_SETTINGS[PANDA_TYPE.stick_no_dash].health = 5
+PANDA_SETTINGS[PANDA_TYPE.stick_no_dash].has_stick = true
+
+PANDA_SETTINGS[PANDA_TYPE.stick_and_dash] = table.copy(PANDA_SETTINGS[PANDA_TYPE.basic])
+PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].health = 6
+PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].has_stick = true
+PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].has_dash = true
+PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].dash_charge_duration = 0.35
+PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].dash_duration = 0.7
+PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].dash_strength = 180
+
+
+PANDA_WITHOUT_STICK_ATTACK_WIDTH = 20
+PANDA_WITH_STICK_ATTACK_WIDTH = 26
 
 -- Если мы ближе, чем это расстояние, то пора остановиться
 PANDA_MIN_X_DISTANCE_TO_PLAYER = 8
@@ -381,7 +411,7 @@ SPRITES = {
     transparent = Sprite:new({0}),
 
     player = {
-        idle = Sprite:new({380}, 1, 2, 2),
+        idle = Sprite:new({396}, 1, 2, 1),
         dead = Sprite:new({479}),
 
         running = Sprite:new({384, 386, 388, 390, 392, 394}, 6, 2, 2),
@@ -405,6 +435,7 @@ SPRITES = {
         jump = Animation:new({496, 498, 500, 502}, 6):with_size(2, 1):at_end_goto_last_frame():to_sprite(),
         land = Animation:new({500, 502}, 8):with_size(2, 1):at_end_goto_last_frame():to_sprite(),
         horizontal_attack = Animation:new({488}, 18):with_size(2, 2):at_end_goto_last_frame():to_sprite(),
+        long_horizontal_attack = Animation:new({380}, 18):with_size(2, 1):at_end_goto_last_frame():to_sprite(),
         downward_attack = Animation:new({444}, 18):with_size(2, 2):at_end_goto_last_frame():to_sprite(),
         upward_attack = Animation:new({176}, 18):with_size(2, 2):at_end_goto_last_frame():to_sprite(),
     },
@@ -449,6 +480,10 @@ SPRITES.panda[PANDA_TYPE.chilling].charging_basic_attack = Sprite:new_complex({
     Animation:new({282}, 20),
     Animation:new({267, 268, 269, 270}, 6):with_size(1, 2):at_end_goto_last_frame(),
 })
+SPRITES.panda[PANDA_TYPE.no_stick_no_dash] = table.copy(SPRITES.panda[PANDA_TYPE.basic])
+SPRITES.panda[PANDA_TYPE.no_stick_dash] = table.copy(SPRITES.panda[PANDA_TYPE.basic])
+SPRITES.panda[PANDA_TYPE.stick_no_dash] = table.copy(SPRITES.panda[PANDA_TYPE.basic])
+SPRITES.panda[PANDA_TYPE.stick_and_dash] = table.copy(SPRITES.panda[PANDA_TYPE.basic])
 
 PLAYER_ATTACK_SPRITES = {
     SPRITES.player.attack,

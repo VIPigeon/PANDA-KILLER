@@ -64,6 +64,7 @@ function Panda:new(x, y, panda_type, can_tug)
     panda_type = panda_type or PANDA_TYPE.basic
     can_tug = can_tug or false
     local default_state = (panda_type == PANDA_TYPE.basic or panda_type == PANDA_TYPE.stickless) and PANDA_STATE.patrol or PANDA_STATE.sleeping
+
     local object = {
         x = x,
         y = y,
@@ -82,6 +83,9 @@ function Panda:new(x, y, panda_type, can_tug)
         stun_animation = AnimationController:new(SPRITES.panda_stun_effect),
         animation_controller = AnimationController:new(SPRITES.panda[PANDA_TYPE.basic].rest),
         look_direction = math.coin_flip() and 1 or -1,
+
+        has_dash = PANDA_SETTINGS[panda_type].has_dash,
+        has_stick = PANDA_SETTINGS[panda_type].has_stick,
 
         attack_effect = nil,       -- Мне не нравятся, что в панде плодятся такие поля
         attack_effect_time = 0.0,  -- и такие...
@@ -193,6 +197,42 @@ function Panda:take_damage(hit_x, hit_y)
     end
 end
 
+function Panda:make_attack_rect()
+    local our_rect = Hitbox.rect_of(self)
+    local attack_width
+    if self.has_stick then
+        attack_width = PANDA_WITH_STICK_ATTACK_WIDTH
+    else
+        attack_width = PANDA_WITHOUT_STICK_ATTACK_WIDTH
+    end
+    local attack_rect = Rect:new(
+        our_rect:center_x() + 8 * self.look_direction - attack_width / 2,
+        our_rect:top(),
+        attack_width,
+        8
+    )
+    return attack_rect
+end
+
+function Panda:make_attack_effect()
+    local flip = (self.look_direction < 0) and 1 or 0
+    local sprite
+    if self.has_stick then
+        sprite = SPRITES.particle_effects.long_horizontal_attack
+    else
+        sprite = SPRITES.particle_effects.horizontal_attack
+    end
+    local attack_effect = ChildBody:new(
+        self,
+        8 * (self.look_direction - flip),
+        -8 * (self.animation_controller:current_animation().height - 1),
+        sprite,
+        flip
+    )
+    return attack_effect
+end
+
+
 function Panda:update()
     --
     -- И ведь будут же люди, которым здесь нужно будет что-то сделать, они зайдут,
@@ -285,8 +325,9 @@ function Panda:update()
 
     local player = game.player
 
-    local our_rect = Hitbox.rect_of(self)
     local player_rect = Hitbox.rect_of(player)
+
+    local our_rect = Hitbox.rect_of(self)
 
     local is_on_ground = Physics.is_on_ground(self)
 
@@ -346,7 +387,7 @@ function Panda:update()
             elseif self.time_after_which_we_should_attack == 0.0 then
                 self.time_after_which_we_should_attack = PANDA_SETTINGS[self.type].delay_after_starting_chase_before_attacking
             end
-        elseif is_on_ground and x_distance_to_player <= PANDA_X_DISTANCE_TO_PLAYER_UNTIL_DASH then
+        elseif self.has_dash and is_on_ground and x_distance_to_player <= PANDA_X_DISTANCE_TO_PLAYER_UNTIL_DASH then
             if can_attack_the_player then
                 if y_distance_to_player <= PANDA_Y_DISTANCE_TO_PLAYER_UNTIL_DASH then
                     Basic.play_sound(SOUNDS.PANDA_DASH_CHARGE)
@@ -403,13 +444,7 @@ function Panda:update()
 
         if self.animation_controller:is_at_last_frame() then
             if self.basic_attack_time_left == 0.0 then
-                local attack_width = 22
-                local attack_rect = Rect:new(
-                    our_rect:center_x() + 8 * self.look_direction - attack_width / 2,
-                    our_rect:top(),
-                    attack_width,
-                    8
-                )
+                local attack_rect = self:make_attack_rect()
 
                 -- Раскомментируйте, чтобы посмотреть на hurtbox атаки панды.
                 --Debug.add(function()
@@ -425,18 +460,9 @@ function Panda:update()
 
                 Basic.play_sound(SOUNDS.PANDA_BASIC_ATTACK)
 
-                local flip = (self.look_direction < 0) and 1 or 0
-                if self.type ~= PANDA_TYPE.stickless then
-                    self.attack_effect = ChildBody:new(
-                        self,
-                        8 * (self.look_direction - flip),
-                        -8 * (self.animation_controller:current_animation().height - 1),
-                        SPRITES.particle_effects.horizontal_attack,
-                        flip
-                    )
-                    self.attack_effect_time = PANDA_BASIC_ATTACK_EFFECT_DURATION
-                end
-                
+                self.attack_effect = self:make_attack_effect()
+                self.attack_effect_time = PANDA_BASIC_ATTACK_EFFECT_DURATION
+
                 self.basic_attack_time_left = PANDA_BASIC_ATTACK_DURATION
             else
                 self.basic_attack_time_left = Basic.tick_timer(self.basic_attack_time_left)
@@ -452,26 +478,13 @@ function Panda:update()
 
         if self.animation_controller:is_at_last_frame() then
             if self.basic_attack_time_left == 0.0 then
-                local flip = (self.look_direction < 0) and 1 or 0
-                if self.type ~= PANDA_TYPE.stickless then
-                    self.attack_effect = ChildBody:new(
-                        self,
-                        8 * (self.look_direction - flip),
-                        -8 * (self.animation_controller:current_animation().height - 1),
-                        SPRITES.particle_effects.horizontal_attack,
-                        flip
-                    )
-                    self.attack_effect_time = PANDA_BASIC_ATTACK_EFFECT_DURATION
-                end
+
+                self.attack_effect = self:make_attack_effect()
+                self.attack_effect_time = PANDA_BASIC_ATTACK_EFFECT_DURATION
                 self.basic_attack_time_left = PANDA_BASIC_ATTACK_DURATION
+
             else
-                local attack_width = 22
-                local attack_rect = Rect:new(
-                    our_rect:center_x() + 8 * self.look_direction - attack_width / 2,
-                    our_rect:top(),
-                    attack_width,
-                    8
-                )
+                local attack_rect = self:make_attack_rect()
 
                 -- Раскомментируйте, чтобы посмотреть на hurtbox атаки панды.
                 --Debug.add(function()
@@ -532,7 +545,6 @@ function Panda:update()
     end
 
     Physics.update(self)
-
 
     local tile_ids = Physics.tile_ids_that_intersect_with_rect(our_rect)
     for _, collision in ipairs(tile_ids) do
