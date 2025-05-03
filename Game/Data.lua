@@ -274,6 +274,8 @@ PANDA_SETTINGS = {
         dash_charge_duration = 1.4,  -- 1.5
         dash_duration = 0.9, -- 1.0
         dash_strength = 170,
+        small_dash_strength = 90,
+        small_dash_duration = 0.5,
 
         health_at_which_to_get_stunned = 2,
 

@@ -431,32 +431,38 @@ function Panda:update()
         self:set_look_direction(player_rect:center_x() < our_rect:center_x() and -1 or 1)
 
         if self.animation_controller:is_at_last_frame() then
-            if self.basic_attack_time_left == 0.0 then
-                local attack_rect = self:make_attack_rect()
-
-                -- Раскомментируйте, чтобы посмотреть на hurtbox атаки панды.
-                --Debug.add(function()
-                --    attack_rect:draw(2)
-                --    our_rect:draw(2)
-                --end)
-
-                if Physics.check_collision_rect_rect(our_rect, player_rect) then
-                    player:die(self.look_direction, 0)
-                elseif Physics.check_collision_rect_rect(attack_rect, player_rect) then
-                    player:die(self.look_direction, 0)
-                end
-
-                Basic.play_sound(SOUNDS.PANDA_BASIC_ATTACK)
-
-                self.attack_effect = self:make_attack_effect()
-                self.attack_effect_time = PANDA_BASIC_ATTACK_EFFECT_DURATION
-
-                self.basic_attack_time_left = PANDA_BASIC_ATTACK_DURATION
-            else
-                self.basic_attack_time_left = Basic.tick_timer(self.basic_attack_time_left)
+            if self.has_stick then
                 if self.basic_attack_time_left == 0.0 then
-                    self.state = PANDA_STATE.chase
+                    local attack_rect = self:make_attack_rect()
+
+                    -- Раскомментируйте, чтобы посмотреть на hurtbox атаки панды.
+                    --Debug.add(function()
+                    --    attack_rect:draw(2)
+                    --    our_rect:draw(2)
+                    --end)
+
+                    if Physics.check_collision_rect_rect(our_rect, player_rect) then
+                        player:die(self.look_direction, 0)
+                    elseif Physics.check_collision_rect_rect(attack_rect, player_rect) then
+                        player:die(self.look_direction, 0)
+                    end
+
+                    Basic.play_sound(SOUNDS.PANDA_BASIC_ATTACK)
+
+                    self.attack_effect = self:make_attack_effect()
+                    self.attack_effect_time = PANDA_BASIC_ATTACK_EFFECT_DURATION
+
+                    self.basic_attack_time_left = PANDA_BASIC_ATTACK_DURATION
+                else
+                    self.basic_attack_time_left = Basic.tick_timer(self.basic_attack_time_left)
+                    if self.basic_attack_time_left == 0.0 then
+                        self.state = PANDA_STATE.chase
+                    end
                 end
+            else
+                self.velocity.x = PANDA_SETTINGS[self.type].small_dash_strength * self.look_direction
+                self.state = PANDA_STATE.dashing
+                self.small_dash = true
             end
         end
 
@@ -486,11 +492,13 @@ function Panda:update()
                 if not self.has_stick then
                     self.state = PANDA_STATE.stunned
                     self.stun_time_left = PANDA_STUN_DURATION
+                    self.dash_can_not_kill_player = false
+                    self.small_dash = false
                 end
             end
         end
 
-        if self.animation_controller:is_at_last_frame() then
+        if self.has_stick and self.animation_controller:is_at_last_frame() then
             if self.basic_attack_time_left == 0.0 then
 
                 self.attack_effect = self:make_attack_effect()
@@ -518,6 +526,7 @@ function Panda:update()
                 if self.basic_attack_time_left == 0.0 then
                     self.state = PANDA_STATE.chase
                     self.dash_can_not_kill_player = false
+                    self.small_dash = false
                 end
             end
         end
@@ -528,9 +537,12 @@ function Panda:update()
 
         self.time_since_dashing = self.time_since_dashing + Time.dt()
 
-        if is_on_ground and self.time_since_dashing > PANDA_SETTINGS[self.type].dash_duration then
-            self.dash_can_not_kill_player = false
+        local dash_duration = self.small_dash and PANDA_SETTINGS[self.type].small_dash_duration or PANDA_SETTINGS[self.type].dash_duration
+
+        if is_on_ground and self.time_since_dashing > dash_duration then
             self.state = PANDA_STATE.chase
+            self.dash_can_not_kill_player = false
+            self.small_dash = false
         end
         self.chase_time_left = Basic.tick_timer(self.chase_time_left)
 
