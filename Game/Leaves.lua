@@ -1,5 +1,5 @@
-local minlife_leaves = 1000
-local maxlife_leaves = 2000
+local minlife_leaves = 500
+local maxlife_leaves = 1000
 
 local minstartsize = 1
 local maxstartsize = 2
@@ -15,7 +15,7 @@ local maxstartvy = -2
 local default_leaves_amount = 1
 
 local fx = 0
-local fy = 0.15
+local fy = 0.1
 
 local leaves_color_1 = {5}
 local leaves_color_2 = {11}
@@ -95,7 +95,7 @@ function spread_leaves(hit_x, hit_y, x, y)
     elseif hit_x > 0 then
         create_leaves(px, py, 1)
     else
-        create_leaves(px, py, -1)
-        create_leaves(px, py, 1)
+        --create_leaves(px, py, -1)
+        --create_leaves(px, py, 1)
     end
 end
