@@ -518,8 +518,23 @@ function Player:update()
             self.attack_effect_time = PLAYER_ATTACK_EFFECT_DURATION
             self.attack_cooldown = PLAYER_ATTACK_COOLDOWN
         end
+
+        for _, rect in ipairs(self.attack_rects) do
+            local start_tx, start_ty = rect.x // 8, rect.y // 8
+            local end_tx, end_ty = (rect.x + rect.w - 1) // 8, (rect.y + rect.h - 1) // 8
+            
+            for ty = start_ty, end_ty do
+                for tx = start_tx, end_tx do
+                    local tile = mget(tx, ty)
+                    if tile >= 144 and tile <= 175 then
+                        leaves_spread(attack_direction_x, attack_direction_y, tx, ty)
+                    end
+                end
+            end
+        end
     end
 
+   
     -- Анимациями занимаются здесь 🏭
     -- Заметка для меня из будущего:
     -- Здесь может быть баг с тем, что спрайты глобальные. Так было
