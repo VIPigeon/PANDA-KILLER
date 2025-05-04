@@ -87,7 +87,7 @@ function create_leaves(x, y, orientation, amount_of_leaves)
     create_particles(x, y, orientation, minlife_leaves, maxlife_leaves, amount_of_leaves, leaves_color_2)
 end
 
-function leaves_spread(hit_x, hit_y, x, y)
+function spread_leaves(hit_x, hit_y, x, y)
     local px = x * 8 + 4
     local py = y * 8 + 4
     if hit_x < 0 then

@@ -526,8 +526,8 @@ function Player:update()
             for ty = start_ty, end_ty do
                 for tx = start_tx, end_tx do
                     local tile = mget(tx, ty)
-                    if tile >= 144 and tile <= 175 then
-                        leaves_spread(attack_direction_x, attack_direction_y, tx, ty)
+                    if tile >= 144 and tile <= 149 or tile >= 160 and tile <= 175 then
+                        spread_leaves(attack_direction_x, attack_direction_y, tx, ty)
                     end
                 end
             end
