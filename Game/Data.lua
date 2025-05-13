@@ -1,7 +1,7 @@
 data = {}
 
 -- 🏮 Перед релизом поставить в false!!! 🏮
-DEV_MODE_ENABLED = true
+DEV_MODE_ENABLED = false
 
 --
 -- Управление
@@ -493,6 +493,16 @@ SPRITES = {
     },
 
     panda_stun_effect = Animation:new({8, 9, 10, 11}, 8):to_sprite(),
+
+    cutscene = {
+        start_player = Animation:new({480, 481}, 6):at_end_goto_last_frame():to_sprite(),
+        run_player = Animation:new({482, 483, 482, 484, 482, 483, 485, 482, 483, 482, 485}, 8):to_sprite(),
+        --finish_player_win = Animation:new({208},2):to_sprite(),
+
+        start_panda = Animation:new({268, 269},6):with_size(1, 2):at_end_goto_last_frame():to_sprite(),
+        run_panda = Animation:new({271, 281, 314, 316, 314, 281, 317, 314, 281, 314, 317},8):to_sprite(),
+        --finish_panda_win = Animation:new({271, 256},1):at_end_goto_last_frame():to_sprite(),
+    },
 }
 -- Специальные переделки для чилящей панды.
 -- Жаль что это всё нельзя сделать внутри одной таблицы.

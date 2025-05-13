@@ -54,6 +54,9 @@ is_game_over = false
 is_player_win = false
 trigger_panda = nil
 
+trigger_flip_panda = 1
+trigger_stick = false
+
 function ClickerMinigame:init(panda)
     -- наверное придётся поменять у панды её выражение лица, жесты, позу, самочувствие.
     -- TODO so
@@ -71,6 +74,9 @@ function ClickerMinigame:init(panda)
     --table.insert(game.CRUTCH_dialog_window, __dx_dw)
 
     INITIAL_SCALE = game.scale
+
+    animation_controller_player = AnimationController:new(SPRITES.cutscene.start_player)
+    animation_controller_panda = AnimationController:new(SPRITES.cutscene.start_panda)
 
     ClickerMinigame:rescale_game(true)
 
@@ -172,11 +178,24 @@ function ClickerMinigame:update()
             is_player_win = true
         end
 
+        if animation_controller_player:animation_ended() then
+            animation_controller_player:set_sprite(SPRITES.cutscene.run_player)
+            trigger_stick = true
+        end
+
+        if animation_controller_panda:animation_ended() then
+            animation_controller_panda:set_sprite(SPRITES.cutscene.run_panda)
+            trigger_flip_panda = 0
+        end
+
+        animation_controller_player:next_frame()
+        animation_controller_panda:next_frame()
+
         -- Сброс силы игрока написал, а return забыл.
         current_player_force = MIN_PLAYER_FORCE
         return
     end
-
+    
     ClickerMinigame:gameover()
 end
 
@@ -241,20 +260,58 @@ function ClickerMinigame:draw()
     ClickerMinigame:draw_progress_bar()
 
     -- тут стоит подумать, может стоит символично оставить только одну панду
+    
+    -- game.player:draw()
+    
+    id_frame_player = animation_controller_player:current_frame()
+
+    if id_frame_player == 484 or id_frame_player == 483 then
+        animation_controller_player:draw(game.player.x-1,game.player.y)
+        if trigger_stick then
+            draw_stick(game.player.x+13,game.player.y+7,11,animation_controller_player)
+        end
+    elseif id_frame_player == 485 then
+        animation_controller_player:draw(game.player.x-2,game.player.y)
+        if trigger_stick then
+            draw_stick(game.player.x+12,game.player.y+7,11,animation_controller_player)
+        end
+    else
+        animation_controller_player:draw(game.player.x,game.player.y)
+        if trigger_stick then
+            draw_stick(game.player.x+14,game.player.y+7,11,animation_controller_player)
+        end
+    end
+
     for _, panda in ipairs(game.current_level.pandas) do
-        panda:draw()
+        animation_controller_panda:draw(panda.x,panda.y,trigger_flip_panda)
+    end 
+    
+    -- -- это вообще совсем мусор
+    -- if is_game_over and not is_player_win then
+    --     --game.player.is_dead = true
+    -- end
+
+    -- if is_game_over and is_player_win then
+    --     -- Завершение(убрать весь визуал)
+    -- end
+end
+
+-- Да, хардкод, но... Будет так! 
+function draw_stick(x, y, color, animation_controller)
+    current_scale = game.scale
+    -- А вот это вообще ужас, с каких соображений x и y такие? Но разработчику, 
+    -- который данный код писал в AnimationController, виднее...
+    x = x - (current_scale - 1) * 48
+    y = y + 24 * (current_scale - 1) - 8 * current_scale * (animation_controller:current_animation().height - 1)
+    pix(x-1, y, color)
+    for i = 0, 1 do
+        pix(x+i, y, color)
     end
-    game.player:draw()
-
-
-
-    -- это вообще совсем мусор
-    if is_game_over and not is_player_win then
-        --game.player.is_dead = true
+    for i = 1, 11 do
+        pix(x+i+1, y+1, color)      
     end
-
-    if is_game_over and is_player_win then
-        -- Завершение(убрать весь визуал)
+    for i = 1, 5 do
+        pix(x+10+i, y+2, color)
     end
 end
 
