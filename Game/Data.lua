@@ -222,7 +222,27 @@ PANDA_TYPE = {
     chilling = 1,
     orange_eyes = 2,
     stickless = 3,
+
+    no_stick_no_dash = 5,
+    no_stick_dash = 6,
+    stick_no_dash = 7,
+    stick_and_dash = 8,
 }
+
+-- Когда уже в lua добавят enum-ы? 😩
+PANDA_STATE = {
+    patrol = 1,
+    chase = 2,
+    charging_dash = 3,
+    charging_basic_attack = 4,
+    doing_basic_attack = 5,
+    dashing = 6,
+    staggered = 7,
+    stunned = 8,
+    sleeping = 9,
+}
+PANDA_STATE_COLORS = {0, 9, 0, 0, 0, 0, 0, 0}
+
 
 -- Возможно их стоит объединить с panda type. Иначе получается излишнее
 -- обобщение. Блин, вместо этого комментария я мог бы просто это сделать 😡
@@ -231,6 +251,11 @@ SPECIAL_TILES = {
     {id = 39, type = PANDA_TYPE.chilling},
     {id = 37, type = PANDA_TYPE.orange_eyes},
     {id = 36, type = PANDA_TYPE.stickless},
+
+    {id = 8, type = PANDA_TYPE.no_stick_no_dash},
+    {id = 9, type = PANDA_TYPE.no_stick_dash},
+    {id = 10, type = PANDA_TYPE.stick_no_dash},
+    {id = 11, type = PANDA_TYPE.stick_and_dash},
 }
 
 PANDA_PHYSICS_SETTINGS = {
@@ -249,19 +274,18 @@ PANDA_SETTINGS = {
         dash_charge_duration = 1.4,  -- 1.5
         dash_duration = 0.9, -- 1.0
         dash_strength = 170,
+        small_dash_strength = 90,
+        small_dash_duration = 0.5,
 
         health_at_which_to_get_stunned = 2,
 
         eye_color = 13,
 
-        -- Это отсчет до того как панда сможет атаковать после
-        -- того как начала гнаться за игроком. Да, я просто перевел
-        -- название переменной с английского и назвал это документацией.
         delay_after_starting_chase_before_attacking = 0.3,
 
-        -- Время, после которого панда устанет гоняться за игроком.
-        -- Это при условии, что она игрока не видит.
         chase_duration = 4.0,
+
+        default_state = PANDA_STATE.patrol,
     },
     [PANDA_TYPE.stickless] = {
         health = 6,
@@ -315,13 +339,41 @@ PANDA_SETTINGS = {
 
         delay_after_starting_chase_before_attacking = 0.3,
         chase_duration = 2.0,
+
+        default_state = PANDA_STATE.sleeping,
     },
 }
+PANDA_SETTINGS[PANDA_TYPE.no_stick_no_dash] = table.copy(PANDA_SETTINGS[PANDA_TYPE.basic])
+PANDA_SETTINGS[PANDA_TYPE.no_stick_no_dash].health = 4
+
+PANDA_SETTINGS[PANDA_TYPE.no_stick_dash] = table.copy(PANDA_SETTINGS[PANDA_TYPE.basic])
+PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].health = 3
+PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].has_dash = true
+PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].dash_charge_duration = 0.35
+PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].dash_duration = 0.7
+PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].dash_strength = 180
+
+PANDA_SETTINGS[PANDA_TYPE.stick_no_dash] = table.copy(PANDA_SETTINGS[PANDA_TYPE.basic])
+PANDA_SETTINGS[PANDA_TYPE.stick_no_dash].health = 5
+PANDA_SETTINGS[PANDA_TYPE.stick_no_dash].has_stick = true
+
+PANDA_SETTINGS[PANDA_TYPE.stick_and_dash] = table.copy(PANDA_SETTINGS[PANDA_TYPE.basic])
+PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].health = 6
+PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].has_stick = true
+PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].has_dash = true
+PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].dash_charge_duration = 0.35
+PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].dash_duration = 0.7
+PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].dash_strength = 180
+
+
+PANDA_WITHOUT_STICK_ATTACK_WIDTH = 20
+PANDA_WITH_STICK_ATTACK_WIDTH = 26
 
 -- Если мы ближе, чем это расстояние, то пора остановиться
 PANDA_MIN_X_DISTANCE_TO_PLAYER = 8
 
 PANDA_X_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK = 20
+PANDA_X_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK_WITH_STICK = 26
 PANDA_Y_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK = 14
 -- Время, которое панда будет держать свой последний кадр
 -- анимации атаки.
@@ -381,7 +433,7 @@ SPRITES = {
     transparent = Sprite:new({0}),
 
     player = {
-        idle = Sprite:new({380}, 1, 2, 2),
+        idle = Sprite:new({396}, 1, 2, 1),
         dead = Sprite:new({479}),
 
         running = Sprite:new({384, 386, 388, 390, 392, 394}, 6, 2, 2),
@@ -405,6 +457,7 @@ SPRITES = {
         jump = Animation:new({496, 498, 500, 502}, 6):with_size(2, 1):at_end_goto_last_frame():to_sprite(),
         land = Animation:new({500, 502}, 8):with_size(2, 1):at_end_goto_last_frame():to_sprite(),
         horizontal_attack = Animation:new({488}, 18):with_size(2, 2):at_end_goto_last_frame():to_sprite(),
+        long_horizontal_attack = Animation:new({380}, 18):with_size(2, 1):at_end_goto_last_frame():to_sprite(),
         downward_attack = Animation:new({444}, 18):with_size(2, 2):at_end_goto_last_frame():to_sprite(),
         upward_attack = Animation:new({176}, 18):with_size(2, 2):at_end_goto_last_frame():to_sprite(),
     },
@@ -449,6 +502,10 @@ SPRITES.panda[PANDA_TYPE.chilling].charging_basic_attack = Sprite:new_complex({
     Animation:new({282}, 20),
     Animation:new({267, 268, 269, 270}, 6):with_size(1, 2):at_end_goto_last_frame(),
 })
+SPRITES.panda[PANDA_TYPE.no_stick_no_dash] = table.copy(SPRITES.panda[PANDA_TYPE.basic])
+SPRITES.panda[PANDA_TYPE.no_stick_dash] = table.copy(SPRITES.panda[PANDA_TYPE.basic])
+SPRITES.panda[PANDA_TYPE.stick_no_dash] = table.copy(SPRITES.panda[PANDA_TYPE.basic])
+SPRITES.panda[PANDA_TYPE.stick_and_dash] = table.copy(SPRITES.panda[PANDA_TYPE.basic])
 
 PLAYER_ATTACK_SPRITES = {
     SPRITES.player.attack,
@@ -474,6 +531,7 @@ SOUNDS = {
     PLAYER_JUMP = {id = 4, note = 'A#4'},
     PLAYER_SLIDE = {id = 8, note = 'D-1', channel = 1},
     PLAYER_DEAD = {id = 5, note = 'C-5', duration = 30, channel = 2},
+    PLAYER_PARRY = {id = 4, note = 'C-5', duration = 10, channel = 2},
 
     PANDA_DASH_CHARGE = {id = 11, note = 'G-3', duration = 20, channel = 2},
     PANDA_DASH = {id = 11, note = 'C-5', duration = 20, channel = 2},

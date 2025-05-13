@@ -45,25 +45,13 @@ SOLID, видеокартах... ️🕯️
 
 Panda = {}
 
--- Когда уже в lua добавят enum-ы? 😩
-local PANDA_STATE = {
-    patrol = 1,
-    chase = 2,
-    charging_dash = 3,
-    charging_basic_attack = 4,
-    doing_basic_attack = 5,
-    dashing = 6,
-    staggered = 7,
-    stunned = 8,
-    sleeping = 9,
-}
-
-local PANDA_STATE_COLORS = {0, 9, 0, 0, 0, 0, 0, 0}
 
 function Panda:new(x, y, panda_type, can_tug)
     panda_type = panda_type or PANDA_TYPE.basic
     can_tug = can_tug or false
-    local default_state = (panda_type == PANDA_TYPE.basic or panda_type == PANDA_TYPE.stickless) and PANDA_STATE.patrol or PANDA_STATE.sleeping
+
+    local default_state = PANDA_SETTINGS[panda_type].default_state
+
     local object = {
         x = x,
         y = y,
@@ -83,11 +71,13 @@ function Panda:new(x, y, panda_type, can_tug)
         animation_controller = AnimationController:new(SPRITES.panda[PANDA_TYPE.basic].rest),
         look_direction = math.coin_flip() and 1 or -1,
 
+        has_dash = PANDA_SETTINGS[panda_type].has_dash,
+        has_stick = PANDA_SETTINGS[panda_type].has_stick,
+
         attack_effect = nil,       -- Мне не нравятся, что в панде плодятся такие поля
         attack_effect_time = 0.0,  -- и такие...
 
         -- Как же я обожаю таймеры 😍
-        time_of_most_recent_hit = 0.0,
         count_of_recent_hits = 0,
 
         time_after_which_we_should_attack = 0.0,
@@ -103,6 +93,7 @@ function Panda:new(x, y, panda_type, can_tug)
         -- Хотите ли вы потягаться с такой пандой?🙄 Ответ был дан выше
         --kantugging_friend_panda = can_tug,
         kantugging_friend_panda = false,
+        dash_can_not_kill_player = false,
     }
 
     setmetatable(object, self)
@@ -172,12 +163,6 @@ function Panda:take_damage(hit_x, hit_y)
         self.state = PANDA_STATE.stunned
         self.stun_time_left = PANDA_STUN_DURATION
 
-        --
-        -- ААХХАХАХАХА Я СОШЁЛ С УМА 🥶 😷
-        --
-        self.time_of_most_recent_hit = Time.now()
-        self.stun_time_left = PANDA_STUN_DURATION
-
         self.velocity.x = stun_knockback_direction_x * PANDA_STUN_KNOCKBACK_HORIZONTAL
         self.velocity.y = stun_knockback_direction_y
     else
@@ -192,6 +177,45 @@ function Panda:take_damage(hit_x, hit_y)
         self:die()
     end
 end
+
+function Panda:make_attack_rect()
+    local our_rect = Hitbox.rect_of(self)
+    local attack_width
+    if self.has_stick then
+        attack_width = PANDA_WITH_STICK_ATTACK_WIDTH
+    else
+        attack_width = PANDA_WITHOUT_STICK_ATTACK_WIDTH
+    end
+    local attack_rect = Rect:new(
+        our_rect:center_x() + 8 * self.look_direction - attack_width / 2,
+        our_rect:top(),
+        attack_width,
+        8
+    )
+    return attack_rect
+end
+
+function Panda:make_attack_effect()
+    local flip = (self.look_direction < 0) and 1 or 0
+    local x = 8 * (self.look_direction - flip)
+    local y = -8 * (self.animation_controller:current_animation().height - 1)
+    local sprite
+    if self.has_stick then
+        sprite = SPRITES.particle_effects.long_horizontal_attack
+        y = y + 8
+    else
+        sprite = SPRITES.particle_effects.horizontal_attack
+    end
+    local attack_effect = ChildBody:new(
+        self,
+        x,
+        y,
+        sprite,
+        flip
+    )
+    return attack_effect
+end
+
 
 function Panda:update()
     --
@@ -285,8 +309,9 @@ function Panda:update()
 
     local player = game.player
 
-    local our_rect = Hitbox.rect_of(self)
     local player_rect = Hitbox.rect_of(player)
+
+    local our_rect = Hitbox.rect_of(self)
 
     local is_on_ground = Physics.is_on_ground(self)
 
@@ -339,14 +364,18 @@ function Panda:update()
 
         local should_we_chase_the_player = true
 
-        if x_distance_to_player <= PANDA_X_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK and y_distance_to_player <= PANDA_Y_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK then
+        local attack_distance = self.has_stick and
+                                PANDA_X_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK_WITH_STICK or
+                                PANDA_X_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK 
+
+        if x_distance_to_player <= attack_distance and y_distance_to_player <= PANDA_Y_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK then
             if can_attack_the_player then
                 Basic.play_sound(SOUNDS.PANDA_BASIC_ATTACK_CHARGE)
                 self.state = PANDA_STATE.charging_basic_attack
             elseif self.time_after_which_we_should_attack == 0.0 then
                 self.time_after_which_we_should_attack = PANDA_SETTINGS[self.type].delay_after_starting_chase_before_attacking
             end
-        elseif is_on_ground and x_distance_to_player <= PANDA_X_DISTANCE_TO_PLAYER_UNTIL_DASH then
+        elseif self.has_dash and is_on_ground and x_distance_to_player <= PANDA_X_DISTANCE_TO_PLAYER_UNTIL_DASH then
             if can_attack_the_player then
                 if y_distance_to_player <= PANDA_Y_DISTANCE_TO_PLAYER_UNTIL_DASH then
                     Basic.play_sound(SOUNDS.PANDA_DASH_CHARGE)
@@ -402,47 +431,38 @@ function Panda:update()
         self:set_look_direction(player_rect:center_x() < our_rect:center_x() and -1 or 1)
 
         if self.animation_controller:is_at_last_frame() then
-            if self.basic_attack_time_left == 0.0 then
-                local attack_width = 22
-                local attack_rect = Rect:new(
-                    our_rect:center_x() + 8 * self.look_direction - attack_width / 2,
-                    our_rect:top(),
-                    attack_width,
-                    8
-                )
-
-                -- Раскомментируйте, чтобы посмотреть на hurtbox атаки панды.
-                --Debug.add(function()
-                --    attack_rect:draw(2)
-                --    our_rect:draw(2)
-                --end)
-
-                if Physics.check_collision_rect_rect(our_rect, player_rect) then
-                    player:die(self.look_direction, 0)
-                elseif Physics.check_collision_rect_rect(attack_rect, player_rect) then
-                    player:die(self.look_direction, 0)
-                end
-
-                Basic.play_sound(SOUNDS.PANDA_BASIC_ATTACK)
-
-                local flip = (self.look_direction < 0) and 1 or 0
-                if self.type ~= PANDA_TYPE.stickless then
-                    self.attack_effect = ChildBody:new(
-                        self,
-                        8 * (self.look_direction - flip),
-                        -8 * (self.animation_controller:current_animation().height - 1),
-                        SPRITES.particle_effects.horizontal_attack,
-                        flip
-                    )
-                    self.attack_effect_time = PANDA_BASIC_ATTACK_EFFECT_DURATION
-                end
-                
-                self.basic_attack_time_left = PANDA_BASIC_ATTACK_DURATION
-            else
-                self.basic_attack_time_left = Basic.tick_timer(self.basic_attack_time_left)
+            if self.has_stick then
                 if self.basic_attack_time_left == 0.0 then
-                    self.state = PANDA_STATE.chase
+                    local attack_rect = self:make_attack_rect()
+
+                    -- Раскомментируйте, чтобы посмотреть на hurtbox атаки панды.
+                    --Debug.add(function()
+                    --    attack_rect:draw(2)
+                    --    our_rect:draw(2)
+                    --end)
+
+                    if Physics.check_collision_rect_rect(our_rect, player_rect) then
+                        player:die(self.look_direction, 0)
+                    elseif Physics.check_collision_rect_rect(attack_rect, player_rect) then
+                        player:die(self.look_direction, 0)
+                    end
+
+                    Basic.play_sound(SOUNDS.PANDA_BASIC_ATTACK)
+
+                    self.attack_effect = self:make_attack_effect()
+                    self.attack_effect_time = PANDA_BASIC_ATTACK_EFFECT_DURATION
+
+                    self.basic_attack_time_left = PANDA_BASIC_ATTACK_DURATION
+                else
+                    self.basic_attack_time_left = Basic.tick_timer(self.basic_attack_time_left)
+                    if self.basic_attack_time_left == 0.0 then
+                        self.state = PANDA_STATE.chase
+                    end
                 end
+            else
+                self.velocity.x = PANDA_SETTINGS[self.type].small_dash_strength * self.look_direction
+                self.state = PANDA_STATE.dashing
+                self.small_dash = true
             end
         end
 
@@ -450,28 +470,43 @@ function Panda:update()
 
     elseif self.state == PANDA_STATE.dashing then
 
-        if self.animation_controller:is_at_last_frame() then
-            if self.basic_attack_time_left == 0.0 then
-                local flip = (self.look_direction < 0) and 1 or 0
-                if self.type ~= PANDA_TYPE.stickless then
-                    self.attack_effect = ChildBody:new(
-                        self,
-                        8 * (self.look_direction - flip),
-                        -8 * (self.animation_controller:current_animation().height - 1),
-                        SPRITES.particle_effects.horizontal_attack,
-                        flip
-                    )
-                    self.attack_effect_time = PANDA_BASIC_ATTACK_EFFECT_DURATION
+        if not self.dash_can_not_kill_player and player:is_attacking_or_charging_attack() then
+            local intersecting_player_attack_rect = false
+            for _, attack_rect in ipairs(player.attack_rects) do
+                if Physics.check_collision_rect_rect(our_rect, attack_rect) then
+                    intersecting_player_attack_rect = true
+                    break
                 end
+            end
+
+            if intersecting_player_attack_rect or Physics.check_collision_rect_rect(our_rect, player_rect) then
+                Basic.play_sound(SOUNDS.PLAYER_PARRY)
+
+                self.dash_can_not_kill_player = true
+
+                if self.has_stick then
+                    Effects.spawn_epic_parry_particles(self.x, self.y, -1)
+                    Effects.spawn_epic_parry_particles(self.x, self.y, 1)
+                end
+
+                if not self.has_stick then
+                    self.state = PANDA_STATE.stunned
+                    self.stun_time_left = PANDA_STUN_DURATION
+                    self.dash_can_not_kill_player = false
+                    self.small_dash = false
+                end
+            end
+        end
+
+        if self.has_stick and self.animation_controller:is_at_last_frame() then
+            if self.basic_attack_time_left == 0.0 then
+
+                self.attack_effect = self:make_attack_effect()
+                self.attack_effect_time = PANDA_BASIC_ATTACK_EFFECT_DURATION
                 self.basic_attack_time_left = PANDA_BASIC_ATTACK_DURATION
+
             else
-                local attack_width = 22
-                local attack_rect = Rect:new(
-                    our_rect:center_x() + 8 * self.look_direction - attack_width / 2,
-                    our_rect:top(),
-                    attack_width,
-                    8
-                )
+                local attack_rect = self:make_attack_rect()
 
                 -- Раскомментируйте, чтобы посмотреть на hurtbox атаки панды.
                 --Debug.add(function()
@@ -479,27 +514,35 @@ function Panda:update()
                 --    our_rect:draw(2)
                 --end)
 
-                if Physics.check_collision_rect_rect(our_rect, player_rect) then
-                    player:die(self.look_direction, 0)
-                elseif Physics.check_collision_rect_rect(attack_rect, player_rect) then
-                    player:die(self.look_direction, 0)
+                if not self.dash_can_not_kill_player then
+                    if Physics.check_collision_rect_rect(our_rect, player_rect) then
+                        player:die(self.look_direction, 0)
+                    elseif Physics.check_collision_rect_rect(attack_rect, player_rect) then
+                        player:die(self.look_direction, 0)
+                    end
                 end
 
                 self.basic_attack_time_left = Basic.tick_timer(self.basic_attack_time_left)
                 if self.basic_attack_time_left == 0.0 then
                     self.state = PANDA_STATE.chase
+                    self.dash_can_not_kill_player = false
+                    self.small_dash = false
                 end
             end
         end
 
-        if Physics.check_collision_rect_rect(our_rect, player_rect) then
+        if Physics.check_collision_rect_rect(our_rect, player_rect) and not self.dash_can_not_kill_player then
             game.player:die(self.velocity.x, self.velocity.y)
         end
 
         self.time_since_dashing = self.time_since_dashing + Time.dt()
 
-        if is_on_ground and self.time_since_dashing > PANDA_SETTINGS[self.type].dash_duration then
+        local dash_duration = self.small_dash and PANDA_SETTINGS[self.type].small_dash_duration or PANDA_SETTINGS[self.type].dash_duration
+
+        if is_on_ground and self.time_since_dashing > dash_duration then
             self.state = PANDA_STATE.chase
+            self.dash_can_not_kill_player = false
+            self.small_dash = false
         end
         self.chase_time_left = Basic.tick_timer(self.chase_time_left)
 
@@ -520,10 +563,6 @@ function Panda:update()
     elseif self.state == PANDA_STATE.sleeping then
 
         -- Спим :)
-        if self.type == PANDA_TYPE.orange_eyes then
-            self.state = PANDA_STATE.patrol
-            -- Не спим >:(
-        end
 
     else
 
@@ -532,7 +571,6 @@ function Panda:update()
     end
 
     Physics.update(self)
-
 
     local tile_ids = Physics.tile_ids_that_intersect_with_rect(our_rect)
     for _, collision in ipairs(tile_ids) do

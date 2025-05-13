@@ -101,6 +101,17 @@ function Player:die(kill_velocity_x, kill_velocity_y)
     Basic.play_sound(SOUNDS.PLAYER_DEAD)
 end
 
+function Player:is_attacking_or_charging_attack()
+    return self.attack_timer > 0 and
+           table.contains(PLAYER_ATTACK_SPRITES, self.animation_controller.sprite)
+end
+
+function Player:is_attacking()
+    return self.attack_timer > 0 and
+           table.contains(PLAYER_ATTACK_SPRITES, self.animation_controller.sprite) and
+           self.animation_controller:animation_ended()
+end
+
 function Player:update()
     if self.hide then
         return
@@ -270,8 +281,6 @@ function Player:update()
     -- значительно повысит сложность прохождения и предоставит им новые вызовы,
     -- так и простым игрокам, потому что они будут счастливы использовать обычный прыжок вместо этой странной фигни
     --
-    -- trace('ya joking')
-    trace(self.has_attacked_downward)
     if is_on_ground and attack_pressed and self.has_attacked_downward then
         -- Дорогой дневник разработки новых механик: 
         --
@@ -291,17 +300,17 @@ function Player:update()
         -- день 12:
         -- решил спросить у автора, получил ответ, цитата: "Я откуда знаю".
         --
+        -- ^-- автор в то время был в неадекватном состоянии, иначе бы он ответил "😄🌊"
+        --
         -- 35 день:
         -- Разобрался, что да как, думаю достаточно быстро для 1000000-строчного монолита
         -- Фича уходит в релиз
         --
         self.velocity.y = PLAYER_DOWNWARD_ATTACK_JUMP_STRENGTH
         has_jumped = true
-        -- trace('gotcha!')
     end
     -- Ну да, вписать это в обычный прыжок будет очень легко.
 
-    
     if should_jump then
         if is_on_ground and self.velocity.y <= 0 then
             if are_we_in_water then
@@ -420,10 +429,7 @@ function Player:update()
     reveal_any_house_at(tile_x + 2, tile_y)
 
     -- Атака
-    if self.attack_timer > 0 and
-           table.contains(PLAYER_ATTACK_SPRITES, self.animation_controller.sprite) and
-           self.animation_controller:animation_ended()
-    then
+    if self:is_attacking() then
         local attack_direction_x = 0
         local attack_direction_y = 0
         if looking_down then
@@ -469,6 +475,7 @@ function Player:update()
                 end
             end
         end
+
         if #hit_pandas > 0 then
             game.camera:shake(PLAYER_ATTACK_SHAKE_MAGNITUDE, PLAYER_ATTACK_SHAKE_DURATION)
 
@@ -478,6 +485,10 @@ function Player:update()
             end
 
             for _, panda in ipairs(hit_pandas) do
+                if panda.state == PANDA_STATE.dashing then
+                    goto next_iteration
+                end
+
                 -- Я положу здесь новую механику, каваи-гоплит не заметит грязный код,
                 -- потому что он окружен обширным комментарием с смайликами😉
                 -- да и монолитность не пропала, тут действительно не к чему придраться😎
@@ -488,6 +499,8 @@ function Player:update()
                     return
                 end
                 panda:take_damage(attack_direction_x, attack_direction_y)
+
+                ::next_iteration::
             end
             self.attack_timer = 0
         end
@@ -505,8 +518,25 @@ function Player:update()
             self.attack_effect_time = PLAYER_ATTACK_EFFECT_DURATION
             self.attack_cooldown = PLAYER_ATTACK_COOLDOWN
         end
+
+        for _, rect in ipairs(self.attack_rects) do
+            local start_tx, start_ty = rect.x // 8, rect.y // 8
+            local end_tx, end_ty = (rect.x + rect.w - 1) // 8, (rect.y + rect.h - 1) // 8
+            
+            for ty = start_ty, end_ty do
+                for tx = start_tx, end_tx do
+                    local tile = mget(tx, ty)
+                    if tile >= 144 and tile <= 149 or tile >= 160 and tile <= 175 then
+                        if math.random() < 0.5 then
+                            spread_leaves(attack_direction_x, attack_direction_y, tx, ty)
+                        end
+                    end
+                end
+            end
+        end
     end
 
+   
     -- Анимациями занимаются здесь 🏭
     -- Заметка для меня из будущего:
     -- Здесь может быть баг с тем, что спрайты глобальные. Так было

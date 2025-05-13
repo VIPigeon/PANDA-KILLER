@@ -126,7 +126,6 @@ function update_ps(ps, timenow)
         -- 1 (!) РАЗ ПОД ПОДУШКУ 💊, ТО НАЙДЕТЕ НОВЫЙ АЙФОН 🍎0ww.
         --local tx, ty = game.camera:transform_coordinates(p.x, p.y)
 		--if (tx<0 or tx>240 or ty<0 or ty>136) then
-        --    trace("FUCK ME")
 		--	dead = true
 		--end
 

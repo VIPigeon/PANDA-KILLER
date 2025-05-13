@@ -18,6 +18,7 @@ require 'Base/Time'
 
 require 'Game/Bike'
 require 'Game/Blood'
+require 'Game/Leaves'
 require 'Game/Camera'
 require 'Game/ClickerMinigame'
 -- перфекционизм разрушает gjrjq
