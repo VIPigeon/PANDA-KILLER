@@ -265,20 +265,25 @@ function ClickerMinigame:draw()
     
     id_frame_player = animation_controller_player:current_frame()
 
-    if id_frame_player == 484 or id_frame_player == 483 then
-        animation_controller_player:draw(game.player.x-1,game.player.y)
+    if id_frame_player == 484 then
+        animation_controller_player:draw(game.player.x-game.scale,game.player.y)
         if trigger_stick then
-            draw_stick(game.player.x+13,game.player.y+7,11,animation_controller_player)
+            draw_stick(game.player.x+13,game.player.y+6,11,animation_controller_player)
         end
     elseif id_frame_player == 485 then
-        animation_controller_player:draw(game.player.x-2,game.player.y)
+        animation_controller_player:draw(game.player.x-2*game.scale,game.player.y)
         if trigger_stick then
-            draw_stick(game.player.x+12,game.player.y+7,11,animation_controller_player)
+            draw_stick(game.player.x+12,game.player.y+6,11,animation_controller_player)
+        end
+    elseif id_frame_player == 483 then
+        animation_controller_player:draw(game.player.x+game.scale,game.player.y)
+        if trigger_stick then
+            draw_stick(game.player.x+15,game.player.y+6,11,animation_controller_player)
         end
     else
         animation_controller_player:draw(game.player.x,game.player.y)
         if trigger_stick then
-            draw_stick(game.player.x+14,game.player.y+7,11,animation_controller_player)
+            draw_stick(game.player.x+14,game.player.y+6,11,animation_controller_player)
         end
     end
 
@@ -303,15 +308,13 @@ function draw_stick(x, y, color, animation_controller)
     -- который данный код писал в AnimationController, виднее...
     x = x - (current_scale - 1) * 48
     y = y + 24 * (current_scale - 1) - 8 * current_scale * (animation_controller:current_animation().height - 1)
-    pix(x-1, y, color)
-    for i = 0, 1 do
-        pix(x+i, y, color)
+    rect(x-current_scale, y,current_scale, current_scale, color)
+    rect(x, y,current_scale, current_scale, color)
+    for i = 0, 4 do
+        rect(x+i*current_scale+current_scale, y+current_scale,current_scale, current_scale, color)    
     end
-    for i = 1, 11 do
-        pix(x+i+1, y+1, color)      
-    end
-    for i = 1, 5 do
-        pix(x+10+i, y+2, color)
+    for i = 1, 2 do
+        rect(x+i*current_scale+5*current_scale, y+2*current_scale,current_scale, current_scale, color)
     end
 end
 
