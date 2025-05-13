@@ -1,7 +1,7 @@
 data = {}
 
 -- 🏮 Перед релизом поставить в false!!! 🏮
-DEV_MODE_ENABLED = false
+DEV_MODE_ENABLED = true
 DISCLAIMER = false
 
 --

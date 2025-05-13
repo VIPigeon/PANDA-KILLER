@@ -65,6 +65,8 @@ function Player:new()
         has_attacked_upwards = false,
         just_attacked = false,
 
+        did_we_hit_ground_with_downward_strike = false,
+
         coyote_time = 0.0,
         attack_timer = 0.0,
         jump_buffer_time = 0.0,
@@ -272,6 +274,7 @@ function Player:update()
     local has_walljumped = false
     local should_jump = self.jump_buffer_time > 0.0
 
+
     -- 2.5 🌟 Новая механика 🌟 
     -- Преобразование кинетической силы атаки блока в потенцально имбовую силу полёта ❗
     -- Эта фича взорвёт наших фанатов! 🤩🙄
@@ -282,7 +285,7 @@ function Player:update()
     -- значительно повысит сложность прохождения и предоставит им новые вызовы,
     -- так и простым игрокам, потому что они будут счастливы использовать обычный прыжок вместо этой странной фигни
     --
-    if is_on_ground and self.downward_attack_time > 0.0 then
+    if self.did_we_hit_ground_with_downward_strike then
         -- Дорогой дневник разработки новых механик: 
         --
         -- 1 день:
@@ -308,6 +311,7 @@ function Player:update()
         -- Фича уходит в релиз
         --
         self.velocity.y = PLAYER_DOWNWARD_ATTACK_JUMP_STRENGTH
+        self.did_we_hit_ground_with_downward_strike = false
         self.downward_attack_time = 0.0
         has_jumped = true
     end
@@ -538,6 +542,14 @@ function Player:update()
         end
     end
 
+    if self:is_attacking() and self.has_attacked_downward then
+        -- Ну да, а что поделать? Для дурацких проблем нужны дурацкие решения.
+        local strike_attack_rect = self.attack_rects[1]
+        self.did_we_hit_ground_with_downward_strike = Physics.check_collision_rect_tilemap(strike_attack_rect) ~= nil
+    else
+        self.did_we_hit_ground_with_downward_strike = false
+    end
+
    
     -- Анимациями занимаются здесь 🏭
     -- Заметка для меня из будущего:
@@ -578,12 +590,6 @@ function Player:update()
         self.animation_controller:set_sprite(SPRITES.player.running)
     else
         self.animation_controller:set_sprite(SPRITES.player.idle)
-    end
-
-    -- Тревожно...
-    if self.has_attacked_downward then
-        self.downward_attack_time = PLAYER_DOWNWARD_ATTACK_TIME
-        self.has_attacked_downward = false
     end
 
     -- У игрока есть много вещей, зависящих от времени (таймеров).
