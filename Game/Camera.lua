@@ -156,13 +156,13 @@ function Camera:update()
     self.x = self.center_x
     self.y = self.center_y
 
+    self:trap_inside_borders(game.current_level.min_x, game.current_level.max_x, game.current_level.min_y, game.current_level.max_y)
+
     if self.shake_time_left > 0 then
         self.x = self.x + math.random_sign() * self.shake_magnitude
         self.y = self.y + math.random_sign() * self.shake_magnitude
         self.shake_time_left = Basic.tick_timer(self.shake_time_left)
     end
-
-    self:trap_inside_borders(game.current_level.min_x, game.current_level.max_x, game.current_level.min_y, game.current_level.max_y)
 
     -- Дебаг, рисует линии, управляющие камерой 🕷️
     --

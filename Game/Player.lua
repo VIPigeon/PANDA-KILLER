@@ -71,6 +71,7 @@ function Player:new()
         remove_horizontal_speed_limit_time = 0.0,
         attack_buffer_time = 0.0,
         time_we_have_been_running = 0.0,
+        downward_attack_time = 0.0,
 
         time_before_showing_death_screen = 0.0,
     }
@@ -281,7 +282,7 @@ function Player:update()
     -- значительно повысит сложность прохождения и предоставит им новые вызовы,
     -- так и простым игрокам, потому что они будут счастливы использовать обычный прыжок вместо этой странной фигни
     --
-    if is_on_ground and attack_pressed and self.has_attacked_downward then
+    if is_on_ground and self.downward_attack_time > 0.0 then
         -- Дорогой дневник разработки новых механик: 
         --
         -- 1 день:
@@ -307,6 +308,7 @@ function Player:update()
         -- Фича уходит в релиз
         --
         self.velocity.y = PLAYER_DOWNWARD_ATTACK_JUMP_STRENGTH
+        self.downward_attack_time = 0.0
         has_jumped = true
     end
     -- Ну да, вписать это в обычный прыжок будет очень легко.
@@ -578,6 +580,12 @@ function Player:update()
         self.animation_controller:set_sprite(SPRITES.player.idle)
     end
 
+    -- Тревожно...
+    if self.has_attacked_downward then
+        self.downward_attack_time = PLAYER_DOWNWARD_ATTACK_TIME
+        self.has_attacked_downward = false
+    end
+
     -- У игрока есть много вещей, зависящих от времени (таймеров).
     -- Они обновляются тут, в самом конце.
     self.jump_buffer_time = Basic.tick_timer(self.jump_buffer_time)
@@ -587,6 +595,7 @@ function Player:update()
     self.attack_buffer_time = Basic.tick_timer(self.attack_buffer_time)
     self.attack_effect_time = Basic.tick_timer(self.attack_effect_time)
     self.attack_cooldown = Basic.tick_timer(self.attack_cooldown)
+    self.downward_attack_time = Basic.tick_timer(self.downward_attack_time)
     if self.velocity.x ~= 0 then
         self.time_we_have_been_running = self.time_we_have_been_running + Time.dt()
     else
