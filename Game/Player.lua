@@ -272,10 +272,6 @@ function Player:update()
     local has_walljumped = false
     local should_jump = self.jump_buffer_time > 0.0
 
-    if self.has_attacked_downward then
-        self.downward_attack_time = PLAYER_DOWNWARD_ATTACK_TIME
-    end
-
     -- 2.5 🌟 Новая механика 🌟 
     -- Преобразование кинетической силы атаки блока в потенцально имбовую силу полёта ❗
     -- Эта фича взорвёт наших фанатов! 🤩🙄
@@ -313,7 +309,6 @@ function Player:update()
         --
         self.velocity.y = PLAYER_DOWNWARD_ATTACK_JUMP_STRENGTH
         self.downward_attack_time = 0.0
-        self.has_attacked_downward = false
         has_jumped = true
     end
     -- Ну да, вписать это в обычный прыжок будет очень легко.
@@ -583,6 +578,12 @@ function Player:update()
         self.animation_controller:set_sprite(SPRITES.player.running)
     else
         self.animation_controller:set_sprite(SPRITES.player.idle)
+    end
+
+    -- Тревожно...
+    if self.has_attacked_downward then
+        self.downward_attack_time = PLAYER_DOWNWARD_ATTACK_TIME
+        self.has_attacked_downward = false
     end
 
     -- У игрока есть много вещей, зависящих от времени (таймеров).
