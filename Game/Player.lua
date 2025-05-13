@@ -547,7 +547,7 @@ function Player:update()
         -- Ну да, а что поделать? Для дурацких проблем нужны дурацкие решения.
         local strike_attack_rect = self.attack_rects[1]
         self.did_we_hit_ground_with_downward_strike = Physics.check_collision_rect_tilemap(strike_attack_rect) ~= nil
-        self.jump_up_cooldown = 0.25
+        self.jump_up_cooldown = 0.055
     else
         self.did_we_hit_ground_with_downward_strike = false
     end
