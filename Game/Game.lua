@@ -174,7 +174,8 @@ function game.restart()
     game.camera = Camera:new(game.player)
     game.parallaxscrolling = ParallaxScrolling:new()
 
-    game.current_level_index = 1
+    -- game.current_level_index = 1
+    -- спасибо хорошему дизайну кода за мой самый короткий фикс во всем проекте
     game.load_current_level()
 
     --for _, tile_info in ipairs(game.tile_info) do
