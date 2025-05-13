@@ -74,6 +74,7 @@ function Player:new()
         attack_buffer_time = 0.0,
         time_we_have_been_running = 0.0,
         downward_attack_time = 0.0,
+        jump_up_cooldown = 0.0,
 
         time_before_showing_death_screen = 0.0,
     }
@@ -542,10 +543,11 @@ function Player:update()
         end
     end
 
-    if self:is_attacking() and self.has_attacked_downward then
+    if self.jump_up_cooldown == 0.0 and self:is_attacking() and self.has_attacked_downward then
         -- Ну да, а что поделать? Для дурацких проблем нужны дурацкие решения.
         local strike_attack_rect = self.attack_rects[1]
         self.did_we_hit_ground_with_downward_strike = Physics.check_collision_rect_tilemap(strike_attack_rect) ~= nil
+        self.jump_up_cooldown = 0.25
     else
         self.did_we_hit_ground_with_downward_strike = false
     end
@@ -602,6 +604,7 @@ function Player:update()
     self.attack_effect_time = Basic.tick_timer(self.attack_effect_time)
     self.attack_cooldown = Basic.tick_timer(self.attack_cooldown)
     self.downward_attack_time = Basic.tick_timer(self.downward_attack_time)
+    self.jump_up_cooldown = Basic.tick_timer(self.jump_up_cooldown)
     if self.velocity.x ~= 0 then
         self.time_we_have_been_running = self.time_we_have_been_running + Time.dt()
     else
