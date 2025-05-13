@@ -192,6 +192,30 @@ function game.restart()
 end
 
 function game.update()
+    if DISCLAIMER then
+        cls(0)
+        font("DISCLAIMER", 35, 10, 15, 0, nil, nil, 2)
+        local step = 10
+        local cur_y = 40
+        local cur_x = 25
+        font("NO ANIMALS WERE HARMED", cur_x, cur_y, 15, 0, nil)
+        cur_y = cur_y + step
+        font("DURING THE DEVELOPMENT", cur_x, cur_y, 15, 0, nil)
+        cur_y = cur_y + step
+        font("OF THIS GAME", cur_x, cur_y, 15, 0, nil)
+        cur_y = cur_y + step
+        font("THE DEVELOPERS CONDEMN", cur_x, cur_y, 15, 0, nil)
+        cur_y = cur_y + step
+        font("VIOLENCE AGAINST ANIMALS", cur_x, cur_y, 15, 0, nil)
+        cur_y = cur_y + step
+        font("AND ENCOURAGE EVERYONE", cur_x, cur_y, 15, 0, nil)
+        cur_y = cur_y + step
+        font("TO TREAT THEM WITH", cur_x, cur_y, 15, 0, nil)
+        cur_y = cur_y + step
+        font("RESPECT AND CARE", cur_x, cur_y, 15, 0, nil)
+        return
+    end
+
     if game.state == GAME_STATE_LANGUAGE_SELECTION then
         if btnp(BUTTON_Z) then
             game.state = GAME_STATE_GAMEPLAY

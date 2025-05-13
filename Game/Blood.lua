@@ -1,6 +1,6 @@
 
 local minlife_blood = 5000
-local maxlife_blood = 10000
+local maxlife_blood = 40000
 
 local minlife_fur = 1000
 local maxlife_fur = 3000
