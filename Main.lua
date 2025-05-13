@@ -15,6 +15,7 @@ require 'Base/Sprite'
 require 'Base/Table'
 require 'Base/TheTrigger'
 require 'Base/Time'
+require 'Base/Palette'
 
 require 'Game/Bike'
 require 'Game/Blood'
