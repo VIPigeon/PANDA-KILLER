@@ -68,6 +68,19 @@ function affect_blood_collision(particle, params)
     end
 end
 
+-- function affect_blood_water(particle, params)
+--     if particle.vx == 0 and particle.vy == 0 then return end
+--     if not params.color_type == "blood" then return end
+
+--     local next_y = particle.y + particle.vy
+--     local tile_x, tile_y = math.floor(particle.x / 8), math.floor(particle.y / 8)
+--     local tile_id = mget(tile_x, tile_y)
+
+--     if is_tile_water(tile_id) then
+            
+--     end
+-- end
+
 local function create_particles(x, y, orientation, minlife, maxlife, amount, colors, color_type)
     local ps = make_psystem(minlife, maxlife, minstartsize, maxstartsize, minendsize, maxendsize)
 
@@ -102,6 +115,11 @@ local function create_particles(x, y, orientation, minlife, maxlife, amount, col
         affectfunc = affect_blood_collision,
         params = {color_type = color_type}
     })
+
+    -- table.insert(ps.affectors, {
+    --     affectfunc = affect_blood_water,
+    --     params = {color_type = color_type}
+    -- })
     
     return ps
 end
