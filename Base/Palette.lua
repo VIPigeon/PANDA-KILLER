@@ -107,5 +107,3 @@ for i = 1, 15 do
     local color = palette.getColor(i)
     table.insert(palette.defaultColors, color)
 end
-
-return palette
