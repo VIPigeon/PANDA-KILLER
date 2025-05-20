@@ -488,12 +488,12 @@ SPRITES = {
             walk = Animation:new({240, 241}, 22):to_sprite(),
             chase = Animation:new({242, 243}, 10):to_sprite(),
             rest = Animation:new({240, 244}, 20):to_sprite(),
-            dashing = Animation:new({267, 268, 269, 270}, 3):with_size(1, 2):at_end_goto_last_frame():to_sprite(),
+            dashing = Animation:new({249}, 3):at_end_goto_last_frame():to_sprite(),
             -- Панда без палки не может атаковать.
-            charging_basic_attack = Sprite:new_complex({
-                Animation:new({330}, 4),
-                Animation:new({328,329}, 3):with_size(1, 1):at_end_goto_last_frame()
-            }),
+            --charging_basic_attack = Sprite:new_complex({
+            --    Animation:new({330}, 4),
+            --    Animation:new({328,329}, 3):with_size(1, 1):at_end_goto_last_frame()
+            --}),
             charging_dash = Animation:new({245}, 1):to_sprite(),
             dash = Animation:new({246}, 1):to_sprite(),
             sleeping = Animation:new({264}, 1):with_size(2, 1):to_sprite(),
