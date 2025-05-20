@@ -802,6 +802,10 @@ function is_tile_solid(tile_id)
         24 <= tile_id and tile_id <= 31 -- Тайлы крыши дома
 end
 
+function is_tile_water(tile_id)
+    return 32 <= tile_id and tile_id <= 34 or tile_id == 48
+end
+
 -- Далее документация у cat-сцене😸
 
 --[[

@@ -129,6 +129,14 @@ function update_ps(ps, timenow)
 		--	dead = true
 		--end
 
+		local next_y = p.y + p.vy
+		local next_x = p.x + p.vx
+        local tile_x, tile_y = math.floor(next_x / 8), math.floor(next_y / 8)
+        local tile_id = mget(tile_x, tile_y)
+		if is_tile_water(tile_id) then
+			dead = true
+		end
+
 		if (timenow>=p.deathtime) then
 			dead = true
 		end
