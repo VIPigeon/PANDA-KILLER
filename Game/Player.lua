@@ -500,11 +500,14 @@ function Player:update()
                 -- потому что он окружен обширным комментарием с смайликами😉
                 -- да и монолитность не пропала, тут действительно не к чему придраться😎
                 -- кхм, так вот - перетягивание бамбука
-                if panda.kantugging_friend_panda then
-
-                    ClickerMinigame:init(panda)
-                    return
-                end
+                --
+                -- А я заметил!!! 😡
+                -- Партия бамбука недовольна грязнокодом. Комментировать.
+                -- kawaii-ccp@sisyphus.cn
+                --if panda.kantugging_friend_panda then
+                --    ClickerMinigame:init(panda)
+                --    return
+                --end
                 panda:take_damage(attack_direction_x, attack_direction_y)
 
                 ::next_iteration::

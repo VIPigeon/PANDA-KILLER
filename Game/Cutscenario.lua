@@ -1,20 +1,5 @@
 cutscene = {}
 
--- Когда уже в pand'у добавят эти переменные? 😩
-local PANDA_STATE = {
-    patrol = 1,
-    chase = 2,
-    charging_dash = 3,
-    charging_basic_attack = 4,
-    doing_basic_attack = 5,
-    dashing = 6,
-    staggered = 7,
-    stunned = 8,
-    sleeping = 9,
-}
-
-local PANDA_STATE_COLORS = {0, 9, 0, 0, 0, 0, 0, 0}
-
 function special_panda_update(self)
 	--self.state = PANDA_STATE.chase
 	local our_rect = Hitbox.rect_of(self)
@@ -48,7 +33,7 @@ function cutscene:init()
 	PLAYER_SPAWNPOINT_X = 10*8
 	PLAYER_SPAWNPOINT_Y = 11*8
 
-	cutscene.something_in_the_shape_of_panda = Panda:new(15 * 8, 11 * 8, PANDA_TYPE.basic, true)
+	cutscene.something_in_the_shape_of_panda = Panda:new(15 * 8, 11 * 8, PANDA_TYPE.basic)
 	cutscene.something_in_the_shape_of_panda.special_update = special_panda_update
 	table.insert(game.current_level.pandas, cutscene.something_in_the_shape_of_panda)
 end

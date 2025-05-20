@@ -141,7 +141,7 @@ end
 
 function game.spawn_object_by_tile_info(tile_info)
     if table.contains(PANDA_TYPE, tile_info.type) then
-        table.insert(game.current_level.pandas, Panda:new(tile_info.x, tile_info.y, tile_info.type, false))
+        table.insert(game.current_level.pandas, Panda:new(tile_info.x, tile_info.y, tile_info.type))
     else
         error('Invalid tile info type: ' .. tile_info.type)
     end

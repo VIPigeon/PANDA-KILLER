@@ -10,6 +10,7 @@
 -- User Manual:
 -- 
 -- У панды появляется поле kantugging_friend_panda - обозначает, важна ли для неё её палка настолько,
+--                             ^-- Неправда!!!
 -- чтобы она за неё дралась.
 -- Если да, то по функции активации σ(panda, player) запускается игра кликер.
 -- Подробнее о σ(x,y) см. в приложении 2.
@@ -102,7 +103,6 @@ function ClickerMinigame:gameover()
     -- надо выйти в игру нормально и все следы миниигры уничтожить
     if is_player_win then
         trigger_panda:take_damage()
-        trigger_panda.kantugging_friend_panda = false
         -- trigger_panda:take_damage()
 
         -- viewership awkward or other gift for player
