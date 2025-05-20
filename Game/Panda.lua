@@ -349,11 +349,8 @@ function Panda:update()
             self.chase_time_left = PANDA_SETTINGS[self.type].chase_duration
         end
 
-        local can_attack_the_player = false
-        if self.time_after_which_we_should_attack > 0.0 then
-            self.time_after_which_we_should_attack = Basic.tick_timer(self.time_after_which_we_should_attack)
-            can_attack_the_player = self.time_after_which_we_should_attack == 0.0
-        end
+        self.time_after_which_we_should_attack = Basic.tick_timer(self.time_after_which_we_should_attack)
+        local can_attack_the_player = self.time_after_which_we_should_attack == 0.0
 
         local x_distance_to_player = math.abs(player_rect:center_x() - our_rect:center_x())
         local y_distance_to_player = math.abs(player_rect:center_y() - our_rect:center_y())
@@ -370,6 +367,9 @@ function Panda:update()
                 Basic.play_sound(SOUNDS.PANDA_BASIC_ATTACK_CHARGE)
                 if self.has_stick then
                     self.state = PANDA_STATE.charging_basic_attack
+                elseif self.has_dash then
+                    self.charging_dash_time_left = PANDA_SETTINGS[self.type].dash_charge_duration
+                    self.state = PANDA_STATE.charging_dash
                 else
                     self.charging_dash_time_left = PANDA_SETTINGS[self.type].small_dash_charge_duration
                     self.state = PANDA_STATE.charging_small_dash
@@ -491,17 +491,14 @@ function Panda:update()
             if intersecting_player_attack_rect or Physics.check_collision_rect_rect(our_rect, player_rect) then
                 Basic.play_sound(SOUNDS.PLAYER_PARRY)
 
-                self.dash_can_not_kill_player = true
+                Effects.spawn_epic_parry_particles(self.x, self.y, -1)
+                Effects.spawn_epic_parry_particles(self.x, self.y, 1)
 
-                if self.has_stick then
-                    Effects.spawn_epic_parry_particles(self.x, self.y, -1)
-                    Effects.spawn_epic_parry_particles(self.x, self.y, 1)
-                end
+                self.dash_can_not_kill_player = true
 
                 if not self.has_stick then
                     self.state = PANDA_STATE.stunned
                     self.stun_time_left = PANDA_STUN_DURATION
-                    self.dash_can_not_kill_player = false
                     self.small_dash = false
                 end
             end

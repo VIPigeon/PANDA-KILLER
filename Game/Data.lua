@@ -353,6 +353,7 @@ PANDA_SETTINGS[PANDA_TYPE.no_stick_no_dash] = table.copy(PANDA_SETTINGS[PANDA_TY
 PANDA_SETTINGS[PANDA_TYPE.no_stick_no_dash].health = 4
 
 PANDA_SETTINGS[PANDA_TYPE.no_stick_dash] = table.copy(PANDA_SETTINGS[PANDA_TYPE.basic])
+PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].eye_color = 7
 PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].health = 3
 PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].has_dash = true
 PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].dash_charge_duration = 0.35
@@ -361,11 +362,12 @@ PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].dash_strength = 180
 
 PANDA_SETTINGS[PANDA_TYPE.stick_no_dash] = table.copy(PANDA_SETTINGS[PANDA_TYPE.basic])
 PANDA_SETTINGS[PANDA_TYPE.stick_no_dash].health = 5
+PANDA_SETTINGS[PANDA_TYPE.stick_no_dash].eye_color = 10
 PANDA_SETTINGS[PANDA_TYPE.stick_no_dash].has_stick = true
 
 PANDA_SETTINGS[PANDA_TYPE.stick_and_dash] = table.copy(PANDA_SETTINGS[PANDA_TYPE.basic])
 PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].health = 6
-PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].eye_color = 7
+PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].eye_color = 6
 PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].has_stick = true
 PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].has_dash = true
 PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].dash_charge_duration = 0.35
