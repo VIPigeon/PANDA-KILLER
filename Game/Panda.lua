@@ -46,9 +46,8 @@ SOLID, видеокартах... ️🕯️
 Panda = {}
 
 
-function Panda:new(x, y, panda_type, can_tug)
+function Panda:new(x, y, panda_type)
     panda_type = panda_type or PANDA_TYPE.basic
-    can_tug = can_tug or false
 
     local default_state = PANDA_SETTINGS[panda_type].default_state
 
@@ -81,8 +80,8 @@ function Panda:new(x, y, panda_type, can_tug)
         count_of_recent_hits = 0,
 
         time_after_which_we_should_attack = 0.0,
-        time_since_dashing = 0.0,
 
+        dash_time_left = 0.0,
         chase_time_left = 0.0,
         patrol_rest_time = 0.0,
         stagger_time_left = 0.0,
@@ -91,8 +90,6 @@ function Panda:new(x, y, panda_type, can_tug)
         change_look_direction_cooldown = 0.0,
 
         -- Хотите ли вы потягаться с такой пандой?🙄 Ответ был дан выше
-        --kantugging_friend_panda = can_tug,
-        kantugging_friend_panda = false,
         dash_can_not_kill_player = false,
     }
 
@@ -182,11 +179,11 @@ end
 function Panda:make_attack_rect()
     local our_rect = Hitbox.rect_of(self)
     local attack_width
-    if self.has_stick then
-        attack_width = PANDA_WITH_STICK_ATTACK_WIDTH
-    else
+    --if self.has_stick then
+    --    attack_width = PANDA_WITH_STICK_ATTACK_WIDTH
+    --else
         attack_width = PANDA_WITHOUT_STICK_ATTACK_WIDTH
-    end
+    --end
     local attack_rect = Rect:new(
         our_rect:center_x() + 8 * self.look_direction - attack_width / 2,
         our_rect:top(),
@@ -201,12 +198,12 @@ function Panda:make_attack_effect()
     local x = 8 * (self.look_direction - flip)
     local y = -8 * (self.animation_controller:current_animation().height - 1)
     local sprite
-    if self.has_stick then
-        sprite = SPRITES.particle_effects.long_horizontal_attack
-        y = y + 8
-    else
+    --if self.has_stick then
+    --    sprite = SPRITES.particle_effects.long_horizontal_attack
+    --    y = y + 8
+    --else
         sprite = SPRITES.particle_effects.horizontal_attack
-    end
+    --end
     local attack_effect = ChildBody:new(
         self,
         x,
@@ -352,11 +349,8 @@ function Panda:update()
             self.chase_time_left = PANDA_SETTINGS[self.type].chase_duration
         end
 
-        local can_attack_the_player = false
-        if self.time_after_which_we_should_attack > 0.0 then
-            self.time_after_which_we_should_attack = Basic.tick_timer(self.time_after_which_we_should_attack)
-            can_attack_the_player = self.time_after_which_we_should_attack == 0.0
-        end
+        self.time_after_which_we_should_attack = Basic.tick_timer(self.time_after_which_we_should_attack)
+        local can_attack_the_player = self.time_after_which_we_should_attack == 0.0
 
         local x_distance_to_player = math.abs(player_rect:center_x() - our_rect:center_x())
         local y_distance_to_player = math.abs(player_rect:center_y() - our_rect:center_y())
@@ -365,14 +359,21 @@ function Panda:update()
 
         local should_we_chase_the_player = true
 
-        local attack_distance = self.has_stick and
-                                PANDA_X_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK_WITH_STICK or
+        local attack_distance = PANDA_X_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK_WITH_STICK or
                                 PANDA_X_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK 
 
         if x_distance_to_player <= attack_distance and y_distance_to_player <= PANDA_Y_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK then
             if can_attack_the_player then
                 Basic.play_sound(SOUNDS.PANDA_BASIC_ATTACK_CHARGE)
-                self.state = PANDA_STATE.charging_basic_attack
+                if self.has_stick then
+                    self.state = PANDA_STATE.charging_basic_attack
+                elseif self.has_dash then
+                    self.charging_dash_time_left = PANDA_SETTINGS[self.type].dash_charge_duration
+                    self.state = PANDA_STATE.charging_dash
+                else
+                    self.charging_dash_time_left = PANDA_SETTINGS[self.type].small_dash_charge_duration
+                    self.state = PANDA_STATE.charging_small_dash
+                end
             elseif self.time_after_which_we_should_attack == 0.0 then
                 self.time_after_which_we_should_attack = PANDA_SETTINGS[self.type].delay_after_starting_chase_before_attacking
             end
@@ -380,8 +381,8 @@ function Panda:update()
             if can_attack_the_player then
                 if y_distance_to_player <= PANDA_Y_DISTANCE_TO_PLAYER_UNTIL_DASH then
                     Basic.play_sound(SOUNDS.PANDA_DASH_CHARGE)
-                    self.state = PANDA_STATE.charging_dash
                     self.charging_dash_time_left = PANDA_SETTINGS[self.type].dash_charge_duration
+                    self.state = PANDA_STATE.charging_dash
                 else
                     -- Мы слишком низко, попробуем к игроку прыгнуть
                     Basic.play_sound(SOUNDS.PANDA_JUMP)
@@ -416,15 +417,24 @@ function Panda:update()
             self.patrol_rest_time = PANDA_REST_TIME_BEFORE_DIRECTION_CHANGE()
         end
 
-    elseif self.state == PANDA_STATE.charging_dash then
+    elseif self.state == PANDA_STATE.charging_dash or 
+           self.state == PANDA_STATE.charging_small_dash then
 
         self.charging_dash_time_left = Basic.tick_timer(self.charging_dash_time_left)
         if self.charging_dash_time_left == 0.0 then
             Basic.play_sound(SOUNDS.PANDA_DASH)
-            self.state = PANDA_STATE.dashing
 
-            self.time_since_dashing = 0.0
-            self.velocity.x = PANDA_SETTINGS[self.type].dash_strength * self.look_direction
+            if self.state == PANDA_STATE.charging_dash then
+                self.velocity.x = PANDA_SETTINGS[self.type].dash_strength * self.look_direction
+                self.dash_time_left = PANDA_SETTINGS[self.type].dash_duration
+            elseif self.state == PANDA_STATE.charging_small_dash then
+                self.velocity.x = PANDA_SETTINGS[self.type].small_dash_strength * self.look_direction
+                self.dash_time_left = PANDA_SETTINGS[self.type].small_dash_duration
+            else
+                assert(false)
+            end
+
+            self.state = PANDA_STATE.dashing
         end
 
     elseif self.state == PANDA_STATE.charging_basic_attack then
@@ -467,8 +477,6 @@ function Panda:update()
             end
         end
 
-        -- ::skipanimations::
-
     elseif self.state == PANDA_STATE.dashing then
 
         if not self.dash_can_not_kill_player and player:is_attacking_or_charging_attack() then
@@ -483,17 +491,14 @@ function Panda:update()
             if intersecting_player_attack_rect or Physics.check_collision_rect_rect(our_rect, player_rect) then
                 Basic.play_sound(SOUNDS.PLAYER_PARRY)
 
-                self.dash_can_not_kill_player = true
+                Effects.spawn_epic_parry_particles(self.x, self.y, -1)
+                Effects.spawn_epic_parry_particles(self.x, self.y, 1)
 
-                if self.has_stick then
-                    Effects.spawn_epic_parry_particles(self.x, self.y, -1)
-                    Effects.spawn_epic_parry_particles(self.x, self.y, 1)
-                end
+                self.dash_can_not_kill_player = true
 
                 if not self.has_stick then
                     self.state = PANDA_STATE.stunned
                     self.stun_time_left = PANDA_STUN_DURATION
-                    self.dash_can_not_kill_player = false
                     self.small_dash = false
                 end
             end
@@ -536,16 +541,14 @@ function Panda:update()
             game.player:die(self.velocity.x, self.velocity.y)
         end
 
-        self.time_since_dashing = self.time_since_dashing + Time.dt()
+        self.dash_time_left = Basic.tick_timer(self.dash_time_left)
+        self.chase_time_left = Basic.tick_timer(self.chase_time_left)
 
-        local dash_duration = self.small_dash and PANDA_SETTINGS[self.type].small_dash_duration or PANDA_SETTINGS[self.type].dash_duration
-
-        if is_on_ground and self.time_since_dashing > dash_duration then
+        if is_on_ground and self.dash_time_left == 0.0 then
             self.state = PANDA_STATE.chase
             self.dash_can_not_kill_player = false
             self.small_dash = false
         end
-        self.chase_time_left = Basic.tick_timer(self.chase_time_left)
 
     elseif self.state == PANDA_STATE.staggered then
 
@@ -607,7 +610,7 @@ function Panda:update()
         self.animation_controller:set_sprite(sprites.charging_basic_attack)
     elseif self.state == PANDA_STATE.chase then
         self.animation_controller:set_sprite(sprites.chase)
-    elseif self.state == PANDA_STATE.charging_dash then
+    elseif self.state == PANDA_STATE.charging_dash or self.state == PANDA_STATE.charging_small_dash then
         self.animation_controller:set_sprite(sprites.charging_dash)
     elseif self.state == PANDA_STATE.dashing then
         self.animation_controller:set_sprite(sprites.dashing)
@@ -645,33 +648,6 @@ function Panda:draw()
 
     local tx, ty = game.camera:transform_coordinates(self.x, self.y)
 
-    -- rect(tx, ty - 6, 4, 4, PANDA_STATE_COLORS[self.state])
-    if self.type == PANDA_TYPE.chilling then
-        -- spr(294, tx + 4, ty - 6, 0)
-    end
-
-    local eye_start = tx + 2
-    if self.look_direction ~= 1 then
-        -- Налево
-        eye_start = tx + 3
-    end
-    local eye_color = PANDA_SETTINGS[self.type].eye_color
-
-    -- ННННННЕЕЕЕЕЕЕЕЕЕЕТТТТТТТ
-    if self.animation_controller:current_frame() == 282 then
-        rect(eye_start, ty + 5, 4, 1, eye_color)
-    elseif self.animation_controller:current_frame() == 264 then
-        if self.look_direction == 1 then
-            rect(tx + 5, ty + 4, 3, 3, eye_color)
-        else
-            rect(tx + 8, ty + 4, 3, 3, eye_color)
-        end
-    elseif self.animation_controller:current_frame() == 279 then
-        rect(eye_start, ty + 6, 3, 2, eye_color)
-    else
-        rect(eye_start, ty + 2, 3, 3, eye_color)
-    end
-
     local sprites = SPRITES.panda[self.type]
     if self.state == PANDA_STATE.stunned and self.animation_controller.sprite ~= sprites.sleeping then
         self.stun_animation:draw(tx, ty - 8, flip)
@@ -682,12 +658,21 @@ function Panda:draw()
         self.attack_effect:draw()
     end
 
-    -- Ну тип ладно. Вообще довольно дурацкий костыль, не знаю как это лучше сделать.
-    -- Это для правильного позиционирования спрайтов, у которых несколько анимаций
-    -- с разными размерами.
-    --tx = tx - 4 * (self.animation_controller:current_animation().width - 1)
-    --ty = ty - 8 * (self.animation_controller:current_animation().height - 1)
     self.animation_controller:draw(tx, ty, flip)
+
+    -- ГЕНИАЛЬНЫЙ АЛГОРИТМ ПО ВЫКАЛЫВАНИЮ ГЛАЗ ПАНДЫ 🧑🔬
+    -- МУАХХАХАХАХААХАХАХХАХАХ
+    local eye_color = PANDA_SETTINGS[self.type].eye_color
+    for x = 1, 16 do
+        for y = 1, 16 do
+            local fx = math.floor(tx + x)
+            local fy = math.floor(ty + y)
+            local col = pix(fx, fy)
+            if col == 13 then
+                pix(fx, fy, eye_color)
+            end
+        end
+    end
 end
 
 Panda.__index = Panda
