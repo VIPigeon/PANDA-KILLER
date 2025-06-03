@@ -182,11 +182,32 @@ function Player:update()
     -- 
     local tiles_that_we_collide_with = Physics.tile_ids_that_intersect_with_rect(self.hitbox:to_rect(self.x,self.y))
     local are_we_in_water = false
+    local are_we_in_quicksand = false
     for _, collision in ipairs(tiles_that_we_collide_with) do
         if is_bad_tile(collision.id) then
             --self:die(0, 50)
             --return
             are_we_in_water = true
+        end
+        if is_tile_quicksand(collision.id) then
+            are_we_in_quicksand = true
+        end
+    end
+
+    -- Механика зыбучих песков
+    if are_we_in_quicksand then
+        -- Замедляем горизонтальное движение
+        self.velocity.x = self.velocity.x * 0.5
+        -- Уменьшаем прыжок и скорость выхода
+        if is_on_ground then
+            self.velocity.y = math.max(self.velocity.y, -20)
+        end
+        -- Постепенно "тонем"
+        self.y = self.y + 0.5
+        -- Если утонул полностью — смерть
+        if self.y - self.hitbox.offset_y > (math.floor(self.y / 8) + 1) * 8 then
+            self:die(0, 0)
+            return
         end
     end
 

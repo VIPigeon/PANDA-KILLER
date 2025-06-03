@@ -819,6 +819,18 @@ function is_tile_water(tile_id)
     return 33 <= tile_id and tile_id <= 34 
 end
 
+-- Тайлы зыбучих песков (пример: 50, 51)
+data.quicksand_tile = {50, 51}
+
+function is_tile_quicksand(tile_id)
+    for _, quicksand in ipairs(data.quicksand_tile) do
+        if tile_id == quicksand then
+            return true
+        end
+    end
+    return false
+end
+
 -- Далее документация у cat-сцене😸
 
 --[[

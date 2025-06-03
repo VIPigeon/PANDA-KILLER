@@ -614,6 +614,27 @@ function Panda:update()
 ::out_of_state_machine::
     Physics.update(self)
 
+    -- Механика зыбучих песков для панды
+    local is_in_quicksand = false
+    local our_rect = Hitbox.rect_of(self)
+    local tile_ids = Physics.tile_ids_that_intersect_with_rect(our_rect)
+    for _, collision in ipairs(tile_ids) do
+        if is_tile_quicksand(collision.id) then
+            is_in_quicksand = true
+        end
+    end
+    if is_in_quicksand then
+        self.velocity.x = self.velocity.x * 0.5
+        if Physics.is_on_ground(self) then
+            self.velocity.y = math.max(self.velocity.y, -20)
+        end
+        self.y = self.y + 0.5
+        if self.y - self.hitbox.offset_y > (math.floor(self.y / 8) + 1) * 8 then
+            self:die()
+            return
+        end
+    end
+
     local tile_ids = Physics.tile_ids_that_intersect_with_rect(our_rect)
     for _, collision in ipairs(tile_ids) do
         if is_bad_tile(collision.id) then
