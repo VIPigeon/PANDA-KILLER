@@ -106,7 +106,7 @@ function Player:die(kill_velocity_x, kill_velocity_y)
 end
 
 function Player:is_attacking_or_charging_attack()
-    return #self.attack_rects > 0 or
+    return self.attack_timer > 0 and
            table.contains(PLAYER_ATTACK_SPRITES, self.animation_controller.sprite)
 end
 
