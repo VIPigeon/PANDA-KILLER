@@ -214,6 +214,23 @@ function Panda:make_attack_effect()
     return attack_effect
 end
 
+function Panda:has_intersection_with_player_attack(player, rect)
+    if not player:is_attacking_or_charging_attack() then
+        return false
+    end
+
+    local player_rect = Hitbox.rect_of(player)
+    if Physics.check_collision_rect_rect(player_rect, rect) then
+        return true
+    end
+    for _, player_attack_rect in ipairs(player.attack_rects) do
+        if Physics.check_collision_rect_rect(player_attack_rect, rect) then
+            return true
+        end
+    end
+
+    return false
+end
 
 function Panda:update()
     --
@@ -304,6 +321,13 @@ function Panda:update()
     -- Заминусите чела пж - давайте сделаем рекламу, которую мы смотрим лучше
     -- Помогу сделать рекламный пост, сформировать стратегию продвижения,
     -- по вопросам сотрудничества kawai@sysiphus.jam
+    --
+    --
+    -- review #2 kovari-kot@sisyphus.gem 😻
+    -- Несмотря на такой яркий и вдохновляющий комментарий, заставляющий задуматься над природой
+    -- программирования, инженерного дела, и нашей с вами сущности, этот код всё же нуждается в
+    -- рефакторинге. Философы никогда не следуют своей философии на деле, ведь в глубине души
+    -- они знают, что придумали фигню ☝️.
 
     local player = game.player
 
@@ -477,30 +501,40 @@ function Panda:update()
             end
         end
 
-    elseif self.state == PANDA_STATE.dashing then
-
-        if not self.dash_can_not_kill_player and player:is_attacking_or_charging_attack() then
+        if player:is_attacking_or_charging_attack() then
             local intersecting_player_attack_rect = false
+            local our_attack_rect = self:make_attack_rect()
             for _, attack_rect in ipairs(player.attack_rects) do
-                if Physics.check_collision_rect_rect(our_rect, attack_rect) then
+                if Physics.check_collision_rect_rect(our_rect, attack_rect) or
+                   Physics.check_collision_rect_rect(our_attack_rect, attack_rect) then
                     intersecting_player_attack_rect = true
                     break
                 end
             end
 
-            if intersecting_player_attack_rect or Physics.check_collision_rect_rect(our_rect, player_rect) then
+            if intersecting_player_attack_rect then
+                Basic.play_sound(SOUNDS.PLAYER_PARRY)
+                Effects.spawn_epic_parry_particles(self.x, self.y, -1)
+                Effects.spawn_epic_parry_particles(self.x, self.y, 1)
+                self.state = PANDA_STATE.chase
+            end
+        end
+
+    elseif self.state == PANDA_STATE.dashing then
+
+        if not self.has_stick then
+            if self:has_intersection_with_player_attack(player, our_rect) then
                 Basic.play_sound(SOUNDS.PLAYER_PARRY)
 
                 Effects.spawn_epic_parry_particles(self.x, self.y, -1)
                 Effects.spawn_epic_parry_particles(self.x, self.y, 1)
 
-                self.dash_can_not_kill_player = true
+                self.state = PANDA_STATE.stunned
+                self.stun_time_left = self.stun_time_left + PANDA_SMALL_STUN_DURATION
+                self.velocity.x = -1 * self.velocity.x
+                self.small_dash = false
 
-                if not self.has_stick then
-                    self.state = PANDA_STATE.stunned
-                    self.stun_time_left = PANDA_STUN_DURATION
-                    self.small_dash = false
-                end
+                goto out_of_state_machine
             end
         end
 
@@ -513,6 +547,9 @@ function Panda:update()
 
             else
                 local attack_rect = self:make_attack_rect()
+
+                if self:has_intersection_with_player_attack(player, attack_rect) then
+                end
 
                 -- Раскомментируйте, чтобы посмотреть на hurtbox атаки панды.
                 --Debug.add(function()
@@ -574,6 +611,7 @@ function Panda:update()
 
     end
 
+::out_of_state_machine::
     Physics.update(self)
 
     local tile_ids = Physics.tile_ids_that_intersect_with_rect(our_rect)
