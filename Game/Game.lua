@@ -11,12 +11,13 @@ game = {
     tile_info = {},
     coordinates_to_tile_info = {},
     cur_level = {},
-    current_level_index = 1,
+    current_level_index = 3,
     levels = {
-        {tile_x1 = 0, tile_y1 = 0, tile_x2 = 119, tile_y2 = 16, player_x = 10*8, player_y = 11*8},
+        {tile_x1 = 0, tile_y1 = 0, tile_x2 = 102, tile_y2 = 16, player_x = 10*8, player_y = 11*8},
         {tile_x1 = 0, tile_y1 = 17, tile_x2 = 46, tile_y2 = 32, player_x = 0, player_y = 30*8}, 
+        -- {tile_x1 = 122, tile_y1 = 0, tile_x2 = 176, tile_y2 = 16, player_x = (6+122)*8, player_y = 10*8},
         {tile_x1 = 0, tile_y1 = 34, tile_x2 = 62, tile_y2 = 49, player_x = 0, player_y = 46*8},
-        {tile_x1 = 0, tile_y1 = 51, tile_x2 = 62, tile_y2 = 101, player_x = 0, player_y = 97*8},
+        -- {tile_x1 = 0, tile_y1 = 51, tile_x2 = 62, tile_y2 = 101, player_x = 0, player_y = 97*8},
     },
 }
 
@@ -103,6 +104,10 @@ function game.save_special_tile_information()
                 -- Я не чёрт, но тоже тут ногу сломал. Долой дизайнеров и манагеров. Анон
 
                 mset(col, row, 0)
+
+                if this_tile_info.type == PANDA_TYPE.house_maid then
+                    mset(col, row, 74)
+                end
             end
 
             ::skip_loop::
@@ -148,6 +153,9 @@ function game.spawn_object_by_tile_info(tile_info)
 end
 
 function game.all_pandas_dead()
+    if not NEED_TO_KILL_ALL_PANDAS_ON_LEVEL then
+        return true
+    end
     if not game.cur_level or not game.current_level.pandas then
         return false 
     end

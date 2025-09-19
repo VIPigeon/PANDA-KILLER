@@ -185,7 +185,8 @@ function Panda:make_attack_rect()
         attack_width = PANDA_WITHOUT_STICK_ATTACK_WIDTH
     --end
     local attack_rect = Rect:new(
-        our_rect:center_x() + 8 * self.look_direction - attack_width / 2,
+        -- our_rect:center_x() + 8 * self.look_direction - attack_width / 2,
+        our_rect:center_x() + 5 * self.look_direction - attack_width / 2,
         our_rect:top(),
         attack_width,
         8
@@ -195,7 +196,7 @@ end
 
 function Panda:make_attack_effect()
     local flip = (self.look_direction < 0) and 1 or 0
-    local x = 8 * (self.look_direction - flip)
+    local x = 5 * (self.look_direction - flip)
     local y = -8 * (self.animation_controller:current_animation().height - 1)
     local sprite
     --if self.has_stick then

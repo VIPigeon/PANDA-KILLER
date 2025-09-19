@@ -1,6 +1,8 @@
 
-local minlife_blood = 5000
-local maxlife_blood = 40000
+-- local minlife_blood = 5000
+local minlife_blood = 1000  -- censore
+-- local maxlife_blood = 40000
+local maxlife_blood = 5000  -- censore
 
 local minlife_fur = 1000
 local maxlife_fur = 3000
@@ -16,7 +18,9 @@ local maxstartvx = 3
 local minstartvy = -3
 local maxstartvy = -2
 
-local default_blood_amount = 100
+-- local default_blood_amount = 100
+local default_blood_amount = 25  -- censore
+
 local default_fur_amount = 20
 
 local fx = 0
