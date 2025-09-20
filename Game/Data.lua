@@ -281,12 +281,12 @@ PANDA_SETTINGS = {
 
         patrol_speed = 8,
         chase_speed  = 2.5 * 8,
-        dash_charge_duration = 1.5,
+        dash_charge_duration = 1.3,
         dash_duration = 1.1,
-        dash_strength = 170,
+        dash_strength = 180,
 
         small_dash_strength = 90,
-        small_dash_duration = 0.5,
+        small_dash_duration = 0.4,
         small_dash_charge_duration = 0.5,
 
         health_at_which_to_get_stunned = 2,
@@ -360,22 +360,24 @@ PANDA_SETTINGS = {
 
 PANDA_SETTINGS[PANDA_TYPE.no_stick_no_dash] = table.copy(PANDA_SETTINGS[PANDA_TYPE.basic])
 PANDA_SETTINGS[PANDA_TYPE.no_stick_no_dash].health = 4
+PANDA_SETTINGS[PANDA_TYPE.no_stick_no_dash].health_at_which_to_get_stunned = 1
+
 
 PANDA_SETTINGS[PANDA_TYPE.no_stick_dash] = table.copy(PANDA_SETTINGS[PANDA_TYPE.basic])
-PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].eye_color = 7
-PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].health = 3
+PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].eye_color = 6
+PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].health = 4
 PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].has_dash = true
 PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].dash_charge_duration = 0.35
 PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].dash_duration = 0.7
 PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].dash_strength = 180
 
 PANDA_SETTINGS[PANDA_TYPE.stick_no_dash] = table.copy(PANDA_SETTINGS[PANDA_TYPE.basic])
-PANDA_SETTINGS[PANDA_TYPE.stick_no_dash].health = 5
+PANDA_SETTINGS[PANDA_TYPE.stick_no_dash].health = 4
 PANDA_SETTINGS[PANDA_TYPE.stick_no_dash].eye_color = 10
 PANDA_SETTINGS[PANDA_TYPE.stick_no_dash].has_stick = true
 
 PANDA_SETTINGS[PANDA_TYPE.stick_and_dash] = table.copy(PANDA_SETTINGS[PANDA_TYPE.basic])
-PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].health = 6
+PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].health = 5
 PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].eye_color = 6
 PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].has_stick = true
 PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].has_dash = true

@@ -11,13 +11,14 @@ game = {
     tile_info = {},
     coordinates_to_tile_info = {},
     cur_level = {},
-    current_level_index = 3,
+    current_level_index = 1,
     levels = {
         {tile_x1 = 0, tile_y1 = 0, tile_x2 = 102, tile_y2 = 16, player_x = 10*8, player_y = 11*8},
         {tile_x1 = 0, tile_y1 = 17, tile_x2 = 46, tile_y2 = 32, player_x = 0, player_y = 30*8}, 
-        -- {tile_x1 = 122, tile_y1 = 0, tile_x2 = 176, tile_y2 = 16, player_x = (6+122)*8, player_y = 10*8},
         {tile_x1 = 0, tile_y1 = 34, tile_x2 = 62, tile_y2 = 49, player_x = 0, player_y = 46*8},
-        -- {tile_x1 = 0, tile_y1 = 51, tile_x2 = 62, tile_y2 = 101, player_x = 0, player_y = 97*8},
+        {tile_x1 = 122, tile_y1 = 0, tile_x2 = 176, tile_y2 = 16, player_x = (6+122)*8, player_y = 10*8},
+        {tile_x1 = 0, tile_y1 = 51, tile_x2 = 46, tile_y2 = 100, player_x = 0, player_y = 97*8},
+        {tile_x1 = 47, tile_y1 = 51, tile_x2 = 114, tile_y2 = 100, player_x = 50*8, player_y = 97*8},
     },
 }
 
