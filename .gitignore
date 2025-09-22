@@ -3,4 +3,5 @@
 *.bat
 start
 .luarc.json
+build.tic
 BlobMin.lua
