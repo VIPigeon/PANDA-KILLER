@@ -3,6 +3,7 @@ data = {}
 -- 🏮 Перед релизом поставить в false!!! 🏮
 DEV_MODE_ENABLED = true
 DISCLAIMER = false
+NEED_TO_KILL_ALL_PANDAS_ON_LEVEL = true
 
 --
 -- Управление
@@ -229,7 +230,11 @@ PANDA_TYPE = {
     no_stick_dash = 6,
     stick_no_dash = 7,
     stick_and_dash = 8,
+
+    house_maid = 9,
+    guard = 10,
 }
+
 
 -- Когда уже в lua добавят enum-ы? 😩
 PANDA_STATE = {
@@ -259,6 +264,8 @@ SPECIAL_TILES = {
     {id = 37, type = PANDA_TYPE.no_stick_dash},
     {id = 38, type = PANDA_TYPE.stick_no_dash},
     {id = 39, type = PANDA_TYPE.stick_and_dash},
+    {id = 111, type = PANDA_TYPE.house_maid},
+    {id = 20, type = PANDA_TYPE.guard},
 }
 
 PANDA_PHYSICS_SETTINGS = {
@@ -274,19 +281,19 @@ PANDA_SETTINGS = {
 
         patrol_speed = 8,
         chase_speed  = 2.5 * 8,
-        dash_charge_duration = 1.4,  -- 1.5
-        dash_duration = 0.9, -- 1.0
-        dash_strength = 170,
+        dash_charge_duration = 1.3,
+        dash_duration = 1.1,
+        dash_strength = 180,
 
         small_dash_strength = 90,
-        small_dash_duration = 0.5,
+        small_dash_duration = 0.4,
         small_dash_charge_duration = 0.5,
 
         health_at_which_to_get_stunned = 2,
 
         eye_color = 13,
 
-        delay_after_starting_chase_before_attacking = 0.3,
+        delay_after_starting_chase_before_attacking = 0.4,  -- 0.3
 
         chase_duration = 4.0,
 
@@ -349,30 +356,40 @@ PANDA_SETTINGS = {
     --    default_state = PANDA_STATE.sleeping,
     --},
 }
+
+
 PANDA_SETTINGS[PANDA_TYPE.no_stick_no_dash] = table.copy(PANDA_SETTINGS[PANDA_TYPE.basic])
 PANDA_SETTINGS[PANDA_TYPE.no_stick_no_dash].health = 4
+PANDA_SETTINGS[PANDA_TYPE.no_stick_no_dash].health_at_which_to_get_stunned = 1
+
 
 PANDA_SETTINGS[PANDA_TYPE.no_stick_dash] = table.copy(PANDA_SETTINGS[PANDA_TYPE.basic])
-PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].eye_color = 7
-PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].health = 3
+PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].eye_color = 6
+PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].health = 4
 PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].has_dash = true
 PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].dash_charge_duration = 0.35
 PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].dash_duration = 0.7
 PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].dash_strength = 180
 
 PANDA_SETTINGS[PANDA_TYPE.stick_no_dash] = table.copy(PANDA_SETTINGS[PANDA_TYPE.basic])
-PANDA_SETTINGS[PANDA_TYPE.stick_no_dash].health = 5
+PANDA_SETTINGS[PANDA_TYPE.stick_no_dash].health = 4
 PANDA_SETTINGS[PANDA_TYPE.stick_no_dash].eye_color = 10
 PANDA_SETTINGS[PANDA_TYPE.stick_no_dash].has_stick = true
 
 PANDA_SETTINGS[PANDA_TYPE.stick_and_dash] = table.copy(PANDA_SETTINGS[PANDA_TYPE.basic])
-PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].health = 6
+PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].health = 5
 PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].eye_color = 6
 PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].has_stick = true
 PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].has_dash = true
 PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].dash_charge_duration = 0.35
 PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].dash_duration = 0.7
 PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].dash_strength = 180
+
+PANDA_SETTINGS[PANDA_TYPE.house_maid] = table.copy(PANDA_SETTINGS[PANDA_TYPE.no_stick_no_dash])
+PANDA_SETTINGS[PANDA_TYPE.guard] = table.copy(PANDA_SETTINGS[PANDA_TYPE.stick_no_dash])
+PANDA_SETTINGS[PANDA_TYPE.guard].patrol_speed = 0
+PANDA_SETTINGS[PANDA_TYPE.guard].chase_speed = 0
+PANDA_SETTINGS[PANDA_TYPE.guard].health = 2
 
 
 PANDA_WITHOUT_STICK_ATTACK_WIDTH = 20
@@ -405,8 +422,8 @@ PANDA_VIEW_CONE_HEIGHT = 32
 
 -- Панда отлетает в стан, после этого её нужно быстро ударить
 -- несколько раз, чтобы она умерла.
-PANDA_STUN_DURATION = 2.3
-PANDA_SMALL_STUN_DURATION = 0.7
+PANDA_STUN_DURATION = 5  -- 2.3
+PANDA_SMALL_STUN_DURATION = 0.6  -- 0.7
 
 -- Отбрасывание панды от игрока при обычном стаггере
 PANDA_SMALL_STUN_KNOCKBACK_HORIZONTAL = 20.0
@@ -479,7 +496,7 @@ SPRITES = {
             chase = Animation:new({259, 260}, 10):to_sprite(),
             rest = Animation:new({256, 272}, 20):to_sprite(),
             dashing = Animation:new({267, 268, 269, 270}, 3):with_size(1, 2):at_end_goto_last_frame():to_sprite(),
-            charging_basic_attack = Animation:new({267, 267, 267, 267, 268, 269, 270}, 3):with_size(1, 2):at_end_goto_last_frame():to_sprite(),
+            charging_basic_attack = Animation:new({267, 267, 267, 267, 268, 269, 270}, 5):with_size(1, 2):at_end_goto_last_frame():to_sprite(),
             charging_dash = Animation:new({282}, 1):to_sprite(),
             dash = Animation:new({263}, 1):to_sprite(),
             sleeping = Animation:new({264}, 1):with_size(2, 1):to_sprite(),
@@ -526,6 +543,21 @@ SPRITES.panda[PANDA_TYPE.no_stick_no_dash] = table.copy(SPRITES.panda[PANDA_TYPE
 SPRITES.panda[PANDA_TYPE.no_stick_dash] = table.copy(SPRITES.panda[PANDA_TYPE.stickless])
 SPRITES.panda[PANDA_TYPE.stick_no_dash] = table.copy(SPRITES.panda[PANDA_TYPE.basic])
 SPRITES.panda[PANDA_TYPE.stick_and_dash] = table.copy(SPRITES.panda[PANDA_TYPE.basic])
+
+SPRITES.panda[PANDA_TYPE.house_maid] = table.copy(SPRITES.panda[PANDA_TYPE.no_stick_no_dash])
+-- SPRITES.panda[PANDA_TYPE.guard] = table.copy(SPRITES.panda[PANDA_TYPE.basic])
+SPRITES.panda[PANDA_TYPE.guard] = {
+            walk = Animation:new({348, 350}, 22):to_sprite(),
+            chase = Animation:new({348, 350}, 10):to_sprite(),
+            rest = Animation:new({348, 350}, 20):to_sprite(),
+            -- dashing = Animation:new({267, 268, 269, 270}, 3):with_size(1, 2):at_end_goto_last_frame():to_sprite(),
+            charging_basic_attack = Animation:new({112, 112, 113, 114, 115}, 2):with_size(1, 2):at_end_goto_last_frame():to_sprite(),
+            charging_dash = Animation:new({282}, 1):to_sprite(),
+            dash = Animation:new({263}, 1):to_sprite(),
+            sleeping = Animation:new({318}, 1):with_size(2, 1):to_sprite(),
+        }
+
+
 
 PLAYER_ATTACK_SPRITES = {
     SPRITES.player.attack,

@@ -46,6 +46,11 @@ end
 -- ААА -> Capslock <- 👿
 -- Всё ломает
 function Basic.is_any_key_pressed()
+    for i=0,7 do
+        if btn(i) then
+            return true
+        end
+    end
     local keyboard1 = peek(0xFF88)
     local keyboard2 = peek(0xFFA0)
     local any_button_pressed = false
