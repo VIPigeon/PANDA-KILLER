@@ -48,5 +48,11 @@ end
 function Basic.is_any_key_pressed()
     local keyboard1 = peek(0xFF88)
     local keyboard2 = peek(0xFFA0)
-    return keyboard1 ~= 0 or keyboard2 ~= 0
+    local any_button_pressed = false
+    for _, control in pairs(CONTROLS) do
+        if was_just_pressed(control) then
+            any_button_pressed = true
+        end
+    end
+    return keyboard1 ~= 0 or keyboard2 ~= 0 or any_button_pressed
 end

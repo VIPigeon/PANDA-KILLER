@@ -471,10 +471,10 @@ function Panda:update()
                     local attack_rect = self:make_attack_rect()
 
                     -- Раскомментируйте, чтобы посмотреть на hurtbox атаки панды.
-                    --Debug.add(function()
-                    --    attack_rect:draw(2)
-                    --    our_rect:draw(2)
-                    --end)
+                    Debug.add(function()
+                        attack_rect:draw(2)
+                        our_rect:draw(2)
+                    end, 20)
 
                     if Physics.check_collision_rect_rect(our_rect, player_rect) then
                         player:die(self.look_direction, 0)
@@ -511,32 +511,9 @@ function Panda:update()
                     break
                 end
             end
-
-            if intersecting_player_attack_rect then
-                Basic.play_sound(SOUNDS.PLAYER_PARRY)
-                Effects.spawn_epic_parry_particles(self.x, self.y, -1)
-                Effects.spawn_epic_parry_particles(self.x, self.y, 1)
-                self.state = PANDA_STATE.chase
-            end
-        end
+       end
 
     elseif self.state == PANDA_STATE.dashing then
-
-        if not self.has_stick then
-            if self:has_intersection_with_player_attack(player, our_rect) then
-                Basic.play_sound(SOUNDS.PLAYER_PARRY)
-
-                Effects.spawn_epic_parry_particles(self.x, self.y, -1)
-                Effects.spawn_epic_parry_particles(self.x, self.y, 1)
-
-                self.state = PANDA_STATE.stunned
-                self.stun_time_left = self.stun_time_left + PANDA_SMALL_STUN_DURATION
-                self.velocity.x = -1 * self.velocity.x
-                self.small_dash = false
-
-                goto out_of_state_machine
-            end
-        end
 
         if self.has_stick and self.animation_controller:is_at_last_frame() then
             if self.basic_attack_time_left == 0.0 then

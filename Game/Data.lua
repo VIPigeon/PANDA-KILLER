@@ -597,7 +597,7 @@ CONTROLS = {
     look_up   = { keys = { KEY_W },     buttons = { BUTTON_UP }, },
     look_down = { keys = { KEY_S },     buttons = { BUTTON_DOWN }, },
     jump      = { keys = { KEY_SPACE }, buttons = { BUTTON_Z }, },
-    attack    = { keys = { KEY_E, KEY_F, KEY_J },           buttons = { BUTTON_X }, },
+    attack    = { keys = { KEY_E, KEY_F, KEY_J },           buttons = { BUTTON_X,  }, },
 }
 
 function was_just_pressed(control)
