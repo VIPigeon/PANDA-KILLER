@@ -22,6 +22,7 @@ KEY_W = 23
 KEY_A = 01
 KEY_S = 19
 KEY_D = 04
+KEY_N = 14
 KEY_SPACE = 48
 
 KEY_E = 5
@@ -392,8 +393,13 @@ PANDA_SETTINGS[PANDA_TYPE.guard].chase_speed = 0
 PANDA_SETTINGS[PANDA_TYPE.guard].health = 2
 
 
-PANDA_WITHOUT_STICK_ATTACK_WIDTH = 20
-PANDA_WITH_STICK_ATTACK_WIDTH = 26
+PANDA_WITHOUT_STICK_ATTACK_WIDTH = 18
+-- Если кажется, что панда атакует слишком далеко, уменьшите это.
+-- И можно раскомментировать Debug.add в Panda.update, чтобы
+-- посмотреть на результат.
+PANDA_STICK_ATTACK_LENGTH = 3
+-- Пока что не используется. Почему? Не понятно.
+-- PANDA_WITH_STICK_ATTACK_WIDTH = 26
 
 -- Если мы ближе, чем это расстояние, то пора остановиться
 PANDA_MIN_X_DISTANCE_TO_PLAYER = 8
@@ -610,8 +616,12 @@ TEXT = {
         ['ru'] = 'НАЖИМАЙ СТРЕЛКИ ЧТОБЫ ПОМЕНЯТЬ ЯЗЫК',
         ['en'] = 'PRESS RIGHT/LEFT TO SELECT LANGUAGE',
     },
-    PRESS_ANY_BUTTON_TO_RESPAWN = {
-        ['ru'] = '\n\n\n\n\n\n    НАЖМИ ЛЮБУЮ КНОПКУ\n     ЧТОБЫ ВОЗРОДИТЬСЯ',
+    PRESS_ANY_BUTTON_TO_RESPAWN_LINE1 = {
+        ['ru'] = 'НАЖМИ ЛЮБУЮ КНОПКУ',
+        ['en'] = '\n\n\n\n\n\n  PRESS ANY BUTTON\n   TO RESPAWN',
+    },
+    PRESS_ANY_BUTTON_TO_RESPAWN_LINE2 = {
+        ['ru'] = 'ЧТОБЫ ВОЗРОДИТЬСЯ',
         ['en'] = '\n\n\n\n\n\n  PRESS ANY BUTTON\n   TO RESPAWN',
     },
     GO = {

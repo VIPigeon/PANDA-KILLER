@@ -8,11 +8,11 @@ function Debug.add(draw_func, frames)
 end
 
 function Debug.draw()
-    new_drawing_queue = {}
+    local new_drawing_queue = {}
     for _, debug in ipairs(Debug.debug_drawing_queue) do
         debug.draw()
         if debug.frames > 0 then
-            table.insert(new_drawing_queue { draw = debug.draw, frames = debug.frames - 1 })
+            table.insert(new_drawing_queue, { draw = debug.draw, frames = debug.frames - 1 })
         end
     end
     Debug.debug_drawing_queue = new_drawing_queue

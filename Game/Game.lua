@@ -343,7 +343,6 @@ function game.draw_map()
     -- из бумеранга. Я его не очень понимаю и не слишком хочу
     -- трогать. Это будет памятник нашему труду над бумерангом 🪃
 
-    
     -- а потрогать реликвию видимо придётся...
 
     local cx = game.camera.x
@@ -359,10 +358,10 @@ function game.draw_map()
         local ty = math.floor(cy / 8)
         local gmx = tx - math.floor(SCREEN_WIDTH / 16)
         local gmsx = 8 * tx - cx
-        
+
         local gmy = ty - math.floor(SCREEN_HEIGHT / 16)
         local gmsy = math.floor(8 * ty - cy)
-        
+
         cls(0)
         game.parallaxscrolling:draw()
         map(gmx, gmy, 31, 18, gmsx, gmsy, 0)
@@ -380,7 +379,7 @@ function game.draw_map()
 
     local gmy = ty - math.floor((SCREEN_HEIGHT / (16 * game.scale) ))
     local gmsy = 0 --math.floor((8 * ty - cy * game.scale) )
-    
+
     cls(0)
     map(gmx, gmy, math.floor(30 / game.scale) , math.floor(17 / game.scale) + 1, gmsx, gmsy, -1, game.scale)
     game.parallaxscrolling:draw()

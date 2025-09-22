@@ -82,11 +82,15 @@ function DialogWindow:draw_dialog()
     end
 
     rect(self.x-5,self.y-5,max_width*9+10,count_line*9+9,0)
-    font(self.text,self.x,self.y,15,true)
+    local line1 = localize(TEXT.PRESS_ANY_BUTTON_TO_RESPAWN_LINE1)
+    local line2 = localize(TEXT.PRESS_ANY_BUTTON_TO_RESPAWN_LINE2)
+    draw_text_centered_at_x(line1, 120, 48, 8, 8, false, 2)
+    draw_text_centered_at_x(line2, 120, 48 + 24, 8, 8, false, 2)
+    --font(self.text,self.x,self.y,15,true)
 end
 
 function DialogWindow:draw_dialog_death()
-    self.text = localize(TEXT.PRESS_ANY_BUTTON_TO_RESPAWN)
+    self.text = localize(TEXT.PRESS_ANY_BUTTON_TO_RESPAWN_LINE1)
     self.x = 0
     self.y = 0
     rect(self.x,self.y,SCREEN_WIDTH,SCREEN_HEIGHT,0)

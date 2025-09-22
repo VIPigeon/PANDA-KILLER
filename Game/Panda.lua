@@ -178,18 +178,20 @@ end
 
 function Panda:make_attack_rect()
     local our_rect = Hitbox.rect_of(self)
-    local attack_width
+    local attack_width = PANDA_WITHOUT_STICK_ATTACK_WIDTH
+
     --if self.has_stick then
     --    attack_width = PANDA_WITH_STICK_ATTACK_WIDTH
     --else
-        attack_width = PANDA_WITHOUT_STICK_ATTACK_WIDTH
+    --    attack_width = PANDA_WITHOUT_STICK_ATTACK_WIDTH
     --end
+
     local attack_rect = Rect:new(
         -- our_rect:center_x() + 8 * self.look_direction - attack_width / 2,
-        our_rect:center_x() + 5 * self.look_direction - attack_width / 2,
-        our_rect:top(),
+        our_rect:center_x() + PANDA_STICK_ATTACK_LENGTH * self.look_direction - attack_width / 2,
+        our_rect:top() + 1,
         attack_width,
-        8
+        6
     )
     return attack_rect
 end
@@ -472,10 +474,10 @@ function Panda:update()
                     local attack_rect = self:make_attack_rect()
 
                     -- Раскомментируйте, чтобы посмотреть на hurtbox атаки панды.
-                    Debug.add(function()
-                        attack_rect:draw(2)
-                        our_rect:draw(2)
-                    end, 20)
+                    --Debug.add(function()
+                    --    attack_rect:draw(2)
+                    --    our_rect:draw(2)
+                    --end, 20)
 
                     if Physics.check_collision_rect_rect(our_rect, player_rect) then
                         player:die(self.look_direction, 0)
@@ -525,9 +527,6 @@ function Panda:update()
 
             else
                 local attack_rect = self:make_attack_rect()
-
-                if self:has_intersection_with_player_attack(player, attack_rect) then
-                end
 
                 -- Раскомментируйте, чтобы посмотреть на hurtbox атаки панды.
                 --Debug.add(function()
