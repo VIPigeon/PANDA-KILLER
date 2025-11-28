@@ -101,4 +101,12 @@ function AnimationController:draw(x, y, flip, rotate)
     spr(self:current_frame(), x, y, C0, current_scale, flip, rotate, animation.width, animation.height)
 end
 
+function AnimationController:draw_at_screen_coordinates(x, y, flip, rotate)
+    local animation = self:current_animation()
+
+    local scale = 2
+    local y = y - 8 * game.scale * (animation.height - 1)
+    spr(self:current_frame(), x, y, C0, scale, flip, rotate, animation.width, animation.height)
+end
+
 AnimationController.__index = AnimationController

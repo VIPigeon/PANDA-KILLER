@@ -228,7 +228,6 @@ function game.update()
 
     if game.state == GAME_STATE_LANGUAGE_SELECTION then
         if btnp(BUTTON_Z) then
-            --game.state = GAME_STATE_GAMEPLAY
             game.state = GAME_STATE_CUTSCENE
         end
         if btnp(BUTTON_RIGHT) or btnp(BUTTON_LEFT) then
@@ -257,7 +256,7 @@ function game.update()
         end
     elseif game.state == GAME_STATE_CUTSCENE then
         if DEV_MODE_ENABLED then
-           game.state = GAME_STATE_GAMEPLAY 
+           game.state = GAME_STATE_GAMEPLAY
         else
             game.camera:update()
             cutscene:update()
