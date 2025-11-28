@@ -29,7 +29,6 @@ function special_panda_update(self)
 end
 
 function cutscene:init()
-	
 	PLAYER_SPAWNPOINT_X = 10*8
 	PLAYER_SPAWNPOINT_Y = 11*8
 
