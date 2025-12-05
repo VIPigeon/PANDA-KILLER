@@ -199,7 +199,11 @@ function game.restart()
     if not DEV_MODE_ENABLED then
         cutscene:init()
     end
+    game.state = GAME_STATE_CUTSCENE
 end
+
+slow_time = false
+slow_time_counter = 0
 
 function game.update()
     if DISCLAIMER then
@@ -272,6 +276,16 @@ function game.update()
         ClickerMinigame:update()
         ClickerMinigame:draw()
     elseif game.state == GAME_STATE_GAMEPLAY then
+        if slow_time then
+            slow_time_counter = slow_time_counter + 1
+            if slow_time_counter >= 70 then
+                slow_time_counter = 0
+                slow_time = false
+            end
+            if slow_time_counter % 10 ~= 0 then
+                goto end_of_loop
+            end
+        end
         game.dialog_window:update()
         game.player:update()
         game.bike:update()
@@ -326,6 +340,7 @@ function game.update()
         error('Invalid game state!')
     end
 
+::end_of_loop::
     Time.update()
 end
 
