@@ -87,10 +87,13 @@ function Player:die(kill_velocity_x, kill_velocity_y)
     if self.is_dead then
         return
     end
+    slow_time = true
 
     -- heart attack 💔 <- 💓 <- 💢
     kill_velocity_x = kill_velocity_x or 0
     kill_velocity_y = kill_velocity_y or 0
+
+    create_particles(self.x, self.y, math.sign(kill_velocity_x), 1000, 4000, 30, {1})
 
     self.velocity.x = PLAYER_DEATH_KNOCKBACK_HORIZONTAL * math.sign(kill_velocity_x)
     self.velocity.y = PLAYER_DEATH_KNOCKBACK_VERTICAL
