@@ -226,6 +226,12 @@ function game.update()
         return
     end
 
+    -- гордо возвышается над игрой
+    -- выбрать путь предлагает
+    -- меню 🗻
+    -- и дерзкий draw_map - не мешает
+    GameMenu:update()
+
     if game.state == GAME_STATE_LANGUAGE_SELECTION then
         if btnp(BUTTON_Z) then
             --game.state = GAME_STATE_GAMEPLAY
@@ -242,6 +248,7 @@ function game.update()
     elseif game.state == GAME_STATE_PAUSED then
         game.dialog_window:update()
         game.dialog_window:draw()
+        GameMenu:draw()
     elseif game.state == GAME_STATE_RIDING_BIKE then
         game.draw_map()
         game.bike:init_go_away()
@@ -301,6 +308,7 @@ function game.update()
         end
 
         game.draw_map()
+
         for _, panda in ipairs(game.current_level.pandas) do
             panda:draw()
         end

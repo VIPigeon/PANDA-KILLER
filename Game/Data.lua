@@ -30,6 +30,7 @@ KEY_F = 6
 KEY_J = 10
 
 KEY_P = 16
+KEY_Q = 17
 
 --[[
 
@@ -628,6 +629,27 @@ TEXT = {
         ['ru'] = 'ВПЕРЕД)',
         ['en'] = 'GO)',
     },
+    -- как тьма зол
+    -- не щадит любезность
+    -- запретил каомодзи
+    -- kawaii-code 😈
+    MENU_TITLE = {
+        ['ru'] = 'менюшка', -- 'менюшка ~^w^~'
+        ['en'] = 'menuwu', -- 'menuwu ~^w^~'
+    },
+    MENU_OPTION_CONTINUE = {
+        ['ru'] = 'ПРОДОЛЖИТБ', -- 'продолжитб~'
+        ['en'] = 'CONTIMEOW',
+    },
+    MENU_OPTION_SETTINGS = {
+        ['ru'] = 'НАСТРОИЧКИ', -- 'настроички >_<'
+        ['en'] = 'SETTINGS', -- 'settings {{{(>_<)}}}'
+    },
+    MENU_OPTION_MAIN_MENU = {
+        ['ru'] = 'НЕ УХОДИ', -- 'не уходи ￣へ￣'
+        ['en'] = 'DONT LEAVE ME', -- 'dont leave me ￣へ￣'
+    },
+
 }
 
 --
@@ -640,6 +662,7 @@ CONTROLS = {
     look_down = { keys = { KEY_S },     buttons = { BUTTON_DOWN }, },
     jump      = { keys = { KEY_SPACE }, buttons = { BUTTON_Z }, },
     attack    = { keys = { KEY_E, KEY_F, KEY_J },           buttons = { BUTTON_X,  }, },
+    escape    = { keys = { KEY_Q },     buttons = {  }, },
 }
 
 function was_just_pressed(control)
