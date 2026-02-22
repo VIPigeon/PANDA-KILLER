@@ -304,13 +304,14 @@ function game.update()
         local level = game.levels[game.current_level_index]
 
         if game.cur_level and game.all_pandas_dead() and game.player.x >= game.cur_level.tile_x2 * 8 or keyp(KEY_P) then
-            game.current_level_index = game.current_level_index + 1
-            if game.current_level_index <= #game.levels then
-                game.load_current_level()
-            else
-                -- error('ALARM! NO LEVELS LEFT!')
-                error('You WIN the game! Congragulations <3 <3 <3')
-            end
+            load_cart("EPIC_ART.tic")
+            --game.current_level_index = game.current_level_index + 1
+            --if game.current_level_index <= #game.levels then
+            --    game.load_current_level()
+            --else
+            --    -- error('ALARM! NO LEVELS LEFT!')
+            --    error('You WIN the game! Congragulations <3 <3 <3')
+            --end
         end
 
         game.draw_map()

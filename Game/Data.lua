@@ -1,7 +1,7 @@
 data = {}
 
 -- 🏮 Перед релизом поставить в false!!! 🏮
-DEV_MODE_ENABLED = true
+DEV_MODE_ENABLED = false
 DISCLAIMER = false
 NEED_TO_KILL_ALL_PANDAS_ON_LEVEL = true
 
