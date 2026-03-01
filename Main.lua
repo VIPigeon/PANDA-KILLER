@@ -35,7 +35,7 @@ require 'Game/Panda'
 require 'Game/ParallaxScrolling'
 require 'Game/Player'
 
-require 'Game/Cutscenario'
+require 'Game/Cutscenario'  -- почему не в алфавитном порядке? 😠
 
 require 'Libraries/pslib'
 

@@ -454,6 +454,23 @@ function Player:update()
             end
         end
 
+        -- поддерживаем атаку по диагонали для рывка как в Katana Zero
+        if attack_direction_y ~= 0 then
+            if walking_right then
+                attack_direction_x = attack_direction_x + 1
+            elseif walking_left then
+                attack_direction_x = attack_direction_x - 1
+            end 
+        end
+        -- даем игроку доп скорость в направлении удара
+        local katana0_dash = KATANA_ZERO_DASH
+        if attack_direction_y ~= 0 and attack_direction_x ~= 0 then
+            katana0_dash = katana0_dash / math.sqrt(2)
+        end
+        self.velocity.x = self.velocity.x + katana0_dash * attack_direction_x
+        self.velocity.y = self.velocity.y + katana0_dash * (-attack_direction_y)
+
+
         local attack_width = 8 + 4 * math.abs(attack_direction_x)
         local attack_height = 8 + 4 * math.abs(attack_direction_y)
         local attack_x = player_rect:center_x() - attack_width / 2 + attack_direction_x * 8
