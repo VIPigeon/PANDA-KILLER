@@ -18,6 +18,17 @@ BUTTON_X = 5
 BUTTON_A = 6
 BUTTON_S = 7
 
+ALL_BINDABLE_BUTTONS = {
+    BUTTON_UP,
+    BUTTON_DOWN,
+    BUTTON_LEFT,
+    BUTTON_RIGHT,
+    BUTTON_Z,
+    BUTTON_X,
+    BUTTON_A,
+    BUTTON_S,
+}
+
 KEY_W = 23
 KEY_A = 01
 KEY_S = 19
@@ -31,6 +42,45 @@ KEY_J = 10
 
 KEY_P = 16
 KEY_Q = 17
+
+ALL_BINDABLE_KEYS = {
+    KEY_W,
+    KEY_A,
+    KEY_S,
+    KEY_D,
+    KEY_N,
+    KEY_SPACE,
+    KEY_E,
+    KEY_F,
+    KEY_J,
+    KEY_P,
+    KEY_Q,
+}
+
+KEY_NAMES = {
+    [KEY_W] = "W",
+    [KEY_A] = "A",
+    [KEY_S] = "S",
+    [KEY_D] = "D",
+    [KEY_SPACE] = "SPACE",
+    [KEY_N] = "N",
+    [KEY_J] = "J",
+    [KEY_P] = "P",
+    [KEY_Q] = "Q",
+    [KEY_F] = "F",
+    [KEY_E] = "E",
+}
+
+BUTTON_NAMES = {
+    [BUTTON_UP] = "DPAD UP",
+    [BUTTON_DOWN] = "DPAD DOWN",
+    [BUTTON_LEFT] = "DPAD LEFT",
+    [BUTTON_RIGHT] = "DPAD RIGHT",
+    [BUTTON_Z] = "BTN Z",
+    [BUTTON_X] = "BTN X",
+    [BUTTON_A] = "BTN A",
+    [BUTTON_S] = "BT S",
+}
 
 --[[
 
@@ -580,7 +630,7 @@ ANIMATED_TILES = {
 
 --
 -- Звуки (sfx🤪)! 🔊
--- 
+--
 SOUNDS = {
     MUTE_CHANNEL_ZERO = {id = -1, note = -1, channel = 0},
     MUTE_CHANNEL_ONE = {id = -1, note = -1, channel = 1},
@@ -650,6 +700,30 @@ TEXT = {
         ['en'] = 'DONT LEAVE ME', -- 'dont leave me ￣へ￣'
     },
 
+    -- SETTINGS
+    SETTINGS_CONTROLS = {
+        ['ru'] = 'КНОПКИ',
+        ['en'] = 'CONTROLS',
+    },
+    SETTINGS_RESET_DEFAULTS = {
+        ['ru'] = 'ПО УМОЛЧАНИЮ',
+        ['en'] = 'RESET',
+    },
+    SETTINGS_BACK = {
+        ['ru'] = 'НАЗАД',
+        ['en'] = 'BACKA',
+    },
+
+    SETTINGS_PRESS_KEY_TO_REBIND = {
+        ['ru'] = 'НАЖМИ КНОПКУ',
+        ['en'] = 'Press key to rebind',
+    },
+
+    SETTINGS_BACK = {
+        ['ru'] = 'НАЖМИ КНОПКУ',
+        ['en'] = 'Press key to rebind',
+    },
+    
 }
 
 --
@@ -664,6 +738,17 @@ CONTROLS = {
     attack    = { keys = { KEY_E, KEY_F, KEY_J },           buttons = { BUTTON_X,  }, },
     escape    = { keys = { KEY_Q },     buttons = {  }, },
 }
+
+DEFAULT_CONTROLS = {
+    left      = { keys = { KEY_A },     buttons = { BUTTON_LEFT }, },
+    right     = { keys = { KEY_D },     buttons = { BUTTON_RIGHT }, },
+    look_up   = { keys = { KEY_W },     buttons = { BUTTON_UP }, },
+    look_down = { keys = { KEY_S },     buttons = { BUTTON_DOWN }, },
+    jump      = { keys = { KEY_SPACE }, buttons = { BUTTON_Z }, },
+    attack    = { keys = { KEY_E, KEY_F, KEY_J },           buttons = { BUTTON_X,  }, },
+    escape    = { keys = { KEY_Q },     buttons = {  }, },
+}
+
 
 function was_just_pressed(control)
     for _, keyboard_key in ipairs(control.keys) do
@@ -792,14 +877,14 @@ data.attack_in_jump_forward = {
     --tile1 = {424,2}
     --tile2 = {456,2}
     --tile3 = {458,2}
-    --dust_tile = {488,2} 
+    --dust_tile = {488,2}
 }
 
 data.attack_in_jump_down = {
     --tile1 = {490,2}
     --tile2 = {492,2}
     --tile3 = {494,2}
-    --dust_tile = {444,2} 
+    --dust_tile = {444,2}
 }
 
 data.attack_up = {
@@ -807,7 +892,7 @@ data.attack_up = {
     --tile2 = {210,2}
     --tile3 = {212,2}
     --tile4 = {214,2}
-    --dust_tile = {176,2} 
+    --dust_tile = {176,2}
 }
 
 data.jump = {
@@ -881,19 +966,19 @@ end
 -- end
 
 function is_tile_water(tile_id)
-    return 33 <= tile_id and tile_id <= 34 
+    return 33 <= tile_id and tile_id <= 34
 end
 
 -- Далее документация у cat-сцене😸
 
 --[[
-    
+
     Тайлы для панды:
-        1) 268, 281 (8,16) 
+        1) 268, 281 (8,16)
         2) 269, 282 (8,16)
         - Эти два спрайта надо отзеркалить
         -С 3 по 13 (кроме 9,13) нужно дорисовать палку
-        3) 271 (8,8) 
+        3) 271 (8,8)
         4) 281 (8,8)
         5) 314 (8,8)
         6) 316 (8,8)
@@ -907,12 +992,12 @@ end
         - Далее уже панда отбирает палку или умирает и палка у игрока
         14) 271 (8,8) (дорисовать палку)
         15) 287 (8,8) (отзеркалить) (дорисовать палку)
-    
+
     Тайлы для игрока:
-        1) 480 (8,8) 
+        1) 480 (8,8)
         2) 481 (8,8)
         - Эти два спрайта (1,2) без палки, дальше борьба
-        3) 482 (8,8) 
+        3) 482 (8,8)
         4) 483 (8,8)
         5) 482 (8,8)
         6) 484 (8,8) (сместить на 1 пиксель влево)
@@ -956,7 +1041,7 @@ end
         --
         -- Буду рад работать у вас 😻! -- kawaii-Год
 
-    Дебаг от Linux Torbolts (2025): 
+    Дебаг от Linux Torbolts (2025):
         trace('Hello Baka! I\'m Bake for you😤')
         ...
         trace(tostring(self.button_pressed)..' '..'AAAAAAAAAAAAAAAAAAAAAHh💦💦💦')
