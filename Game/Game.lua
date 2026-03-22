@@ -203,6 +203,8 @@ function game.restart()
 end
 
 slow_time = false
+microslow_time = false
+microslow_time_counter = 0
 slow_time_counter = 0
 
 function game.update()
@@ -283,13 +285,24 @@ function game.update()
         ClickerMinigame:update()
         ClickerMinigame:draw()
     elseif game.state == GAME_STATE_GAMEPLAY then
+        update_psystems()  -- перенес наверх для slow_time
         if slow_time then
             slow_time_counter = slow_time_counter + 1
-            if slow_time_counter >= 70 then
+            if slow_time_counter >= 8 then
                 slow_time_counter = 0
                 slow_time = false
             end
             if slow_time_counter % 10 ~= 0 then
+                goto end_of_loop
+            end
+        end
+        if microslow_time then
+            microslow_time_counter = microslow_time_counter + 1
+            if microslow_time_counter >= 2 then
+                microslow_time_counter = 0
+                microslow_time = false
+            end
+            if microslow_time_counter % 10 ~= 0 then
                 goto end_of_loop
             end
         end
@@ -302,7 +315,6 @@ function game.update()
             panda:update()
         end
         game.parallaxscrolling:update()
-        update_psystems()
 
         if game.player.x >= game.cur_level.tile_x2 * 8 and not game.all_pandas_dead() then
             game.player.x = game.cur_level.tile_x2 * 8 - 1
