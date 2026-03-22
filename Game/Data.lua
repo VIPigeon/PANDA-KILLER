@@ -719,9 +719,53 @@ TEXT = {
         ['en'] = 'Press key to rebind',
     },
 
-    SETTINGS_BACK = {
+    SETTINGS_PRESS_KEY = {
         ['ru'] = 'НАЖМИ КНОПКУ',
         ['en'] = 'Press key to rebind',
+    },
+
+    CONTROL_LABELS = {
+        left = {
+            ['ru'] = 'ВЛЕВО',
+            ['en'] = 'MOVE LEFT',
+        },
+        right = {
+            ['ru'] = 'ВПРАВО',
+            ['en'] = 'MOVE RIGHT',
+        },
+        look_down = {
+            ['ru'] = 'ВНИЗ',
+            ['en'] = 'MOVE DOWN',
+        },
+        look_up = {
+            ['ru'] = 'ВВЕРХ',
+            ['en'] = 'MOVE UP',
+        },
+        jump = {
+            ['ru'] = 'ПРЫЖОК',
+            ['en'] = 'JUMP',
+        },
+        attack = {
+            ['ru'] = 'АТАКОВАТЬ',
+            ['en'] = 'ATTACK',
+        },
+        escape = {
+            ['ru'] = 'ПАУЗА',
+            ['en'] = 'PAUSE',
+        },
+        key_rebinding_label = {
+            ['ru'] = '...',
+            ['en'] = '...',
+        },
+        action_col_label = {
+            ['ru'] = 'ДЕЙСТВИЕ',
+            ['en'] = 'ACTION',
+        },
+        key_col_label = {
+            ['ru'] = 'КНОПКА',
+            ['en'] = 'KEY',
+        },
+
     },
     
 }
