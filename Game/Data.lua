@@ -364,8 +364,11 @@ PANDA_SETTINGS = {
 
 
 PANDA_SETTINGS[PANDA_TYPE.no_stick_no_dash] = table.copy(PANDA_SETTINGS[PANDA_TYPE.basic])
-PANDA_SETTINGS[PANDA_TYPE.no_stick_no_dash].health = 4
-PANDA_SETTINGS[PANDA_TYPE.no_stick_no_dash].health_at_which_to_get_stunned = 1
+PANDA_SETTINGS[PANDA_TYPE.no_stick_no_dash].health = 5
+PANDA_SETTINGS[PANDA_TYPE.no_stick_no_dash].health_at_which_to_get_stunned = 2
+-- TODO: при health_at_which_to_get_stunned=1 возникает странный баг,
+-- когда панда все равно вырубается при двух ударах подряд, или при трех ударах с паузой
+-- в текущем балансе этот баг не актуален 🤓
 
 
 PANDA_SETTINGS[PANDA_TYPE.no_stick_dash] = table.copy(PANDA_SETTINGS[PANDA_TYPE.basic])

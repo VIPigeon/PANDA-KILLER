@@ -138,6 +138,7 @@ function Panda:take_damage(hit_x, hit_y)
     local fur_count = blood_count / 10
 
     self.health = self.health - 1
+    microslow_time = true
 
     -- if death by grief for the lost bamboo
     hit_x = hit_x or 0
@@ -163,6 +164,10 @@ function Panda:take_damage(hit_x, hit_y)
 
         self.velocity.x = stun_knockback_direction_x * PANDA_STUN_KNOCKBACK_HORIZONTAL
         self.velocity.y = stun_knockback_direction_y
+
+        slow_time = true
+        microslow_time = false
+        trace("stunned")
     else
         self.state = PANDA_STATE.stunned
         self.stun_time_left = self.stun_time_left + PANDA_SMALL_STUN_DURATION
