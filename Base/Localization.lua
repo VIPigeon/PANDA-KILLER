@@ -95,6 +95,7 @@ function russian_to_translit(s)
             if translation ~= nil then
                 table.insert(result, translation)
             else
+                trace(final) -- толку мне от %x, mister kawaii-Code
                 error(string.format('bad char %x. Obratites k kawaii-Code, tolko on znaet kak rabotaet eta meshanina 💀', final))
             end
         elseif byte & 0x80 == 0 then
