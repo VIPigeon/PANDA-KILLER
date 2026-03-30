@@ -285,27 +285,28 @@ function game.update()
         ClickerMinigame:update()
         ClickerMinigame:draw()
     elseif game.state == GAME_STATE_GAMEPLAY then
+        local level = game.levels[game.current_level_index]
         update_psystems()  -- перенес наверх для slow_time
         if slow_time then
             slow_time_counter = slow_time_counter + 1
-            if slow_time_counter >= 8 then
+            if slow_time_counter >= 16 then
                 slow_time_counter = 0
                 slow_time = false
             end
             if slow_time_counter % 10 ~= 0 then
-                goto end_of_loop
+                goto draw
             end
         end
-        if microslow_time then
-            microslow_time_counter = microslow_time_counter + 1
-            if microslow_time_counter >= 2 then
-                microslow_time_counter = 0
-                microslow_time = false
-            end
-            if microslow_time_counter % 10 ~= 0 then
-                goto end_of_loop
-            end
-        end
+        --if microslow_time then
+        --    microslow_time_counter = microslow_time_counter + 1
+        --    if microslow_time_counter >= 2 then
+        --        microslow_time_counter = 0
+        --        microslow_time = false
+        --    end
+        --    if microslow_time_counter % 10 ~= 0 then
+        --        goto end_of_loop
+        --    end
+        --end
         game.dialog_window:update()
         game.player:update()
         game.bike:update()
@@ -320,8 +321,6 @@ function game.update()
             game.player.x = game.cur_level.tile_x2 * 8 - 1
         end
 
-        local level = game.levels[game.current_level_index]
-
         if game.cur_level and game.all_pandas_dead() and game.player.x >= game.cur_level.tile_x2 * 8 or keyp(KEY_P) then
             load_cart("EPIC_ART.tic")
             --game.current_level_index = game.current_level_index + 1
@@ -333,6 +332,7 @@ function game.update()
             --end
         end
 
+        ::draw::
         game.draw_map()
 
         for _, panda in ipairs(game.current_level.pandas) do
@@ -350,6 +350,8 @@ function game.update()
         draw_psystems()
         game.animate_tiles()
         Debug.draw()
+
+        font(localize(TEXT.SETTINGS_RESET_DEFAULTS), 0, 0, 7, false, 1)
 
         if game.all_pandas_dead() then
             local char_width = 8

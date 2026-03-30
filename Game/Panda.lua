@@ -86,6 +86,8 @@ function Panda:new(x, y, panda_type)
         patrol_rest_time = 0.0,
         stagger_time_left = 0.0,
         stun_time_left = 0.0,
+        white_time_left = 0.0,
+        slash_time_left = 0.0,
         basic_attack_time_left = 0.0,
         change_look_direction_cooldown = 0.0,
 
@@ -137,6 +139,7 @@ function Panda:take_damage(hit_x, hit_y)
     local blood_count = math.lerp(100, 10, self.health / PANDA_SETTINGS[self.type].health)
     local fur_count = blood_count / 10
 
+    self.white_time_left = 0.2
     self.health = self.health - 1
     microslow_time = true
 
@@ -159,6 +162,10 @@ function Panda:take_damage(hit_x, hit_y)
     local stun_knockback_direction_y = hit_y < 0 and PANDA_STUN_KNOCKBACK_VERTICAL_FROM_VERTICAL_ATTACK or PANDA_STUN_KNOCKBACK_VERTICAL
 
     if self.health == PANDA_SETTINGS[self.type].health_at_which_to_get_stunned then
+        Effects.spawn_epic_parry_particles(self.x, self.y, 1)
+        Effects.spawn_epic_parry_particles(self.x, self.y, -1)
+        self.slash_time_left = 0.1
+
         self.state = PANDA_STATE.stunned
         self.stun_time_left = PANDA_STUN_DURATION
 
@@ -177,6 +184,9 @@ function Panda:take_damage(hit_x, hit_y)
     end
 
     if self.health <= 0 then
+        Effects.spawn_epic_parry_particles(self.x, self.y, 1)
+        Effects.spawn_epic_parry_particles(self.x, self.y, -1)
+        self.stun_time_left = PANDA_STUN_DURATION
         self:die()
     end
 end
@@ -644,6 +654,8 @@ function Panda:update()
 
     self.attack_effect_time = Basic.tick_timer(self.attack_effect_time)
     self.change_look_direction_cooldown = Basic.tick_timer(self.change_look_direction_cooldown)
+    self.white_time_left = Basic.tick_timer(self.white_time_left)
+    self.slash_time_left = Basic.tick_timer(self.slash_time_left)
 end
 
 -- Направления: -1 влево, 1 вправо
@@ -670,15 +682,28 @@ function Panda:draw()
 
     local sprites = SPRITES.panda[self.type]
     if self.state == PANDA_STATE.stunned and self.animation_controller.sprite ~= sprites.sleeping then
-        self.stun_animation:draw(tx, ty - 8, flip)
-        self.stun_animation:next_frame()
+        if self.white_time_left > 0.0 then
+            spr(263, tx, ty, 0, 1, flip)
+        else
+            self.stun_animation:draw(tx, ty - 8, flip)
+            self.stun_animation:next_frame()
+        end
     end
 
     if self.attack_effect_time > 0.0 then
         self.attack_effect:draw()
     end
 
-    self.animation_controller:draw(tx, ty, flip)
+    if self.slash_time_left > 0.0 then
+        SLASH_EFFECT:draw(tx, ty)
+    end
+
+    if self.white_time_left > 0.0 then
+        -- 🤍
+        spr(263, tx, ty, 0, 1, flip)
+    else
+        self.animation_controller:draw(tx, ty, flip)
+    end
 
     -- ГЕНИАЛЬНЫЙ АЛГОРИТМ ПО ВЫКАЛЫВАНИЮ ГЛАЗ ПАНДЫ 🧑🔬
     -- МУАХХАХАХАХААХАХАХХАХАХ

@@ -61,7 +61,7 @@ GameMenu.cursor_w = GameMenu.w
 
 -- локальные цвета (потом заменить)
 GameMenu.col_bg = 10
-GameMenu.col_title = 12
+GameMenu.col_title = 0
 GameMenu.col_text = 15
 GameMenu.col_cursor = 5
 GameMenu.col_cursor_text = 0
