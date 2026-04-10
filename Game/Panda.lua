@@ -175,8 +175,8 @@ function Panda:take_damage(hit_x, hit_y)
         slow_time = true
         microslow_time = false
     else
-        self.state = PANDA_STATE.stunned
-        self.stun_time_left = self.stun_time_left + PANDA_SMALL_STUN_DURATION
+        -- self.state = PANDA_STATE.stunned
+        -- self.stun_time_left = self.stun_time_left + PANDA_SMALL_STUN_DURATION
 
         self.velocity.x = stun_knockback_direction_x * PANDA_SMALL_STUN_KNOCKBACK_HORIZONTAL
         self.velocity.y = stun_knockback_direction_y

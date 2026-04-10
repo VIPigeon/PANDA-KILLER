@@ -337,7 +337,7 @@ PANDA_VIEW_CONE_HEIGHT = 32
 -- Панда отлетает в стан, после этого её нужно быстро ударить
 -- несколько раз, чтобы она умерла.
 PANDA_STUN_DURATION = 5  -- 2.3
-PANDA_SMALL_STUN_DURATION = 0.6  -- 0.7
+PANDA_SMALL_STUN_DURATION = 0 -- 0.6  -- 0.7
 
 -- Отбрасывание панды от игрока при обычном стаггере
 PANDA_SMALL_STUN_KNOCKBACK_HORIZONTAL = 20.0
