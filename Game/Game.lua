@@ -13,9 +13,9 @@ game = {
     cur_level = {},
     current_level_index = 1,
     levels = {
-        {tile_x1 = 0, tile_y1 = 0, tile_x2 = 102, tile_y2 = 16, player_x = 10*8, player_y = 11*8},
-        {tile_x1 = 0, tile_y1 = 17, tile_x2 = 46, tile_y2 = 32, player_x = 0, player_y = 30*8}, 
-        {tile_x1 = 0, tile_y1 = 34, tile_x2 = 62, tile_y2 = 49, player_x = 0, player_y = 46*8},
+        {tile_x1 = 0, tile_y1 = 0, tile_x2 = 119, tile_y2 = 16, player_x = PLAYER_SPAWNPOINT_X, player_y = PLAYER_SPAWNPOINT_Y},
+        {tile_x1 = 0, tile_y1 = 17, tile_x2 = 99, tile_y2 = 32, player_x = 0, player_y = 30*8}, 
+        {tile_x1 = 0, tile_y1 = 34, tile_x2 = 62, tile_y2 = 49, player_x = 3*8, player_y = 42*8},
         {tile_x1 = 122, tile_y1 = 0, tile_x2 = 176, tile_y2 = 16, player_x = (6+122)*8, player_y = 10*8},
         {tile_x1 = 0, tile_y1 = 51, tile_x2 = 46, tile_y2 = 100, player_x = 0, player_y = 97*8},
         {tile_x1 = 47, tile_y1 = 51, tile_x2 = 114, tile_y2 = 100, player_x = 50*8, player_y = 97*8},
@@ -320,14 +320,13 @@ function game.update()
         end
 
         if game.cur_level and game.all_pandas_dead() and game.player.x >= game.cur_level.tile_x2 * 8 or keyp(KEY_P) then
-            load_cart("EPIC_ART.tic")
-            --game.current_level_index = game.current_level_index + 1
-            --if game.current_level_index <= #game.levels then
-            --    game.load_current_level()
-            --else
-            --    -- error('ALARM! NO LEVELS LEFT!')
-            --    error('You WIN the game! Congragulations <3 <3 <3')
-            --end
+            game.current_level_index = game.current_level_index + 1
+            if game.current_level_index <= #game.levels then
+                game.load_current_level()
+            else
+                -- error('ALARM! NO LEVELS LEFT!')
+                error('You WIN the game! Congragulations <3 <3 <3')
+            end
         end
 
         ::draw::

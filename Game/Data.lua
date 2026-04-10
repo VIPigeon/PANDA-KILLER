@@ -58,8 +58,8 @@ CAMERA_DIRECTION_CHANGE_TIME = 0.3
 --]]
 
 -- кароч ещё в cutscenatio есть такое
-PLAYER_SPAWNPOINT_X = 10*8                                      -- пиксели
-PLAYER_SPAWNPOINT_Y = 11*8                                     -- пиксели
+PLAYER_SPAWNPOINT_X = 3*8                                      -- пиксели
+PLAYER_SPAWNPOINT_Y = 7*8                                     -- пиксели
 
 --
 -- Всё что связано с движением 🏎️
@@ -788,7 +788,7 @@ function is_tile_solid(tile_id)
     -- Славный был парень, покойся смело👍
     return
         108 <= tile_id and tile_id <= 110 or
-         1 <= tile_id and tile_id <= 4 or
+         1 <= tile_id and tile_id <= 3 or
         16 <= tile_id and tile_id <= 19 or
         35 <= tile_id and tile_id <= 35 or
         48 < tile_id and tile_id <= 52 or
@@ -797,7 +797,7 @@ function is_tile_solid(tile_id)
         (table.contains(HOUSE_OUTSIDE_TILES, tile_id) and not table.contains(HOUSE_DOORS_OUTSIDE, tile_id)) or
         tile_id == 40 or tile_id == 56 or tile_id == 47 or tile_id == 63 or -- Внутренние стенки в доме
         24 <= tile_id and tile_id <= 31 -- Тайлы крыши дома
-        or 33 <= tile_id and tile_id <= 34
+        or 96 <= tile_id and tile_id <= 101
 end
 
 -- function is_tile_water(tile_id)

@@ -174,7 +174,6 @@ function Panda:take_damage(hit_x, hit_y)
 
         slow_time = true
         microslow_time = false
-        trace("stunned")
     else
         self.state = PANDA_STATE.stunned
         self.stun_time_left = self.stun_time_left + PANDA_SMALL_STUN_DURATION
