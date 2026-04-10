@@ -13,16 +13,13 @@ game = {
     cur_level = {},
     current_level_index = 1,
     levels = {
-        {tile_x1 = 0, tile_y1 = 0, tile_x2 = 89, tile_y2 = 48, player_x = 10*8, player_y = 11*8},
-        {tile_x1 = 90, tile_y1 = 0, tile_x2 = 119, tile_y2 = 48, player_x = 90*8, player_y = 23*8},
-        {tile_x1 = 120, tile_y1 = 0, tile_x2 = 179, tile_y2 = 16, player_x = 120*8, player_y = 3*8},
-        {tile_x1 = 180, tile_y1 = 0, tile_x2 = 209, tile_y2 = 16, player_x = 180*8, player_y = 7*8},
---        {tile_x1 = 0, tile_y1 = 0, tile_x2 = 119, tile_y2 = 16, player_x = PLAYER_SPAWNPOINT_X, player_y = PLAYER_SPAWNPOINT_Y},
---        {tile_x1 = 0, tile_y1 = 17, tile_x2 = 99, tile_y2 = 32, player_x = 0, player_y = 30*8}, 
---        {tile_x1 = 0, tile_y1 = 34, tile_x2 = 62, tile_y2 = 49, player_x = 3*8, player_y = 42*8},
---        {tile_x1 = 122, tile_y1 = 0, tile_x2 = 176, tile_y2 = 16, player_x = (6+122)*8, player_y = 10*8},
---        {tile_x1 = 0, tile_y1 = 51, tile_x2 = 46, tile_y2 = 100, player_x = 0, player_y = 97*8},
---        {tile_x1 = 47, tile_y1 = 51, tile_x2 = 114, tile_y2 = 100, player_x = 50*8, player_y = 97*8},
+        {tile_x1 = 0, tile_y1 = 0, tile_x2 = 119, tile_y2 = 16, player_x = PLAYER_SPAWNPOINT_X, player_y = PLAYER_SPAWNPOINT_Y},
+        {tile_x1 = 0, tile_y1 = 17, tile_x2 = 99, tile_y2 = 32, player_x = 0, player_y = 30*8}, 
+        {tile_x1 = 0, tile_y1 = 34, tile_x2 = 62, tile_y2 = 49, player_x = 3*8, player_y = 42*8},
+        {tile_x1 = 0, tile_y1 = 51, tile_x2 = 89, tile_y2 = 89, player_x = 10*8, player_y = (51+11)*8},
+        {tile_x1 = 90, tile_y1 = 51, tile_x2 = 119, tile_y2 = 89, player_x = 94*8, player_y = 75*8},
+        {tile_x1 = 120, tile_y1 = 51, tile_x2 = 179, tile_y2 = 51+16, player_x = 120*8, player_y = (51+3)*8},
+        {tile_x1 = 180, tile_y1 = 51, tile_x2 = 209, tile_y2 = 51+16, player_x = 180*8, player_y = (51+7)*8},
     },
 }
 

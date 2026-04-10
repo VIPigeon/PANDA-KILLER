@@ -380,6 +380,8 @@ function Panda:update()
             local x_in_the_near_future = self.x + self.look_direction * PANDA_PATROL_PIXELS_UNTIL_STOP
 
             local wall_to_the_right = Physics.check_collision_rect_tilemap(self.hitbox:to_rect(x_in_the_near_future, self.y)) ~= nil
+            local current_level = game.levels[game.current_level_index]
+            wall_to_the_right = wall_to_the_right or x_in_the_near_future - 8 > 8*current_level.tile_x2
             local ground_forward = Physics.check_collision_rect_tilemap(self.hitbox:to_rect(x_in_the_near_future, self.y + 1)) ~= nil
 
             if wall_to_the_right or not ground_forward then
