@@ -14,7 +14,7 @@ function AnimationController:new(first_sprite, need_custom_scale, scale)
     need_custom_scale = need_custom_scale or false
 
     -- idk how game inits game.scale must be below
-    scale = scale or data.STANDART_SCALE
+    scale = scale or 1
     local custom_scale = nil
 
     if need_custom_scale then

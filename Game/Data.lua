@@ -1,102 +1,8 @@
 data = {}
 
--- 🏮 Перед релизом поставить в false!!! 🏮
-DEV_MODE_ENABLED = true
+SKIP_CUTSCENE = true
 DISCLAIMER = false
 NEED_TO_KILL_ALL_PANDAS_ON_LEVEL = true
-
---
--- Управление
---
-BUTTON_UP    = 0
-BUTTON_DOWN  = 1
-BUTTON_LEFT  = 2
-BUTTON_RIGHT = 3
-
-BUTTON_Z = 4
-BUTTON_X = 5
-BUTTON_A = 6
-BUTTON_S = 7
-
-ALL_BINDABLE_BUTTONS = {
-    BUTTON_UP,
-    BUTTON_DOWN,
-    BUTTON_LEFT,
-    BUTTON_RIGHT,
-    BUTTON_Z,
-    BUTTON_X,
-    BUTTON_A,
-    BUTTON_S,
-}
-
-KEY_W = 23
-KEY_A = 01
-KEY_S = 19
-KEY_D = 04
-KEY_N = 14
-KEY_SPACE = 48
-
-KEY_E = 5
-KEY_F = 6
-KEY_J = 10
-
-KEY_P = 16
-KEY_Q = 17
-
-ALL_BINDABLE_KEYS = {
-    KEY_W,
-    KEY_A,
-    KEY_S,
-    KEY_D,
-    KEY_N,
-    KEY_SPACE,
-    KEY_E,
-    KEY_F,
-    KEY_J,
-    KEY_P,
-    KEY_Q,
-}
-
-KEY_NAMES = {
-    [KEY_W] = "W",
-    [KEY_A] = "A",
-    [KEY_S] = "S",
-    [KEY_D] = "D",
-    [KEY_SPACE] = "SPACE",
-    [KEY_N] = "N",
-    [KEY_J] = "J",
-    [KEY_P] = "P",
-    [KEY_Q] = "Q",
-    [KEY_F] = "F",
-    [KEY_E] = "E",
-}
-
-BUTTON_NAMES = {
-    [BUTTON_UP] = "DPAD UP",
-    [BUTTON_DOWN] = "DPAD DOWN",
-    [BUTTON_LEFT] = "DPAD LEFT",
-    [BUTTON_RIGHT] = "DPAD RIGHT",
-    [BUTTON_Z] = "BTN Z",
-    [BUTTON_X] = "BTN X",
-    [BUTTON_A] = "BTN A",
-    [BUTTON_S] = "BT S",
-}
-
---[[
-
-Таблица переводов кнопок контроллеров.
-Кто-то же должен это делать 🤓
-
-+------+-----------+----------+-----------+
-| XBOX |    PS4    | Keyboard | Direction |
-+------+-----------+----------+-----------+
-|  A   |  cross    |    z     |   south   |
-|  B   |  circle   |    x     |   east    |
-|  X   |  square   |    a     |   west    |
-|  Y   |  triangle |    s     |   north   |
-+------+-----------+----------+-----------+
-
-]]--
 
 
 
@@ -355,62 +261,6 @@ PANDA_SETTINGS = {
 
         default_state = PANDA_STATE.patrol,
     },
-    -- Вот это всё бесполезно
-    --[PANDA_TYPE.stickless] = {
-    --    health = 6,
-
-    --    patrol_speed = 8,
-    --    chase_speed  = 2.5 * 8,
-    --    dash_charge_duration = 0.8,  -- 1.5
-    --    dash_duration = 0.6, -- 1.0
-    --    dash_strength = 170,
-    --    -- Это отсчет до того как панда сможет атаковать после
-    --    -- того как начала гнаться за игроком. Да, я просто перевел
-    --    -- название переменной с английского и назвал это документацией.
-    --    delay_after_starting_chase_before_attacking = 0.3,
-
-    --    -- Время, после которого панда устанет гоняться за игроком.
-    --    -- Это при условии, что она игрока не видит.
-    --    chase_duration = 3.0,
-    --},
-    --[PANDA_TYPE.orange_eyes] = {
-    --    health = 6,
-
-    --    patrol_speed = 9,
-    --    chase_speed  = 2.7 * 8,
-    --    dash_charge_duration = 0.5,  -- 1.5
-    --    dash_duration = 0.6, -- 1.0
-    --    dash_strength = 200,
-    --    health_at_which_to_get_stunned = 2,
-
-    --    eye_color = 9,
-
-    --    -- Это отсчет до того как панда сможет атаковать после
-    --    -- того как начала гнаться за игроком. Да, я просто перевел
-    --    -- название переменной с английского и назвал это документацией.
-    --    delay_after_starting_chase_before_attacking = 0.3,
-
-    --    -- Время, после которого панда устанет гоняться за игроком.
-    --    -- Это при условии, что она игрока не видит.
-    --    chase_duration = 4.0,
-    --},
-    --[PANDA_TYPE.chilling] = {
-    --    health = 6,
-
-    --    patrol_speed = 6,
-    --    chase_speed  = 2.0 * 6,
-    --    dash_charge_duration = 0.7,
-    --    dash_duration = 0.6,
-    --    dash_strength = 100,
-    --    health_at_which_to_get_stunned = 4,
-
-    --    eye_color = 13,
-
-    --    delay_after_starting_chase_before_attacking = 0.3,
-    --    chase_duration = 2.0,
-
-    --    default_state = PANDA_STATE.sleeping,
-    --},
 }
 
 
@@ -426,7 +276,7 @@ PANDA_SETTINGS[PANDA_TYPE.no_stick_dash] = table.copy(PANDA_SETTINGS[PANDA_TYPE.
 PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].eye_color = 6
 PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].health = 4
 PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].has_dash = true
-PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].dash_charge_duration = 0.35
+PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].dash_charge_duration = 0.6
 PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].dash_duration = 0.7
 PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].dash_strength = 180
 
@@ -497,6 +347,10 @@ PANDA_SMALL_STUN_KNOCKBACK_HORIZONTAL = 20.0
 PANDA_STUN_KNOCKBACK_HORIZONTAL = 75.0
 PANDA_STUN_KNOCKBACK_VERTICAL = 10.0
 PANDA_STUN_KNOCKBACK_VERTICAL_FROM_VERTICAL_ATTACK = 80.0
+
+PANDA_LYING_DOWN_SPRITES = { 264, 279 }
+PANDA_STANDING_HITBOX = Hitbox:new(1, 0, 6, 8)
+PANDA_LYING_DOWN_HITBOX = Hitbox:new(3, 4, 9, 4)
 
 -- Поля для параллакс скроллинга
 PARALLAX_LAYER_SPEED = 0.2
@@ -779,58 +633,6 @@ TEXT = {
     
 }
 
---
--- Бинды на клавиши ⌨️
---
-CONTROLS = {
-    left      = { keys = { KEY_A },     buttons = { BUTTON_LEFT }, },
-    right     = { keys = { KEY_D },     buttons = { BUTTON_RIGHT }, },
-    look_up   = { keys = { KEY_W },     buttons = { BUTTON_UP }, },
-    look_down = { keys = { KEY_S },     buttons = { BUTTON_DOWN }, },
-    jump      = { keys = { KEY_SPACE }, buttons = { BUTTON_Z }, },
-    attack    = { keys = { KEY_E, KEY_F, KEY_J },           buttons = { BUTTON_X,  }, },
-    escape    = { keys = { KEY_Q },     buttons = {  }, },
-}
-
-DEFAULT_CONTROLS = {
-    left      = { keys = { KEY_A },     buttons = { BUTTON_LEFT }, },
-    right     = { keys = { KEY_D },     buttons = { BUTTON_RIGHT }, },
-    look_up   = { keys = { KEY_W },     buttons = { BUTTON_UP }, },
-    look_down = { keys = { KEY_S },     buttons = { BUTTON_DOWN }, },
-    jump      = { keys = { KEY_SPACE }, buttons = { BUTTON_Z }, },
-    attack    = { keys = { KEY_E, KEY_F, KEY_J },           buttons = { BUTTON_X,  }, },
-    escape    = { keys = { KEY_Q },     buttons = {  }, },
-}
-
-
-function was_just_pressed(control)
-    for _, keyboard_key in ipairs(control.keys) do
-        if keyp(keyboard_key) then
-            return true
-        end
-    end
-    for _, button in ipairs(control.buttons) do
-        if btnp(button) then
-            return true
-        end
-    end
-    return false
-end
-
-function is_held_down(control)
-    for _, keyboard_key in ipairs(control.keys) do
-        if key(keyboard_key) then
-            return true
-        end
-    end
-    for _, button in ipairs(control.buttons) do
-        if btn(button) then
-            return true
-        end
-    end
-    return false
-end
-
 -- Это всё нужно убрать в какие-нибудь файлы, но эта задача
 -- для clean coder-ов 🧹
 function is_bad_tile(tile_id)
@@ -842,22 +644,6 @@ function is_bad_tile(tile_id)
     return false
 end
 
-data.STANDART_SCALE = 1
-
-data.bad_tile = {}
-data.panda = {}
-data.run = {}
-data.jump = {}
-data.idle = {}
-data.attack = {}
-data.attack_in_jump_forward = {}
-data.attack_in_jump_down = {}
-data.attack_up = {}
-data.slide = {}
-data.coffee_bush = {}
-data.bush = {}
-data.stump = {}
-data.cactus = {}
 
 
 -- Это тайлы для анимаций

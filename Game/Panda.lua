@@ -58,7 +58,7 @@ function Panda:new(x, y, panda_type)
             x = 0,
             y = 0,
         },
-        hitbox = Hitbox:new(1, 0, 6, 8),
+        hitbox = PANDA_STANDING_HITBOX,
         physics_settings = PANDA_PHYSICS_SETTINGS,
 
         type = panda_type,
@@ -68,19 +68,16 @@ function Panda:new(x, y, panda_type)
 
         stun_animation = AnimationController:new(SPRITES.panda_stun_effect),
         animation_controller = AnimationController:new(SPRITES.panda[PANDA_TYPE.basic].rest),
-        look_direction = math.coin_flip() and 1 or -1,
-
-        has_dash = PANDA_SETTINGS[panda_type].has_dash,
-        has_stick = PANDA_SETTINGS[panda_type].has_stick,
+        look_direction = -1, --math.coin_flip() and 1 or -1,
 
         attack_effect = nil,       -- Мне не нравятся, что в панде плодятся такие поля
         attack_effect_time = 0.0,  -- и такие...
 
-        -- Как же я обожаю таймеры 😍
         count_of_recent_hits = 0,
 
         time_after_which_we_should_attack = 0.0,
 
+        -- Как же я обожаю таймеры 😍
         dash_time_left = 0.0,
         chase_time_left = 0.0,
         patrol_rest_time = 0.0,
@@ -92,7 +89,6 @@ function Panda:new(x, y, panda_type)
         change_look_direction_cooldown = 0.0,
 
         -- Хотите ли вы потягаться с такой пандой?🙄 Ответ был дан выше
-        dash_can_not_kill_player = false,
     }
 
     setmetatable(object, self)
@@ -128,6 +124,10 @@ end
 function Panda:die()
     Basic.play_sound(SOUNDS.PANDA_DEAD)
     table.remove_element(game.current_level.pandas, self)
+end
+
+function Panda:moving_at_high_speed()
+    return math.abs(self.velocity.x) >= 0.25 * PANDA_SETTINGS[self.type].dash_strength
 end
 
 -- кто уберет, тот сам будет переписывать код миниигры
@@ -351,12 +351,21 @@ function Panda:update()
 
     local player_rect = Hitbox.rect_of(player)
 
+    if table.contains(PANDA_LYING_DOWN_SPRITES, self.animation_controller:current_frame()) then
+        self.hitbox = PANDA_LYING_DOWN_HITBOX
+    else
+        self.hitbox = PANDA_STANDING_HITBOX
+    end
+
     local our_rect = Hitbox.rect_of(self)
 
     local is_on_ground = Physics.is_on_ground(self)
 
     local view_cone = self:view_cone_shape()
     local sees_player = Physics.check_collision_shape_rect(view_cone, Hitbox.rect_of(player))
+
+    local has_dash = PANDA_SETTINGS[self.type].has_dash
+    local has_stick = PANDA_SETTINGS[self.type].has_stick
 
     if self.state == PANDA_STATE.patrol then
 
@@ -407,9 +416,9 @@ function Panda:update()
         if x_distance_to_player <= attack_distance and y_distance_to_player <= PANDA_Y_DISTANCE_TO_PLAYER_UNTIL_BASIC_ATTACK then
             if can_attack_the_player then
                 Basic.play_sound(SOUNDS.PANDA_BASIC_ATTACK_CHARGE)
-                if self.has_stick then
+                if has_stick then
                     self.state = PANDA_STATE.charging_basic_attack
-                elseif self.has_dash then
+                elseif has_dash then
                     self.charging_dash_time_left = PANDA_SETTINGS[self.type].dash_charge_duration
                     self.state = PANDA_STATE.charging_dash
                 else
@@ -419,7 +428,7 @@ function Panda:update()
             elseif self.time_after_which_we_should_attack == 0.0 then
                 self.time_after_which_we_should_attack = PANDA_SETTINGS[self.type].delay_after_starting_chase_before_attacking
             end
-        elseif self.has_dash and is_on_ground and x_distance_to_player <= PANDA_X_DISTANCE_TO_PLAYER_UNTIL_DASH then
+        elseif has_dash and is_on_ground and x_distance_to_player <= PANDA_X_DISTANCE_TO_PLAYER_UNTIL_DASH then
             if can_attack_the_player then
                 if y_distance_to_player <= PANDA_Y_DISTANCE_TO_PLAYER_UNTIL_DASH then
                     Basic.play_sound(SOUNDS.PANDA_DASH_CHARGE)
@@ -484,7 +493,7 @@ function Panda:update()
         self:set_look_direction(player_rect:center_x() < our_rect:center_x() and -1 or 1)
 
         if self.animation_controller:is_at_last_frame() then
-            if self.has_stick then
+            if has_stick then
                 if self.basic_attack_time_left == 0.0 then
                     local attack_rect = self:make_attack_rect()
 
@@ -533,7 +542,7 @@ function Panda:update()
 
     elseif self.state == PANDA_STATE.dashing then
 
-        if self.has_stick and self.animation_controller:is_at_last_frame() then
+        if has_stick and self.animation_controller:is_at_last_frame() then
             if self.basic_attack_time_left == 0.0 then
 
                 self.attack_effect = self:make_attack_effect()
@@ -549,24 +558,21 @@ function Panda:update()
                 --    our_rect:draw(2)
                 --end)
 
-                if not self.dash_can_not_kill_player then
-                    if Physics.check_collision_rect_rect(our_rect, player_rect) then
-                        player:die(self.look_direction, 0)
-                    elseif Physics.check_collision_rect_rect(attack_rect, player_rect) then
-                        player:die(self.look_direction, 0)
-                    end
+                if Physics.check_collision_rect_rect(our_rect, player_rect) then
+                    player:die(self.look_direction, 0)
+                elseif Physics.check_collision_rect_rect(attack_rect, player_rect) then
+                    player:die(self.look_direction, 0)
                 end
 
                 self.basic_attack_time_left = Basic.tick_timer(self.basic_attack_time_left)
                 if self.basic_attack_time_left == 0.0 then
                     self.state = PANDA_STATE.chase
-                    self.dash_can_not_kill_player = false
                     self.small_dash = false
                 end
             end
         end
 
-        if Physics.check_collision_rect_rect(our_rect, player_rect) and not self.dash_can_not_kill_player then
+        if Physics.check_collision_rect_rect(our_rect, player_rect) then
             game.player:die(self.velocity.x, self.velocity.y)
         end
 
@@ -575,7 +581,6 @@ function Panda:update()
 
         if is_on_ground and self.dash_time_left == 0.0 then
             self.state = PANDA_STATE.chase
-            self.dash_can_not_kill_player = false
             self.small_dash = false
         end
 

@@ -22,10 +22,6 @@ game = {
     },
 }
 
-if DEV_MODE_ENABLED then
-    game.state = GAME_STATE_GAMEPLAY
-end
-
 function game.init()
     -- А что использовать как сид 🤔? `os.time()` в тике недоступен
     -- math.randomseed(69420)
@@ -196,7 +192,9 @@ function game.restart()
     game.bike = Bike:new(190*8, 12*8)
     table.insert(game.triggers, game.bike)
 
-    if not DEV_MODE_ENABLED then
+    if SKIP_CUTSCENE then
+        game.state = GAME_STATE_GAMEPLAY
+    else
         cutscene:init()
     end
     game.state = GAME_STATE_CUTSCENE
@@ -268,7 +266,7 @@ function game.update()
             dialog_window:draw()
         end
     elseif game.state == GAME_STATE_CUTSCENE then
-        if DEV_MODE_ENABLED then
+        if SKIP_CUTSCENE then
            game.state = GAME_STATE_GAMEPLAY
         else
             game.camera:update()
@@ -350,8 +348,6 @@ function game.update()
         draw_psystems()
         game.animate_tiles()
         Debug.draw()
-
-        font(localize(TEXT.SETTINGS_RESET_DEFAULTS), 0, 0, 7, false, 1)
 
         if game.all_pandas_dead() then
             local char_width = 8
