@@ -87,10 +87,13 @@ function Player:die(kill_velocity_x, kill_velocity_y)
     if self.is_dead then
         return
     end
+    --slow_time = true
 
     -- heart attack 💔 <- 💓 <- 💢
     kill_velocity_x = kill_velocity_x or 0
     kill_velocity_y = kill_velocity_y or 0
+
+    create_particles(self.x, self.y, math.sign(kill_velocity_x), 1000, 4000, 30, {1})
 
     self.velocity.x = PLAYER_DEATH_KNOCKBACK_HORIZONTAL * math.sign(kill_velocity_x)
     self.velocity.y = PLAYER_DEATH_KNOCKBACK_VERTICAL
@@ -286,7 +289,7 @@ function Player:update()
     -- значительно повысит сложность прохождения и предоставит им новые вызовы,
     -- так и простым игрокам, потому что они будут счастливы использовать обычный прыжок вместо этой странной фигни
     --
-    if self.did_we_hit_ground_with_downward_strike then
+    --if self.did_we_hit_ground_with_downward_strike then
         -- Дорогой дневник разработки новых механик: 
         --
         -- 1 день:
@@ -311,11 +314,11 @@ function Player:update()
         -- Разобрался, что да как, думаю достаточно быстро для 1000000-строчного монолита
         -- Фича уходит в релиз
         --
-        self.velocity.y = PLAYER_DOWNWARD_ATTACK_JUMP_STRENGTH
-        self.did_we_hit_ground_with_downward_strike = false
-        self.downward_attack_time = 0.0
-        has_jumped = true
-    end
+    --    self.velocity.y = PLAYER_DOWNWARD_ATTACK_JUMP_STRENGTH
+    --    self.did_we_hit_ground_with_downward_strike = false
+    --    self.downward_attack_time = 0.0
+    --    has_jumped = true
+    --end
     -- Ну да, вписать это в обычный прыжок будет очень легко.
 
     if should_jump then
@@ -451,8 +454,25 @@ function Player:update()
             end
         end
 
-        local attack_width = 8 + 4 * math.abs(attack_direction_x)
-        local attack_height = 8 + 4 * math.abs(attack_direction_y)
+        -- поддерживаем атаку по диагонали для рывка как в Katana Zero
+        --if attack_direction_y ~= 0 then
+        --    if walking_right then
+        --        attack_direction_x = attack_direction_x + 1
+        --    elseif walking_left then
+        --        attack_direction_x = attack_direction_x - 1
+        --    end 
+        --end
+        -- даем игроку доп скорость в направлении удара
+        --if is_on_ground then
+        --    self.velocity.x = self.velocity.x + KATANA_ZERO_DASH.ground * attack_direction_x
+        --    self.velocity.y = self.velocity.y + KATANA_ZERO_DASH.ground * (-attack_direction_y)
+        --else
+        --    self.velocity.x = self.velocity.x + KATANA_ZERO_DASH.air * attack_direction_x
+        --    self.velocity.y = self.velocity.y + KATANA_ZERO_DASH.air * (-attack_direction_y)
+        --end
+
+        local attack_width = 10 + 4 * math.abs(attack_direction_x)
+        local attack_height = 10 + 4 * math.abs(attack_direction_y)
         local attack_x = player_rect:center_x() - attack_width / 2 + attack_direction_x * 8
         local attack_y = player_rect:center_y() - attack_height / 2 + attack_direction_y * 8
 
@@ -492,7 +512,7 @@ function Player:update()
             end
 
             for _, panda in ipairs(hit_pandas) do
-                if panda.state == PANDA_STATE.dashing then
+                if panda:moving_at_high_speed() then
                     goto next_iteration
                 end
 
@@ -546,25 +566,17 @@ function Player:update()
         end
     end
 
-    if self.jump_up_cooldown == 0.0 and self:is_attacking() and self.has_attacked_downward then
-        -- Ну да, а что поделать? Для дурацких проблем нужны дурацкие решения.
-        local strike_attack_rect = self.attack_rects[1]
-        self.did_we_hit_ground_with_downward_strike = Physics.check_collision_rect_tilemap(strike_attack_rect) ~= nil
-        self.jump_up_cooldown = 0.055
-    else
-        self.did_we_hit_ground_with_downward_strike = false
-    end
+    --if self.jump_up_cooldown == 0.0 and self:is_attacking() and self.has_attacked_downward then
+    --    -- Ну да, а что поделать? Для дурацких проблем нужны дурацкие решения.
+    --    local strike_attack_rect = self.attack_rects[1]
+    --    self.did_we_hit_ground_with_downward_strike = Physics.check_collision_rect_tilemap(strike_attack_rect) ~= nil
+    --    self.jump_up_cooldown = 0.055
+    --else
+    --    self.did_we_hit_ground_with_downward_strike = false
+    --end
 
-   
-    -- Анимациями занимаются здесь 🏭
-    -- Заметка для меня из будущего:
-    -- Здесь может быть баг с тем, что спрайты глобальные. Так было
-    -- в пандах, у которых был один общий спрайт на всех, поэтому пришлось
-    -- копировать.
     if has_jumped then
         if has_walljumped then
-            -- Наверное в будущем здесь вообще будут кастомные эффекты. Пока
-            -- что же тут магические константы 🪄
             if self.looking_left then
                 Effects.add(self.x + 2, self.y, SPRITES.particle_effects.jump)
             else
@@ -575,6 +587,11 @@ function Player:update()
         end
     end
 
+    -- Анимациями занимаются здесь 🏭
+    -- Заметка для меня из будущего:
+    -- Здесь может быть баг с тем, что спрайты глобальные. Так было
+    -- в пандах, у которых был один общий спрайт на всех, поэтому пришлось
+    -- копировать.
     if self.attack_timer > 0 then
         if self.has_attacked_downward then
             self.animation_controller:set_sprite(SPRITES.player.attack_air_downward)
@@ -623,14 +640,6 @@ function Player:draw()
     local flip = self.looking_left and 1 or 0
 
     local tx, ty = game.camera:transform_coordinates(self.x, self.y)
-    --ty = ty - 8 * (self.animation_controller:current_animation().height - 1)
-
-    for _, attack_rect in ipairs(self.attack_rects) do
-        -- Этот код не работает. Почему?
-        --if attack_rect.y < Hitbox.rect_of(self).y - 2 then
-        --    flip = flip + 2
-        --end
-    end
 
     self.animation_controller:draw(tx, ty, flip)
     self.animation_controller:next_frame()
@@ -642,10 +651,6 @@ function Player:draw()
     if self.is_dead then
         self.hat:draw()
     end
-
-    --for _, attack_rect in ipairs(self.attack_rects) do
-    --   attack_rect:draw(2)
-    --end
 end
 
 Player.__index = Player

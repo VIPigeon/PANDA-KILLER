@@ -17,12 +17,14 @@ game = {
         {tile_x1 = 90, tile_y1 = 0, tile_x2 = 119, tile_y2 = 48, player_x = 90*8, player_y = 23*8},
         {tile_x1 = 120, tile_y1 = 0, tile_x2 = 179, tile_y2 = 16, player_x = 120*8, player_y = 3*8},
         {tile_x1 = 180, tile_y1 = 0, tile_x2 = 209, tile_y2 = 16, player_x = 180*8, player_y = 7*8},
+--        {tile_x1 = 0, tile_y1 = 0, tile_x2 = 119, tile_y2 = 16, player_x = PLAYER_SPAWNPOINT_X, player_y = PLAYER_SPAWNPOINT_Y},
+--        {tile_x1 = 0, tile_y1 = 17, tile_x2 = 99, tile_y2 = 32, player_x = 0, player_y = 30*8}, 
+--        {tile_x1 = 0, tile_y1 = 34, tile_x2 = 62, tile_y2 = 49, player_x = 3*8, player_y = 42*8},
+--        {tile_x1 = 122, tile_y1 = 0, tile_x2 = 176, tile_y2 = 16, player_x = (6+122)*8, player_y = 10*8},
+--        {tile_x1 = 0, tile_y1 = 51, tile_x2 = 46, tile_y2 = 100, player_x = 0, player_y = 97*8},
+--        {tile_x1 = 47, tile_y1 = 51, tile_x2 = 114, tile_y2 = 100, player_x = 50*8, player_y = 97*8},
     },
 }
-
-if DEV_MODE_ENABLED then
-    game.state = GAME_STATE_GAMEPLAY
-end
 
 function game.init()
     -- А что использовать как сид 🤔? `os.time()` в тике недоступен
@@ -194,10 +196,18 @@ function game.restart()
     game.bike = Bike:new(190*8, 12*8)
     table.insert(game.triggers, game.bike)
 
-    if not DEV_MODE_ENABLED then
+    if SKIP_CUTSCENE then
+        game.state = GAME_STATE_GAMEPLAY
+    else
         cutscene:init()
     end
+    game.state = GAME_STATE_CUTSCENE
 end
+
+slow_time = false
+microslow_time = false
+microslow_time_counter = 0
+slow_time_counter = 0
 
 function game.update()
     if DISCLAIMER then
@@ -224,9 +234,14 @@ function game.update()
         return
     end
 
+    -- гордо возвышается над игрой
+    -- выбрать путь предлагает
+    -- меню 🗻
+    -- и дерзкий draw_map - не мешает
+    GameMenu:update()
+
     if game.state == GAME_STATE_LANGUAGE_SELECTION then
         if btnp(BUTTON_Z) then
-            --game.state = GAME_STATE_GAMEPLAY
             game.state = GAME_STATE_CUTSCENE
         end
         if btnp(BUTTON_RIGHT) or btnp(BUTTON_LEFT) then
@@ -240,6 +255,7 @@ function game.update()
     elseif game.state == GAME_STATE_PAUSED then
         game.dialog_window:update()
         game.dialog_window:draw()
+        GameMenu:draw()
     elseif game.state == GAME_STATE_RIDING_BIKE then
         game.draw_map()
         game.bike:init_go_away()
@@ -254,8 +270,8 @@ function game.update()
             dialog_window:draw()
         end
     elseif game.state == GAME_STATE_CUTSCENE then
-        if DEV_MODE_ENABLED then
-           game.state = GAME_STATE_GAMEPLAY 
+        if SKIP_CUTSCENE then
+           game.state = GAME_STATE_GAMEPLAY
         else
             game.camera:update()
             cutscene:update()
@@ -271,6 +287,28 @@ function game.update()
         ClickerMinigame:update()
         ClickerMinigame:draw()
     elseif game.state == GAME_STATE_GAMEPLAY then
+        local level = game.levels[game.current_level_index]
+        update_psystems()  -- перенес наверх для slow_time
+        if slow_time then
+            slow_time_counter = slow_time_counter + 1
+            if slow_time_counter >= 16 then
+                slow_time_counter = 0
+                slow_time = false
+            end
+            if slow_time_counter % 10 ~= 0 then
+                goto draw
+            end
+        end
+        --if microslow_time then
+        --    microslow_time_counter = microslow_time_counter + 1
+        --    if microslow_time_counter >= 2 then
+        --        microslow_time_counter = 0
+        --        microslow_time = false
+        --    end
+        --    if microslow_time_counter % 10 ~= 0 then
+        --        goto end_of_loop
+        --    end
+        --end
         game.dialog_window:update()
         game.player:update()
         game.bike:update()
@@ -280,13 +318,10 @@ function game.update()
             panda:update()
         end
         game.parallaxscrolling:update()
-        update_psystems()
 
         if game.player.x >= game.cur_level.tile_x2 * 8 and not game.all_pandas_dead() then
             game.player.x = game.cur_level.tile_x2 * 8 - 1
         end
-
-        local level = game.levels[game.current_level_index]
 
         if game.cur_level and game.all_pandas_dead() and game.player.x >= game.cur_level.tile_x2 * 8 or keyp(KEY_P) then
             game.current_level_index = game.current_level_index + 1
@@ -298,7 +333,9 @@ function game.update()
             end
         end
 
+        ::draw::
         game.draw_map()
+
         for _, panda in ipairs(game.current_level.pandas) do
             panda:draw()
         end
@@ -325,6 +362,7 @@ function game.update()
         error('Invalid game state!')
     end
 
+::end_of_loop::
     Time.update()
 end
 

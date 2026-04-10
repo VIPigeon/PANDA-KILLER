@@ -4,6 +4,7 @@ require 'Base/AnimationController'
 require 'Base/Basic'
 require 'Base/Body'
 require 'Base/ChildBody'
+require 'Base/Controls'
 require 'Base/Hitbox'
 require 'Base/Localization'
 require 'Base/Math'
@@ -31,11 +32,12 @@ require 'Game/Game'
 require 'Game/Hat'
 require 'Game/House'
 require 'Game/LanguageSelection'
+require 'Game/Menu'
 require 'Game/Panda'
 require 'Game/ParallaxScrolling'
 require 'Game/Player'
 
-require 'Game/Cutscenario'
+require 'Game/Cutscenario'  -- почему не в алфавитном порядке? 😠
 
 require 'Libraries/pslib'
 

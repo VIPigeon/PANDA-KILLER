@@ -10,7 +10,8 @@
 -- User Manual:
 -- 
 -- У панды появляется поле kantugging_friend_panda - обозначает, важна ли для неё её палка настолько,
---                             ^-- Неправда!!!
+--                             ^-- Неправда!!! 
+--                                      ^-- Может быть и нет, но когда я это писал - было, я уже забыл, честно говоря, вы там наверное уже всё пофиксили
 -- чтобы она за неё дралась.
 -- Если да, то по функции активации σ(panda, player) запускается игра кликер.
 -- Подробнее о σ(x,y) см. в приложении 2.
@@ -265,32 +266,38 @@ function ClickerMinigame:draw()
     
     id_frame_player = animation_controller_player:current_frame()
 
+    local x = 40
+    local y = 96
+    local stick_x = x + 10
+    local stick_y = y + 6
+    local panda_x = x + 22
+
     if id_frame_player == 484 then
-        animation_controller_player:draw(game.player.x-game.scale,game.player.y)
+        animation_controller_player:draw_at_screen_coordinates(x - 2, y)
         if trigger_stick then
-            draw_stick(game.player.x+13,game.player.y+6,11,animation_controller_player)
+            draw_stick(stick_x + 1, stick_y, 11, animation_controller_player)
         end
     elseif id_frame_player == 485 then
-        animation_controller_player:draw(game.player.x-2*game.scale,game.player.y)
+        animation_controller_player:draw_at_screen_coordinates(x - 4, y)
         if trigger_stick then
-            draw_stick(game.player.x+12,game.player.y+6,11,animation_controller_player)
+            draw_stick(stick_x, stick_y, 11, animation_controller_player)
         end
     elseif id_frame_player == 483 then
-        animation_controller_player:draw(game.player.x+game.scale,game.player.y)
+        animation_controller_player:draw_at_screen_coordinates(x + 2, y)
         if trigger_stick then
-            draw_stick(game.player.x+15,game.player.y+6,11,animation_controller_player)
+            draw_stick(stick_x + 3, stick_y, 11, animation_controller_player)
         end
     else
-        animation_controller_player:draw(game.player.x,game.player.y)
+        animation_controller_player:draw_at_screen_coordinates(x, y)
         if trigger_stick then
-            draw_stick(game.player.x+14,game.player.y+6,11,animation_controller_player)
+            draw_stick(stick_x + 2, stick_y, 11, animation_controller_player)
         end
     end
 
     for _, panda in ipairs(game.current_level.pandas) do
-        animation_controller_panda:draw(panda.x,panda.y,trigger_flip_panda)
-    end 
-    
+        animation_controller_panda:draw_at_screen_coordinates(panda_x, y)
+    end
+
     -- -- это вообще совсем мусор
     -- if is_game_over and not is_player_win then
     --     --game.player.is_dead = true
@@ -306,8 +313,8 @@ function draw_stick(x, y, color, animation_controller)
     current_scale = game.scale
     -- А вот это вообще ужас, с каких соображений x и y такие? Но разработчику, 
     -- который данный код писал в AnimationController, виднее...
-    x = x - (current_scale - 1) * 48
-    y = y + 24 * (current_scale - 1) - 8 * current_scale * (animation_controller:current_animation().height - 1)
+    --x = x - (current_scale - 1) * 48
+    --y = y + 24 * (current_scale - 1) - 8 * current_scale * (animation_controller:current_animation().height - 1)
     rect(x-current_scale, y,current_scale, current_scale, color)
     rect(x, y,current_scale, current_scale, color)
     for i = 0, 4 do
