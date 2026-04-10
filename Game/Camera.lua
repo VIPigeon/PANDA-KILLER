@@ -34,16 +34,6 @@ function Camera:new(player)
     return object
 end
 
--- function Camera:rescale(scale_mult)
---     for y = 0, 135 do
---         for x = 0, 239 do
---             local color = pix(x, y)
---             --trace('rescaling')
---             rect(x * scale_mult, y * scale_mult, scale_mult, scale_mult, color)
---         end
---     end
--- end
-
 function Camera:transform_coordinates(x, y)
     local tx = x + SCREEN_WIDTH/2 - math.floor(self.x)
     local ty = y + SCREEN_HEIGHT/2 - math.ceil(self.y) - 4
@@ -95,11 +85,6 @@ function Camera:update()
     local player_x = (player.x + 8)
     local line_left_x = self.center_x - CAMERA_LINES_DISTANCE_FROM_CENTER
     local line_right_x = self.center_x + CAMERA_LINES_DISTANCE_FROM_CENTER
-
-    -- if self.scale ~= 1 then
-    --     trace('hahahahahhahahah')
-    --     self:rescale(self.scale)
-    -- end
 
     if self.horizontal_pan_state == CAMERA_NO_HORIZONTAL_PAN then
         self.time_since_player_changed_direction = 0.0

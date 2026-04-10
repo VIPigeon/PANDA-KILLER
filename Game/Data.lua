@@ -1,53 +1,10 @@
 data = {}
 
--- 🏮 Перед релизом поставить в false!!! 🏮
-DEV_MODE_ENABLED = true
+SKIP_CUTSCENE = true
 DISCLAIMER = false
 NEED_TO_KILL_ALL_PANDAS_ON_LEVEL = true
 
---
--- Управление
---
-BUTTON_UP    = 0
-BUTTON_DOWN  = 1
-BUTTON_LEFT  = 2
-BUTTON_RIGHT = 3
-
-BUTTON_Z = 4
-BUTTON_X = 5
-BUTTON_A = 6
-BUTTON_S = 7
-
-KEY_W = 23
-KEY_A = 01
-KEY_S = 19
-KEY_D = 04
-KEY_N = 14
-KEY_SPACE = 48
-
-KEY_E = 5
-KEY_F = 6
-KEY_J = 10
-
-KEY_P = 16
-
---[[
-
-Таблица переводов кнопок контроллеров.
-Кто-то же должен это делать 🤓
-
-+------+-----------+----------+-----------+
-| XBOX |    PS4    | Keyboard | Direction |
-+------+-----------+----------+-----------+
-|  A   |  cross    |    z     |   south   |
-|  B   |  circle   |    x     |   east    |
-|  X   |  square   |    a     |   west    |
-|  Y   |  triangle |    s     |   north   |
-+------+-----------+----------+-----------+
-
-]]--
-
-
+CLICKER_FIGHT_MODE = true
 
 GAME_STATE_LANGUAGE_SELECTION = 1
 GAME_STATE_GAMEPLAY = 2
@@ -101,8 +58,8 @@ CAMERA_DIRECTION_CHANGE_TIME = 0.3
 --]]
 
 -- кароч ещё в cutscenatio есть такое
-PLAYER_SPAWNPOINT_X = 10*8                                      -- пиксели
-PLAYER_SPAWNPOINT_Y = 11*8                                     -- пиксели
+PLAYER_SPAWNPOINT_X = 3*8                                      -- пиксели
+PLAYER_SPAWNPOINT_Y = 7*8                                     -- пиксели
 
 --
 -- Всё что связано с движением 🏎️
@@ -137,6 +94,10 @@ PLAYER_GRAVITY = (2 * PLAYER_JUMP_HEIGHT) / (PLAYER_TIME_TO_APEX * PLAYER_TIME_T
 PLAYER_GRAVITY_AFTER_WALL_JUMP = 0.75 * PLAYER_GRAVITY
 PLAYER_JUMP_STRENGTH = math.sqrt(2 * PLAYER_GRAVITY * PLAYER_JUMP_HEIGHT)
 PLAYER_DOWNWARD_ATTACK_JUMP_STRENGTH = 0.8 * PLAYER_JUMP_STRENGTH
+KATANA_ZERO_DASH = {
+    ground = 0.6 * PLAYER_JUMP_STRENGTH,
+    air = 0.1 * PLAYER_JUMP_STRENGTH,
+}
 --[[
 Итак, объясняю как работает прыжок от стены 🤓
 
@@ -278,7 +239,7 @@ PANDA_PHYSICS_SETTINGS = {
 -- Настройки, которые меняются в зависимости от типа панды
 PANDA_SETTINGS = {
     [PANDA_TYPE.basic] = {
-        health = 6,
+        health = 4,
 
         patrol_speed = 8,
         chase_speed  = 2.5 * 8,
@@ -300,85 +261,32 @@ PANDA_SETTINGS = {
 
         default_state = PANDA_STATE.patrol,
     },
-    -- Вот это всё бесполезно
-    --[PANDA_TYPE.stickless] = {
-    --    health = 6,
-
-    --    patrol_speed = 8,
-    --    chase_speed  = 2.5 * 8,
-    --    dash_charge_duration = 0.8,  -- 1.5
-    --    dash_duration = 0.6, -- 1.0
-    --    dash_strength = 170,
-    --    -- Это отсчет до того как панда сможет атаковать после
-    --    -- того как начала гнаться за игроком. Да, я просто перевел
-    --    -- название переменной с английского и назвал это документацией.
-    --    delay_after_starting_chase_before_attacking = 0.3,
-
-    --    -- Время, после которого панда устанет гоняться за игроком.
-    --    -- Это при условии, что она игрока не видит.
-    --    chase_duration = 3.0,
-    --},
-    --[PANDA_TYPE.orange_eyes] = {
-    --    health = 6,
-
-    --    patrol_speed = 9,
-    --    chase_speed  = 2.7 * 8,
-    --    dash_charge_duration = 0.5,  -- 1.5
-    --    dash_duration = 0.6, -- 1.0
-    --    dash_strength = 200,
-    --    health_at_which_to_get_stunned = 2,
-
-    --    eye_color = 9,
-
-    --    -- Это отсчет до того как панда сможет атаковать после
-    --    -- того как начала гнаться за игроком. Да, я просто перевел
-    --    -- название переменной с английского и назвал это документацией.
-    --    delay_after_starting_chase_before_attacking = 0.3,
-
-    --    -- Время, после которого панда устанет гоняться за игроком.
-    --    -- Это при условии, что она игрока не видит.
-    --    chase_duration = 4.0,
-    --},
-    --[PANDA_TYPE.chilling] = {
-    --    health = 6,
-
-    --    patrol_speed = 6,
-    --    chase_speed  = 2.0 * 6,
-    --    dash_charge_duration = 0.7,
-    --    dash_duration = 0.6,
-    --    dash_strength = 100,
-    --    health_at_which_to_get_stunned = 4,
-
-    --    eye_color = 13,
-
-    --    delay_after_starting_chase_before_attacking = 0.3,
-    --    chase_duration = 2.0,
-
-    --    default_state = PANDA_STATE.sleeping,
-    --},
 }
 
 
 PANDA_SETTINGS[PANDA_TYPE.no_stick_no_dash] = table.copy(PANDA_SETTINGS[PANDA_TYPE.basic])
-PANDA_SETTINGS[PANDA_TYPE.no_stick_no_dash].health = 4
-PANDA_SETTINGS[PANDA_TYPE.no_stick_no_dash].health_at_which_to_get_stunned = 1
+--PANDA_SETTINGS[PANDA_TYPE.no_stick_no_dash].health = 5
+--PANDA_SETTINGS[PANDA_TYPE.no_stick_no_dash].health_at_which_to_get_stunned = 2
+-- TODO: при health_at_which_to_get_stunned=1 возникает странный баг,
+-- когда панда все равно вырубается при двух ударах подряд, или при трех ударах с паузой
+-- в текущем балансе этот баг не актуален 🤓
 
 
 PANDA_SETTINGS[PANDA_TYPE.no_stick_dash] = table.copy(PANDA_SETTINGS[PANDA_TYPE.basic])
 PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].eye_color = 6
-PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].health = 4
+--PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].health = 4
 PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].has_dash = true
-PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].dash_charge_duration = 0.35
+PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].dash_charge_duration = 0.6
 PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].dash_duration = 0.7
 PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].dash_strength = 180
 
 PANDA_SETTINGS[PANDA_TYPE.stick_no_dash] = table.copy(PANDA_SETTINGS[PANDA_TYPE.basic])
-PANDA_SETTINGS[PANDA_TYPE.stick_no_dash].health = 4
+--PANDA_SETTINGS[PANDA_TYPE.stick_no_dash].health = 4
 PANDA_SETTINGS[PANDA_TYPE.stick_no_dash].eye_color = 10
 PANDA_SETTINGS[PANDA_TYPE.stick_no_dash].has_stick = true
 
 PANDA_SETTINGS[PANDA_TYPE.stick_and_dash] = table.copy(PANDA_SETTINGS[PANDA_TYPE.basic])
-PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].health = 5
+--PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].health = 5
 PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].eye_color = 6
 PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].has_stick = true
 PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].has_dash = true
@@ -429,7 +337,7 @@ PANDA_VIEW_CONE_HEIGHT = 32
 -- Панда отлетает в стан, после этого её нужно быстро ударить
 -- несколько раз, чтобы она умерла.
 PANDA_STUN_DURATION = 5  -- 2.3
-PANDA_SMALL_STUN_DURATION = 0.6  -- 0.7
+PANDA_SMALL_STUN_DURATION = 0.6
 
 -- Отбрасывание панды от игрока при обычном стаггере
 PANDA_SMALL_STUN_KNOCKBACK_HORIZONTAL = 20.0
@@ -439,6 +347,10 @@ PANDA_SMALL_STUN_KNOCKBACK_HORIZONTAL = 20.0
 PANDA_STUN_KNOCKBACK_HORIZONTAL = 75.0
 PANDA_STUN_KNOCKBACK_VERTICAL = 10.0
 PANDA_STUN_KNOCKBACK_VERTICAL_FROM_VERTICAL_ATTACK = 80.0
+
+PANDA_LYING_DOWN_SPRITES = { 264, 279 }
+PANDA_STANDING_HITBOX = Hitbox:new(1, 0, 6, 8)
+PANDA_LYING_DOWN_HITBOX = Hitbox:new(3, 4, 9, 4)
 
 -- Поля для параллакс скроллинга
 PARALLAX_LAYER_SPEED = 0.2
@@ -457,6 +369,8 @@ end
       Спасибо за посещение. 🧑💼
 
 --]]
+
+SLASH_EFFECT = Sprite:new({486}, 1, 2, 1)
 
 --
 -- Спрайты! 🖼️
@@ -553,15 +467,15 @@ SPRITES.panda[PANDA_TYPE.stick_and_dash] = table.copy(SPRITES.panda[PANDA_TYPE.b
 SPRITES.panda[PANDA_TYPE.house_maid] = table.copy(SPRITES.panda[PANDA_TYPE.no_stick_no_dash])
 -- SPRITES.panda[PANDA_TYPE.guard] = table.copy(SPRITES.panda[PANDA_TYPE.basic])
 SPRITES.panda[PANDA_TYPE.guard] = {
-            walk = Animation:new({348, 350}, 22):to_sprite(),
-            chase = Animation:new({348, 350}, 10):to_sprite(),
-            rest = Animation:new({348, 350}, 20):to_sprite(),
-            -- dashing = Animation:new({267, 268, 269, 270}, 3):with_size(1, 2):at_end_goto_last_frame():to_sprite(),
-            charging_basic_attack = Animation:new({112, 112, 113, 114, 115}, 2):with_size(1, 2):at_end_goto_last_frame():to_sprite(),
-            charging_dash = Animation:new({282}, 1):to_sprite(),
-            dash = Animation:new({263}, 1):to_sprite(),
-            sleeping = Animation:new({318}, 1):with_size(2, 1):to_sprite(),
-        }
+    walk = Animation:new({348, 350}, 22):to_sprite(),
+    chase = Animation:new({348, 350}, 10):to_sprite(),
+    rest = Animation:new({348, 350}, 20):to_sprite(),
+    -- dashing = Animation:new({267, 268, 269, 270}, 3):with_size(1, 2):at_end_goto_last_frame():to_sprite(),
+    charging_basic_attack = Animation:new({112, 112, 113, 114, 115}, 2):with_size(1, 2):at_end_goto_last_frame():to_sprite(),
+    charging_dash = Animation:new({282}, 1):to_sprite(),
+    dash = Animation:new({263}, 1):to_sprite(),
+    sleeping = Animation:new({318}, 1):with_size(2, 1):to_sprite(),
+}
 
 
 
@@ -579,7 +493,7 @@ ANIMATED_TILES = {
 
 --
 -- Звуки (sfx🤪)! 🔊
--- 
+--
 SOUNDS = {
     MUTE_CHANNEL_ZERO = {id = -1, note = -1, channel = 0},
     MUTE_CHANNEL_ONE = {id = -1, note = -1, channel = 1},
@@ -591,9 +505,9 @@ SOUNDS = {
     PLAYER_DEAD = {id = 5, note = 'C-5', duration = 30, channel = 2},
     PLAYER_PARRY = {id = 4, note = 'C-5', duration = 10, channel = 2},
 
-    PANDA_DASH_CHARGE = {id = 11, note = 'G-3', duration = 20, channel = 2},
+    PANDA_DASH_CHARGE = {id = 15, note = 'G-3', duration = 20, channel = 2},
     PANDA_DASH = {id = 11, note = 'C-5', duration = 20, channel = 2},
-    PANDA_BASIC_ATTACK_CHARGE = {id = 11, note = 'G-4', duration = 20, channel = 2},
+    PANDA_BASIC_ATTACK_CHARGE = {id = 15, note = 'G-4', duration = 20, channel = 2},
     PANDA_BASIC_ATTACK = {id = 11, note = 'C-4', duration = 20, channel = 2},
     PANDA_JUMP = {id = 4, note = 'A#5'},
     PANDA_HIT = {id = 11, note = 'G-5', duration = 20, channel = 2},
@@ -628,47 +542,96 @@ TEXT = {
         ['ru'] = 'ВПЕРЕД)',
         ['en'] = 'GO)',
     },
+    -- как тьма зол
+    -- не щадит любезность
+    -- запретил каомодзи
+    -- kawaii-code 😈
+    MENU_TITLE = {
+        ['ru'] = 'менюшка', -- 'менюшка ~^w^~'
+        ['en'] = 'menuwu', -- 'menuwu ~^w^~'
+    },
+    MENU_OPTION_CONTINUE = {
+        ['ru'] = 'ПРОДОЛЖИТБ', -- 'продолжитб~'
+        ['en'] = 'CONTIMEOW',
+    },
+    MENU_OPTION_SETTINGS = {
+        ['ru'] = 'НАСТРОИЧКИ', -- 'настроички >_<'
+        ['en'] = 'SETTINGS', -- 'settings {{{(>_<)}}}'
+    },
+    MENU_OPTION_MAIN_MENU = {
+        ['ru'] = 'НЕ УХОДИ', -- 'не уходи ￣へ￣'
+        ['en'] = 'DONT LEAVE ME', -- 'dont leave me ￣へ￣'
+    },
+
+    -- SETTINGS
+    SETTINGS_CONTROLS = {
+        ['ru'] = 'КНОПКИ',
+        ['en'] = 'CONTROLS',
+    },
+    SETTINGS_RESET_DEFAULTS = {
+        ['ru'] = 'ПО УМОЛЧАНИЮ',
+        ['en'] = 'RESET',
+    },
+    SETTINGS_BACK = {
+        ['ru'] = 'НАЗАД',
+        ['en'] = 'BACKA',
+    },
+
+    SETTINGS_PRESS_KEY_TO_REBIND = {
+        ['ru'] = 'НАЖМИ КНОПКУ',
+        ['en'] = 'Press key to rebind',
+    },
+
+    SETTINGS_PRESS_KEY = {
+        ['ru'] = 'НАЖМИ КНОПКУ',
+        ['en'] = 'Press key to rebind',
+    },
+
+    CONTROL_LABELS = {
+        left = {
+            ['ru'] = 'ВЛЕВО',
+            ['en'] = 'MOVE LEFT',
+        },
+        right = {
+            ['ru'] = 'ВПРАВО',
+            ['en'] = 'MOVE RIGHT',
+        },
+        look_down = {
+            ['ru'] = 'ВНИЗ',
+            ['en'] = 'MOVE DOWN',
+        },
+        look_up = {
+            ['ru'] = 'ВВЕРХ',
+            ['en'] = 'MOVE UP',
+        },
+        jump = {
+            ['ru'] = 'ПРЫЖОК',
+            ['en'] = 'JUMP',
+        },
+        attack = {
+            ['ru'] = 'АТАКОВАТЬ',
+            ['en'] = 'ATTACK',
+        },
+        escape = {
+            ['ru'] = 'ПАУЗА',
+            ['en'] = 'PAUSE',
+        },
+        key_rebinding_label = {
+            ['ru'] = '...',
+            ['en'] = '...',
+        },
+        action_col_label = {
+            ['ru'] = 'ДЕЙСТВИЕ',
+            ['en'] = 'ACTION',
+        },
+        key_col_label = {
+            ['ru'] = 'КНОПКА',
+            ['en'] = 'KEY',
+        },
+
+    },
+    
 }
-
---
--- Бинды на клавиши ⌨️
---
-CONTROLS = {
-    left      = { keys = { KEY_A },     buttons = { BUTTON_LEFT }, },
-    right     = { keys = { KEY_D },     buttons = { BUTTON_RIGHT }, },
-    look_up   = { keys = { KEY_W },     buttons = { BUTTON_UP }, },
-    look_down = { keys = { KEY_S },     buttons = { BUTTON_DOWN }, },
-    jump      = { keys = { KEY_SPACE }, buttons = { BUTTON_Z }, },
-    attack    = { keys = { KEY_E, KEY_F, KEY_J },           buttons = { BUTTON_X,  }, },
-}
-
-function was_just_pressed(control)
-    for _, keyboard_key in ipairs(control.keys) do
-        if keyp(keyboard_key) then
-            return true
-        end
-    end
-    for _, button in ipairs(control.buttons) do
-        if btnp(button) then
-            return true
-        end
-    end
-    return false
-end
-
-function is_held_down(control)
-    for _, keyboard_key in ipairs(control.keys) do
-        if key(keyboard_key) then
-            return true
-        end
-    end
-    for _, button in ipairs(control.buttons) do
-        if btn(button) then
-            return true
-        end
-    end
-    return false
-end
 
 -- Это всё нужно убрать в какие-нибудь файлы, но эта задача
 -- для clean coder-ов 🧹
@@ -681,22 +644,6 @@ function is_bad_tile(tile_id)
     return false
 end
 
-data.STANDART_SCALE = 1
-
-data.bad_tile = {}
-data.panda = {}
-data.run = {}
-data.jump = {}
-data.idle = {}
-data.attack = {}
-data.attack_in_jump_forward = {}
-data.attack_in_jump_down = {}
-data.attack_up = {}
-data.slide = {}
-data.coffee_bush = {}
-data.bush = {}
-data.stump = {}
-data.cactus = {}
 
 
 -- Это тайлы для анимаций
@@ -769,14 +716,14 @@ data.attack_in_jump_forward = {
     --tile1 = {424,2}
     --tile2 = {456,2}
     --tile3 = {458,2}
-    --dust_tile = {488,2} 
+    --dust_tile = {488,2}
 }
 
 data.attack_in_jump_down = {
     --tile1 = {490,2}
     --tile2 = {492,2}
     --tile3 = {494,2}
-    --dust_tile = {444,2} 
+    --dust_tile = {444,2}
 }
 
 data.attack_up = {
@@ -784,7 +731,7 @@ data.attack_up = {
     --tile2 = {210,2}
     --tile3 = {212,2}
     --tile4 = {214,2}
-    --dust_tile = {176,2} 
+    --dust_tile = {176,2}
 }
 
 data.jump = {
@@ -841,7 +788,7 @@ function is_tile_solid(tile_id)
     -- Славный был парень, покойся смело👍
     return
         108 <= tile_id and tile_id <= 110 or
-         1 <= tile_id and tile_id <= 4 or
+         1 <= tile_id and tile_id <= 3 or
         16 <= tile_id and tile_id <= 19 or
         35 <= tile_id and tile_id <= 35 or
         48 < tile_id and tile_id <= 52 or
@@ -854,7 +801,7 @@ function is_tile_solid(tile_id)
         (table.contains(HOUSE_OUTSIDE_TILES, tile_id) and not table.contains(HOUSE_DOORS_OUTSIDE, tile_id)) or
         tile_id == 40 or tile_id == 56 or tile_id == 47 or tile_id == 63 or -- Внутренние стенки в доме
         24 <= tile_id and tile_id <= 31 -- Тайлы крыши дома
-        or 33 <= tile_id and tile_id <= 34
+        or 96 <= tile_id and tile_id <= 101
 end
 
 -- function is_tile_water(tile_id)
@@ -862,19 +809,19 @@ end
 -- end
 
 function is_tile_water(tile_id)
-    return 33 <= tile_id and tile_id <= 34 
+    return 33 <= tile_id and tile_id <= 34
 end
 
 -- Далее документация у cat-сцене😸
 
 --[[
-    
+
     Тайлы для панды:
-        1) 268, 281 (8,16) 
+        1) 268, 281 (8,16)
         2) 269, 282 (8,16)
         - Эти два спрайта надо отзеркалить
         -С 3 по 13 (кроме 9,13) нужно дорисовать палку
-        3) 271 (8,8) 
+        3) 271 (8,8)
         4) 281 (8,8)
         5) 314 (8,8)
         6) 316 (8,8)
@@ -888,12 +835,12 @@ end
         - Далее уже панда отбирает палку или умирает и палка у игрока
         14) 271 (8,8) (дорисовать палку)
         15) 287 (8,8) (отзеркалить) (дорисовать палку)
-    
+
     Тайлы для игрока:
-        1) 480 (8,8) 
+        1) 480 (8,8)
         2) 481 (8,8)
         - Эти два спрайта (1,2) без палки, дальше борьба
-        3) 482 (8,8) 
+        3) 482 (8,8)
         4) 483 (8,8)
         5) 482 (8,8)
         6) 484 (8,8) (сместить на 1 пиксель влево)
@@ -937,7 +884,7 @@ end
         --
         -- Буду рад работать у вас 😻! -- kawaii-Год
 
-    Дебаг от Linux Torbolts (2025): 
+    Дебаг от Linux Torbolts (2025):
         trace('Hello Baka! I\'m Bake for you😤')
         ...
         trace(tostring(self.button_pressed)..' '..'AAAAAAAAAAAAAAAAAAAAAHh💦💦💦')

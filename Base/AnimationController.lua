@@ -14,7 +14,7 @@ function AnimationController:new(first_sprite, need_custom_scale, scale)
     need_custom_scale = need_custom_scale or false
 
     -- idk how game inits game.scale must be below
-    scale = scale or data.STANDART_SCALE
+    scale = scale or 1
     local custom_scale = nil
 
     if need_custom_scale then
@@ -99,6 +99,14 @@ function AnimationController:draw(x, y, flip, rotate)
     y = y + 24 * (current_scale - 1) - 8 * current_scale * (self:current_animation().height - 1)
 
     spr(self:current_frame(), x, y, C0, current_scale, flip, rotate, animation.width, animation.height)
+end
+
+function AnimationController:draw_at_screen_coordinates(x, y, flip, rotate)
+    local animation = self:current_animation()
+
+    local scale = 2
+    local y = y - 8 * game.scale * (animation.height - 1)
+    spr(self:current_frame(), x, y, C0, scale, flip, rotate, animation.width, animation.height)
 end
 
 AnimationController.__index = AnimationController

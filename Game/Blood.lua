@@ -86,7 +86,7 @@ end
 --     end
 -- end
 
-local function create_particles(x, y, orientation, minlife, maxlife, amount, colors, color_type)
+function create_particles(x, y, orientation, minlife, maxlife, amount, colors, color_type)
     local ps = make_psystem(minlife, maxlife, minstartsize, maxstartsize, minendsize, maxendsize)
 
     table.insert(ps.emittimers, {
