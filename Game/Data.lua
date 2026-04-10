@@ -4,7 +4,7 @@ SKIP_CUTSCENE = true
 DISCLAIMER = false
 NEED_TO_KILL_ALL_PANDAS_ON_LEVEL = true
 
-
+CLICKER_FIGHT_MODE = true
 
 GAME_STATE_LANGUAGE_SELECTION = 1
 GAME_STATE_GAMEPLAY = 2
@@ -239,7 +239,7 @@ PANDA_PHYSICS_SETTINGS = {
 -- Настройки, которые меняются в зависимости от типа панды
 PANDA_SETTINGS = {
     [PANDA_TYPE.basic] = {
-        health = 6,
+        health = 4,
 
         patrol_speed = 8,
         chase_speed  = 2.5 * 8,
@@ -265,8 +265,8 @@ PANDA_SETTINGS = {
 
 
 PANDA_SETTINGS[PANDA_TYPE.no_stick_no_dash] = table.copy(PANDA_SETTINGS[PANDA_TYPE.basic])
-PANDA_SETTINGS[PANDA_TYPE.no_stick_no_dash].health = 5
-PANDA_SETTINGS[PANDA_TYPE.no_stick_no_dash].health_at_which_to_get_stunned = 2
+--PANDA_SETTINGS[PANDA_TYPE.no_stick_no_dash].health = 5
+--PANDA_SETTINGS[PANDA_TYPE.no_stick_no_dash].health_at_which_to_get_stunned = 2
 -- TODO: при health_at_which_to_get_stunned=1 возникает странный баг,
 -- когда панда все равно вырубается при двух ударах подряд, или при трех ударах с паузой
 -- в текущем балансе этот баг не актуален 🤓
@@ -274,19 +274,19 @@ PANDA_SETTINGS[PANDA_TYPE.no_stick_no_dash].health_at_which_to_get_stunned = 2
 
 PANDA_SETTINGS[PANDA_TYPE.no_stick_dash] = table.copy(PANDA_SETTINGS[PANDA_TYPE.basic])
 PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].eye_color = 6
-PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].health = 4
+--PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].health = 4
 PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].has_dash = true
 PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].dash_charge_duration = 0.6
 PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].dash_duration = 0.7
 PANDA_SETTINGS[PANDA_TYPE.no_stick_dash].dash_strength = 180
 
 PANDA_SETTINGS[PANDA_TYPE.stick_no_dash] = table.copy(PANDA_SETTINGS[PANDA_TYPE.basic])
-PANDA_SETTINGS[PANDA_TYPE.stick_no_dash].health = 4
+--PANDA_SETTINGS[PANDA_TYPE.stick_no_dash].health = 4
 PANDA_SETTINGS[PANDA_TYPE.stick_no_dash].eye_color = 10
 PANDA_SETTINGS[PANDA_TYPE.stick_no_dash].has_stick = true
 
 PANDA_SETTINGS[PANDA_TYPE.stick_and_dash] = table.copy(PANDA_SETTINGS[PANDA_TYPE.basic])
-PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].health = 5
+--PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].health = 5
 PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].eye_color = 6
 PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].has_stick = true
 PANDA_SETTINGS[PANDA_TYPE.stick_and_dash].has_dash = true
@@ -337,7 +337,7 @@ PANDA_VIEW_CONE_HEIGHT = 32
 -- Панда отлетает в стан, после этого её нужно быстро ударить
 -- несколько раз, чтобы она умерла.
 PANDA_STUN_DURATION = 5  -- 2.3
-PANDA_SMALL_STUN_DURATION = 0 -- 0.6  -- 0.7
+PANDA_SMALL_STUN_DURATION = 0.6
 
 -- Отбрасывание панды от игрока при обычном стаггере
 PANDA_SMALL_STUN_KNOCKBACK_HORIZONTAL = 20.0
@@ -467,15 +467,15 @@ SPRITES.panda[PANDA_TYPE.stick_and_dash] = table.copy(SPRITES.panda[PANDA_TYPE.b
 SPRITES.panda[PANDA_TYPE.house_maid] = table.copy(SPRITES.panda[PANDA_TYPE.no_stick_no_dash])
 -- SPRITES.panda[PANDA_TYPE.guard] = table.copy(SPRITES.panda[PANDA_TYPE.basic])
 SPRITES.panda[PANDA_TYPE.guard] = {
-            walk = Animation:new({348, 350}, 22):to_sprite(),
-            chase = Animation:new({348, 350}, 10):to_sprite(),
-            rest = Animation:new({348, 350}, 20):to_sprite(),
-            -- dashing = Animation:new({267, 268, 269, 270}, 3):with_size(1, 2):at_end_goto_last_frame():to_sprite(),
-            charging_basic_attack = Animation:new({112, 112, 113, 114, 115}, 2):with_size(1, 2):at_end_goto_last_frame():to_sprite(),
-            charging_dash = Animation:new({282}, 1):to_sprite(),
-            dash = Animation:new({263}, 1):to_sprite(),
-            sleeping = Animation:new({318}, 1):with_size(2, 1):to_sprite(),
-        }
+    walk = Animation:new({348, 350}, 22):to_sprite(),
+    chase = Animation:new({348, 350}, 10):to_sprite(),
+    rest = Animation:new({348, 350}, 20):to_sprite(),
+    -- dashing = Animation:new({267, 268, 269, 270}, 3):with_size(1, 2):at_end_goto_last_frame():to_sprite(),
+    charging_basic_attack = Animation:new({112, 112, 113, 114, 115}, 2):with_size(1, 2):at_end_goto_last_frame():to_sprite(),
+    charging_dash = Animation:new({282}, 1):to_sprite(),
+    dash = Animation:new({263}, 1):to_sprite(),
+    sleeping = Animation:new({318}, 1):with_size(2, 1):to_sprite(),
+}
 
 
 
@@ -505,9 +505,9 @@ SOUNDS = {
     PLAYER_DEAD = {id = 5, note = 'C-5', duration = 30, channel = 2},
     PLAYER_PARRY = {id = 4, note = 'C-5', duration = 10, channel = 2},
 
-    PANDA_DASH_CHARGE = {id = 11, note = 'G-3', duration = 20, channel = 2},
+    PANDA_DASH_CHARGE = {id = 15, note = 'G-3', duration = 20, channel = 2},
     PANDA_DASH = {id = 11, note = 'C-5', duration = 20, channel = 2},
-    PANDA_BASIC_ATTACK_CHARGE = {id = 11, note = 'G-4', duration = 20, channel = 2},
+    PANDA_BASIC_ATTACK_CHARGE = {id = 15, note = 'G-4', duration = 20, channel = 2},
     PANDA_BASIC_ATTACK = {id = 11, note = 'C-4', duration = 20, channel = 2},
     PANDA_JUMP = {id = 4, note = 'A#5'},
     PANDA_HIT = {id = 11, note = 'G-5', duration = 20, channel = 2},
