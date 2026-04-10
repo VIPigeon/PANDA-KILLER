@@ -847,6 +847,10 @@ function is_tile_solid(tile_id)
         48 < tile_id and tile_id <= 52 or
               tile_id == 80 or
               tile_id == 81 or
+              tile_id == 7 or
+              tile_id == 6 or
+              tile_id >= 96 and tile_id <= 101 or
+              tile_id == 182 or
         (table.contains(HOUSE_OUTSIDE_TILES, tile_id) and not table.contains(HOUSE_DOORS_OUTSIDE, tile_id)) or
         tile_id == 40 or tile_id == 56 or tile_id == 47 or tile_id == 63 or -- Внутренние стенки в доме
         24 <= tile_id and tile_id <= 31 -- Тайлы крыши дома
