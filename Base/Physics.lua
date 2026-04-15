@@ -56,6 +56,19 @@ function Physics.is_on_ground(rigidbody)
 end
 
 function Physics.update(rigidbody)
+    local current_rect = Hitbox.to_rect(rigidbody.hitbox, rigidbody.x, rigidbody.y)
+    local collision = Physics.check_collision_rect_tilemap(current_rect)
+    if collision ~= nil then
+        -- Очень плохая ситуация! Мы в чем-то застряли! 🙃
+        --
+        -- Вообще физика написана так, что ничто никогда ни в чем не застрянет.
+        -- Но у нас тут реальный мир 🦍. Например это может произойти при
+        -- резкой замене хитбокса у объекта. Попробуем выправить ситуацию,
+        -- поискав рядом свободное место, куда мы сможем выпихнуть
+        -- пострадавшего.
+        Physics.try_to_unstuck_rigidbody(rigidbody)
+    end
+
     local is_on_ground = Physics.is_on_ground(rigidbody)
 
     local horizontal_collision = Physics.move_x(rigidbody)
@@ -253,4 +266,59 @@ function Physics.tile_ids_that_intersect_with_rect(rect)
     table.insert(collisions, {x = tile_x2, y = tile_y2, id = id_right_bottom})
 
     return collisions
+end
+
+function Physics.try_to_unstuck_rigidbody(rigidbody)
+    local current_rect = Hitbox.to_rect(rigidbody.hitbox, rigidbody.x, rigidbody.y)
+    local tile_x = math.floor(current_rect.x / 8)
+    local tile_y = math.floor(current_rect.y / 8)
+
+    local new_rect = Rect:new(0, 0, current_rect.w, current_rect.h)
+
+    local radius = 0
+    while radius < 5 do
+        -- В каждой итерации проходимся по квадрату тайлов вокруг застявшего с
+        -- размером стороны radius.
+
+        for dy = -radius + 1, radius - 1 do
+            new_rect.x = 8 * (radius + tile_x)
+            new_rect.y = 8 * (dy + tile_y)
+            if Physics.check_collision_rect_tilemap(new_rect) == nil then
+                goto out_of_two_loops
+            end
+
+            new_rect.x = 8 * (-1 * radius + tile_x)
+            new_rect.y = 8 * (dy + tile_y)
+            if Physics.check_collision_rect_tilemap(new_rect) == nil then
+                goto out_of_two_loops
+            end
+        end
+
+        for dx = -radius, radius do
+            new_rect.x = 8 * (dx + tile_x)
+            new_rect.y = 8 * (radius + tile_y)
+            if Physics.check_collision_rect_tilemap(new_rect) == nil then
+                goto out_of_two_loops
+            end
+
+            new_rect.x = 8 * (dx + tile_x)
+            new_rect.y = 8 * (-1 * radius + tile_y)
+            if Physics.check_collision_rect_tilemap(new_rect) == nil then
+                goto out_of_two_loops
+            end
+        end
+
+        radius = radius + 1
+    end
+
+    ::out_of_two_loops::
+
+    if radius == 5 then
+        -- Это безнадёга. Проверили квадрат размером в 4 тайла -- никуда не
+        -- помещается. Тут только менять уровень или же это смертельный баг.
+        trace("SOMEONE IS STUCK TO DEATH AT " .. rigidbody.x .. ", " .. rigidbody.y .. " FOREVER...")
+    else
+        rigidbody.x = new_rect.x - rigidbody.hitbox.offset_x
+        rigidbody.y = new_rect.y - rigidbody.hitbox.offset_y
+    end
 end
