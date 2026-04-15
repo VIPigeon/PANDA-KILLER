@@ -408,7 +408,6 @@ function Player:update()
         self.looking_left = true
     end
 
-
     if are_we_in_water then
         self.velocity.x = self.velocity.x * PLAYER_SLOWDOWN_IN_WATER_PERCENTAGE
     end
@@ -495,7 +494,6 @@ function Player:update()
         end
 
         local attack_rect = Rect:new(attack_x, attack_y, attack_width, attack_height)
-
 
         -- Выделение памяти 🤮
         self.attack_rects = {attack_rect, player_rect}
