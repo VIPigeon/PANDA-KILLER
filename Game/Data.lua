@@ -87,7 +87,7 @@ PLAYER_TIME_TO_APEX = 0.35                                    -- секунды
 
 -- Когда игрок не зажимает прыжок, у него увеличивается гравитация
 -- Этим достигается "усиленный прыжок" при зажатии кнопки
-PLAYER_GRAVITY_SCALE_WHEN_NOT_HOLDING = 1.92
+PLAYER_GRAVITY_SCALE_WHEN_NOT_HOLDING = 2.7--1.92
 
 -- Считается автоматически! Вручную не менять.
 PLAYER_GRAVITY = (2 * PLAYER_JUMP_HEIGHT) / (PLAYER_TIME_TO_APEX * PLAYER_TIME_TO_APEX)

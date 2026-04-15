@@ -55,7 +55,6 @@ function Player:new()
         looking_left = false,
         was_on_ground_last_frame = false,
         was_sliding_on_wall_last_frame = false,
-        we_jumped_off_a_panda = false,
         is_dead = false,
         hide = false,  -- Когда игрок садится на байк, его надо прятать
 
@@ -272,7 +271,7 @@ function Player:update()
 
     if not is_on_ground then
         local gravity_scale = 1
-        if self.velocity.y > 0 and not jump_held_down and not self.we_jumped_off_a_panda then
+        if self.velocity.y >= 0 and not jump_held_down then
             gravity_scale = PLAYER_GRAVITY_SCALE_WHEN_NOT_HOLDING
         end
         if self.remove_horizontal_speed_limit_time == 0.0 then
@@ -363,9 +362,6 @@ function Player:update()
     end
 
     if is_on_ground then
-        if self.velocity.y == 0 then
-            self.we_jumped_off_a_panda = false
-        end
         if not self.was_on_ground_last_frame then
             Effects.add(self.x, self.y, SPRITES.particle_effects.land)
         end
@@ -514,7 +510,6 @@ function Player:update()
 
             if looking_down then
                 self.velocity.y = PLAYER_JUMP_BY_HIT
-                self.we_jumped_off_a_panda = true
             end
 
             for _, panda in ipairs(hit_pandas) do
