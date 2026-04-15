@@ -14,6 +14,7 @@ function Camera:new(player)
 
         center_x = player.x + 8,
         center_y = player.y,
+        offset_y = 0,
         pan_x_velocity = 0.0,
         pan_y_velocity = 0.0,
 
@@ -139,7 +140,7 @@ function Camera:update()
     end
 
     self.x = self.center_x
-    self.y = self.center_y
+    self.y = self.center_y + self.offset_y
 
     self:trap_inside_borders(game.current_level.min_x, game.current_level.max_x, game.current_level.min_y, game.current_level.max_y)
 

@@ -206,6 +206,14 @@ function Player:update()
         self.jump_buffer_time = PLAYER_JUMP_BUFFER_TIME
     end
 
+    if looking_up then
+        game.camera.offset_y = -16 * 4
+    elseif looking_down then
+        game.camera.offset_y = 16 * 4
+    else
+        game.camera.offset_y = 0
+    end
+
     if attack_pressed and self.attack_cooldown == 0 then
         self.attack_buffer_time = PLAYER_ATTACK_BUFFER_TIME
         if not is_on_ground then
