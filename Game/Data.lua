@@ -796,12 +796,14 @@ function is_tile_solid(tile_id)
               tile_id == 81 or
               tile_id == 7 or
               tile_id == 6 or
-              tile_id >= 96 and tile_id <= 101 or
-              tile_id == 182 or
+              tile_id == 96 or tile_id == 101 or
         (table.contains(HOUSE_OUTSIDE_TILES, tile_id) and not table.contains(HOUSE_DOORS_OUTSIDE, tile_id)) or
         tile_id == 40 or tile_id == 56 or tile_id == 47 or tile_id == 63 or -- Внутренние стенки в доме
         24 <= tile_id and tile_id <= 31 -- Тайлы крыши дома
-        or 96 <= tile_id and tile_id <= 101
+end
+
+function is_tile_semi_solid(tile_id)
+    return tile_id == 97 or tile_id == 98 or tile_id == 99 or tile_id == 100 or tile_id == 182
 end
 
 -- function is_tile_water(tile_id)
