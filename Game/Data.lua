@@ -66,6 +66,7 @@ PLAYER_SPAWNPOINT_Y = 7*8                                     -- пиксели
 --
 PLAYER_MAX_HORIZONTAL_SPEED = 67.0                           -- пиксели / секунду
 PLAYER_MAX_FALL_SPEED = 200.0                                -- пиксели / секунду
+PLAYER_DROP_THROUGH_SPEED = PLAYER_MAX_FALL_SPEED           -- скорость проваливания сквозь полутвёрдую платформу
 PLAYER_HORIZONTAL_ACCELERATION = 900.0                       -- пиксели / (секунду*секунду)
 PLAYER_FRICTION = 12.0                                       -- не знаю, просто магическое число
 PLAYER_MIN_HORIZONTAL_VELOCITY = 4.0                         -- пиксели / секунду
