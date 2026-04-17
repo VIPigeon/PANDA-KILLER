@@ -50,7 +50,7 @@ Physics = {}
 -- Проверяет, что прямо под хитбоксом что-то есть
 function Physics.is_on_ground(rigidbody)
     local collision = Physics.check_collision_rect_tilemap(
-        rigidbody.hitbox:to_rect(rigidbody.x, rigidbody.y + 1)
+        rigidbody.hitbox:to_rect(rigidbody.x, rigidbody.y + 1), true
     )
     return collision ~= nil
 end
@@ -122,13 +122,14 @@ function Physics.move_y(rigidbody)
     -- Отсюда минус в этой формуле (В move_x такого нет)
     local next_y = rigidbody.y - rigidbody.velocity.y * Time.dt()
 
+    local flying_down = rigidbody.velocity.y < 0
+
     local rect_after_y_move = Rect.combine(
         Hitbox.to_rect(rigidbody.hitbox, rigidbody.x, rigidbody.y),
         Hitbox.to_rect(rigidbody.hitbox, rigidbody.x, next_y)
     )
-    local tilemap_collision = Physics.check_collision_rect_tilemap(rect_after_y_move)
+    local tilemap_collision = Physics.check_collision_rect_tilemap(rect_after_y_move, flying_down)
     if tilemap_collision ~= nil then
-        local flying_down = rigidbody.velocity.y < 0
         if flying_down then
             next_y = tilemap_collision.y - rigidbody.hitbox.height - rigidbody.hitbox.offset_y
         else
@@ -167,7 +168,7 @@ end
 
 -- TODO: Уверен, в будущем нужно будет возвращать не только самое первое
 -- столкновение, но вообще все столкновения, которые случились.
-function Physics.check_collision_rect_tilemap(rect)
+function Physics.check_collision_rect_tilemap(rect, include_semi_solid)
     assert(rect.w ~= 0)
     assert(rect.h ~= 0)
 
@@ -188,7 +189,7 @@ function Physics.check_collision_rect_tilemap(rect)
         while x <= x2 do
             local tile_id = mget(tile_x, tile_y)
 
-            if is_tile_solid(tile_id) then
+            if is_tile_solid(tile_id) or (include_semi_solid and is_tile_semi_solid(tile_id)) then
                 return {
                     x = 8 * tile_x,
                     y = 8 * tile_y,
@@ -205,15 +206,15 @@ function Physics.check_collision_rect_tilemap(rect)
         tile_x = x // 8
     end
 
-    if is_tile_solid(mget(tile_x2, tile_y1)) then
+    if is_tile_solid(mget(tile_x2, tile_y1)) or (include_semi_solid and is_tile_semi_solid(mget(tile_x2, tile_y1))) then
         return { x = 8 * tile_x2, y = 8 * tile_y1 }
     end
 
-    if is_tile_solid(mget(tile_x1, tile_y2)) then
+    if is_tile_solid(mget(tile_x1, tile_y2)) or (include_semi_solid and is_tile_semi_solid(mget(tile_x1, tile_y2))) then
         return { x = 8 * tile_x1, y = 8 * tile_y2 }
     end
 
-    if is_tile_solid(mget(tile_x2, tile_y2)) then
+    if is_tile_solid(mget(tile_x2, tile_y2)) or (include_semi_solid and is_tile_semi_solid(mget(tile_x2, tile_y2))) then
         return { x = 8 * tile_x2, y = 8 * tile_y2 }
     end
 
