@@ -128,7 +128,8 @@ function Physics.move_y(rigidbody)
         Hitbox.to_rect(rigidbody.hitbox, rigidbody.x, rigidbody.y),
         Hitbox.to_rect(rigidbody.hitbox, rigidbody.x, next_y)
     )
-    local tilemap_collision = Physics.check_collision_rect_tilemap(rect_after_y_move, flying_down)
+    local include_semi = flying_down and not rigidbody.drop_through_semi_solid
+    local tilemap_collision = Physics.check_collision_rect_tilemap(rect_after_y_move, include_semi)
     if tilemap_collision ~= nil then
         if flying_down then
             next_y = tilemap_collision.y - rigidbody.hitbox.height - rigidbody.hitbox.offset_y
