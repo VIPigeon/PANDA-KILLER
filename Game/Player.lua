@@ -213,19 +213,24 @@ function Player:update()
         game.camera.offset_y = 0
     end
 
-    local is_on_solid_below = Physics.check_collision_rect_tilemap(
-        self.hitbox:to_rect(self.x, self.y + 1)
-    ) ~= nil
-    local is_on_semi_solid_only = is_on_ground and not is_on_solid_below
-    if looking_down and is_on_semi_solid_only then
-        is_on_ground = false
-        if self.velocity.y >= 0 then
-            self.velocity.y = -PLAYER_DROP_THROUGH_SPEED
-        end
+    if looking_down then
         self.drop_through_semi_solid = true
     else
         self.drop_through_semi_solid = false
     end
+    --local is_on_solid_below = Physics.check_collision_rect_tilemap(
+    --    self.hitbox:to_rect(self.x, self.y + 1)
+    --) ~= nil
+    --local is_on_semi_solid_only = is_on_ground and not is_on_solid_below
+    --if looking_down and is_on_semi_solid_only then
+    --    is_on_ground = false
+    --    if self.velocity.y >= 0 then
+    --        self.velocity.y = -PLAYER_DROP_THROUGH_SPEED
+    --    end
+    --    self.drop_through_semi_solid = true
+    --else
+    --    self.drop_through_semi_solid = false
+    --end
 
     if attack_pressed and self.attack_cooldown == 0 then
         self.attack_buffer_time = PLAYER_ATTACK_BUFFER_TIME

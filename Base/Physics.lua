@@ -50,7 +50,7 @@ Physics = {}
 -- Проверяет, что прямо под хитбоксом что-то есть
 function Physics.is_on_ground(rigidbody)
     local collision = Physics.check_collision_rect_tilemap(
-        rigidbody.hitbox:to_rect(rigidbody.x, rigidbody.y + 1), true
+        rigidbody.hitbox:to_rect(rigidbody.x, rigidbody.y + 1), not rigidbody.drop_through_semi_solid
     )
     return collision ~= nil
 end
@@ -186,11 +186,15 @@ function Physics.check_collision_rect_tilemap(rect, include_semi_solid)
     local tile_x2 = x2 // 8
     local tile_y2 = y2 // 8
 
+    function check_semi_solid_tile(tile_id, y2, tile_y)
+        return include_semi_solid and is_tile_semi_solid(tile_id) and (y2 - 8*tile_y) <= 3
+    end
+
     while y <= y2 do
         while x <= x2 do
             local tile_id = mget(tile_x, tile_y)
 
-            if is_tile_solid(tile_id) or (include_semi_solid and is_tile_semi_solid(tile_id)) then
+            if is_tile_solid(tile_id) or check_semi_solid_tile(tile_id, y2, tile_y) then
                 return {
                     x = 8 * tile_x,
                     y = 8 * tile_y,
@@ -207,15 +211,15 @@ function Physics.check_collision_rect_tilemap(rect, include_semi_solid)
         tile_x = x // 8
     end
 
-    if is_tile_solid(mget(tile_x2, tile_y1)) or (include_semi_solid and is_tile_semi_solid(mget(tile_x2, tile_y1))) then
+    if is_tile_solid(mget(tile_x2, tile_y1)) or check_semi_solid_tile(mget(tile_x2, tile_y1), y2, tile_y1) then
         return { x = 8 * tile_x2, y = 8 * tile_y1 }
     end
 
-    if is_tile_solid(mget(tile_x1, tile_y2)) or (include_semi_solid and is_tile_semi_solid(mget(tile_x1, tile_y2))) then
+    if is_tile_solid(mget(tile_x1, tile_y2)) or check_semi_solid_tile(mget(tile_x1, tile_y2), y2, tile_y2) then
         return { x = 8 * tile_x1, y = 8 * tile_y2 }
     end
 
-    if is_tile_solid(mget(tile_x2, tile_y2)) or (include_semi_solid and is_tile_semi_solid(mget(tile_x2, tile_y2))) then
+    if is_tile_solid(mget(tile_x2, tile_y2)) or check_semi_solid_tile(mget(tile_x2, tile_y2), y2, tile_y2) then
         return { x = 8 * tile_x2, y = 8 * tile_y2 }
     end
 
