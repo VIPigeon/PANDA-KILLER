@@ -60,7 +60,6 @@ function Camera:trap_inside_borders(min_x, max_x, min_y, max_y)
         self.x = 8 * (max_x - camera_tile_width + 1)
     end
 
-
     local tile_y = math.floor(self.y / 8)
     local camera_tile_height = math.floor(SCREEN_HEIGHT / 16)
 
@@ -140,9 +139,11 @@ function Camera:update()
     end
 
     self.x = self.center_x
-    self.y = self.center_y + self.offset_y
+    self.y = self.center_y
 
     self:trap_inside_borders(game.current_level.min_x, game.current_level.max_x, game.current_level.min_y, game.current_level.max_y)
+
+    self.y = self.y + self.offset_y
 
     if self.shake_time_left > 0 then
         self.x = self.x + math.random_sign() * self.shake_magnitude

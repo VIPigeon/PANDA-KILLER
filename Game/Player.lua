@@ -206,9 +206,9 @@ function Player:update()
     end
 
     if looking_up then
-        game.camera.offset_y = -16 * 4
+        game.camera.offset_y = -1
     elseif looking_down then
-        game.camera.offset_y = 16 * 4
+        game.camera.offset_y = 1
     else
         game.camera.offset_y = 0
     end
