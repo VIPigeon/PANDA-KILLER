@@ -13,19 +13,19 @@ local maxstartsize = 2
 local minendsize = 0.5
 local maxendsize = 0.5
 
-local minstartvx = 1
-local maxstartvx = 3
+local minstartvx = 0.2
+local maxstartvx = 2
 local minstartvy = -3
 local maxstartvy = -2
 
 -- local default_blood_amount = 100
-local default_blood_amount = 5  -- censore
+local default_blood_amount = 4  -- censore
 
 -- local default_fur_amount = 20
-local default_fur_amount = 5  -- censore
+local default_fur_amount = 4  -- censore
 
 local fx = 0
-local fy = 0.15
+local fy = 0.4
 
 local zoneminx = 0
 local zonemaxx = 240
