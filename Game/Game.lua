@@ -351,6 +351,9 @@ function game.update()
         game.animate_tiles()
         Debug.draw()
 
+        -- Плейсхолдер счётчика HP
+        print("HP: " .. game.player.health, 2, 2, 6)
+
         if game.all_pandas_dead() then
             local char_width = 8
             local char_height = 5
