@@ -3,6 +3,7 @@ data = {}
 SKIP_CUTSCENE = true
 DISCLAIMER = false
 NEED_TO_KILL_ALL_PANDAS_ON_LEVEL = true
+GOD_MODE = false
 
 CLICKER_FIGHT_MODE = true
 

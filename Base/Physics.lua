@@ -55,6 +55,22 @@ function Physics.is_on_ground(rigidbody)
     return collision ~= nil
 end
 
+function Physics.is_on_semisolid(rigidbody)
+    local collision = Physics.check_collision_rect_tilemap(
+        rigidbody.hitbox:to_rect(rigidbody.x, rigidbody.y + 1), true
+    )
+
+    if collision ~= nil then
+        local tile_x = math.floor(collision.x / 8)
+        local tile_y = math.floor(collision.y / 8)
+        if is_tile_semi_solid(mget(tile_x, tile_y)) then
+            return true
+        end
+    end
+
+    return false
+end
+
 function Physics.update(rigidbody)
     local current_rect = Hitbox.to_rect(rigidbody.hitbox, rigidbody.x, rigidbody.y)
     local collision = Physics.check_collision_rect_tilemap(current_rect)

@@ -76,6 +76,9 @@ function Player:new()
         jump_up_cooldown = 0.0,
 
         time_before_showing_death_screen = 0.0,
+
+        drop_through_semi_solid = true,
+        drop_through_semi_solid_timer = 0.0,
     }
 
     setmetatable(object, self)
@@ -83,6 +86,10 @@ function Player:new()
 end
 
 function Player:die(kill_velocity_x, kill_velocity_y)
+    if GOD_MODE then
+        return
+    end
+
     if self.is_dead then
         return
     end
@@ -213,24 +220,12 @@ function Player:update()
         game.camera.offset_y = 0
     end
 
-    if looking_down then
-        self.drop_through_semi_solid = true
-    else
-        self.drop_through_semi_solid = false
+    local can_drop_through = (self.drop_through_semi_solid_timer > 0.0) or Physics.is_on_semisolid(self)
+    if can_drop_through and looking_down and is_held_down(CONTROLS.attack) then
+        self.drop_through_semi_solid_timer = 0.2  -- Хейт магических чисел overrated
+        attack_pressed = false                    -- Blasphemy
     end
-    --local is_on_solid_below = Physics.check_collision_rect_tilemap(
-    --    self.hitbox:to_rect(self.x, self.y + 1)
-    --) ~= nil
-    --local is_on_semi_solid_only = is_on_ground and not is_on_solid_below
-    --if looking_down and is_on_semi_solid_only then
-    --    is_on_ground = false
-    --    if self.velocity.y >= 0 then
-    --        self.velocity.y = -PLAYER_DROP_THROUGH_SPEED
-    --    end
-    --    self.drop_through_semi_solid = true
-    --else
-    --    self.drop_through_semi_solid = false
-    --end
+    self.drop_through_semi_solid = self.drop_through_semi_solid_timer > 0.0
 
     if attack_pressed and self.attack_cooldown == 0 then
         self.attack_buffer_time = PLAYER_ATTACK_BUFFER_TIME
@@ -645,6 +640,7 @@ function Player:update()
     self.attack_cooldown = Basic.tick_timer(self.attack_cooldown)
     self.downward_attack_time = Basic.tick_timer(self.downward_attack_time)
     self.jump_up_cooldown = Basic.tick_timer(self.jump_up_cooldown)
+    self.drop_through_semi_solid_timer = Basic.tick_timer(self.drop_through_semi_solid_timer)
     if self.velocity.x ~= 0 then
         self.time_we_have_been_running = self.time_we_have_been_running + Time.dt()
     else
