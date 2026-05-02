@@ -58,6 +58,9 @@ function Player:new()
         is_dead = false,
         hide = false,  -- Когда игрок садится на байк, его надо прятать
 
+        health = PLAYER_MAX_HEALTH,
+        invulnerability_time = 0.0,
+
         -- Это для анимаций. Как по другому, я не придумал 😜
         has_attacked_in_air = false,
         has_attacked_downward = false,
@@ -83,6 +86,26 @@ function Player:new()
 
     setmetatable(object, self)
     return object
+end
+
+function Player:take_damage(hit_x, hit_y)
+    if self.is_dead or self.invulnerability_time > 0 then
+        return
+    end
+
+    hit_x = hit_x or 0
+    hit_y = hit_y or 0
+
+    self.health = self.health - 1
+
+    if self.health <= 0 then
+        self:die(hit_x, hit_y)
+        return
+    end
+
+    self.invulnerability_time = PLAYER_INVULNERABILITY_DURATION
+    self.velocity.x = PLAYER_DAMAGE_KNOCKBACK_HORIZONTAL * math.sign(hit_x)
+    self.velocity.y = PLAYER_DAMAGE_KNOCKBACK_VERTICAL
 end
 
 function Player:die(kill_velocity_x, kill_velocity_y)
@@ -641,6 +664,7 @@ function Player:update()
     self.downward_attack_time = Basic.tick_timer(self.downward_attack_time)
     self.jump_up_cooldown = Basic.tick_timer(self.jump_up_cooldown)
     self.drop_through_semi_solid_timer = Basic.tick_timer(self.drop_through_semi_solid_timer)
+    self.invulnerability_time = Basic.tick_timer(self.invulnerability_time)
     if self.velocity.x ~= 0 then
         self.time_we_have_been_running = self.time_we_have_been_running + Time.dt()
     else
@@ -657,7 +681,15 @@ function Player:draw()
 
     local tx, ty = game.camera:transform_coordinates(self.x, self.y)
 
-    self.animation_controller:draw(tx, ty, flip)
+    -- Мигание во время неуязвимости
+    local visible = true
+    if self.invulnerability_time > 0 then
+        visible = math.floor(self.invulnerability_time / PLAYER_INVULNERABILITY_BLINK_PERIOD) % 2 == 0
+    end
+
+    if visible then
+        self.animation_controller:draw(tx, ty, flip)
+    end
     self.animation_controller:next_frame()
 
     if self.attack_effect_time > 0 then

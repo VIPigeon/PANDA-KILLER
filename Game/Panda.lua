@@ -124,6 +124,7 @@ end
 function Panda:die()
     Basic.play_sound(SOUNDS.PANDA_DEAD)
     table.remove_element(game.current_level.pandas, self)
+    game.on_panda_killed()
 end
 
 function Panda:moving_at_high_speed()
@@ -507,9 +508,9 @@ function Panda:update()
                     --end, 20)
 
                     if Physics.check_collision_rect_rect(our_rect, player_rect) then
-                        player:die(self.look_direction, 0)
+                        player:take_damage(self.look_direction, 0)
                     elseif Physics.check_collision_rect_rect(attack_rect, player_rect) then
-                        player:die(self.look_direction, 0)
+                        player:take_damage(self.look_direction, 0)
                     end
 
                     Basic.play_sound(SOUNDS.PANDA_BASIC_ATTACK)
@@ -562,9 +563,9 @@ function Panda:update()
                 --end)
 
                 if Physics.check_collision_rect_rect(our_rect, player_rect) then
-                    player:die(self.look_direction, 0)
+                    player:take_damage(self.look_direction, 0)
                 elseif Physics.check_collision_rect_rect(attack_rect, player_rect) then
-                    player:die(self.look_direction, 0)
+                    player:take_damage(self.look_direction, 0)
                 end
 
                 self.basic_attack_time_left = Basic.tick_timer(self.basic_attack_time_left)
@@ -576,7 +577,7 @@ function Panda:update()
         end
 
         if Physics.check_collision_rect_rect(our_rect, player_rect) then
-            game.player:die(self.velocity.x, self.velocity.y)
+            game.player:take_damage(self.velocity.x, self.velocity.y)
         end
 
         self.dash_time_left = Basic.tick_timer(self.dash_time_left)
