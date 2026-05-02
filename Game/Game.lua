@@ -175,6 +175,35 @@ function game.load_current_level()
     game.player.x = level.player_x
     game.player.y = level.player_y
     game.camera:set_position(game.player.x, game.player.y)
+    game.kill_count           = 0
+    game.kill_timer           = 0.0
+    game.kill_shake_time_left = 0.0
+    game.kill_shake_offset_x  = 0.0
+    game.kill_shake_offset_y  = 0.0
+end
+
+function game.on_panda_killed()
+    game.kill_count = game.kill_count + 1
+    game.kill_timer = KILL_COUNTER_RESET_TIME
+    game.kill_shake_time_left = KILL_COUNTER_SHAKE_DURATION
+end
+
+function game.update_kill_counter()
+    if game.kill_timer > 0.0 then
+        game.kill_timer = Basic.tick_timer(game.kill_timer)
+        if game.kill_timer == 0.0 then
+            game.kill_count = 0
+        end
+    end
+
+    if game.kill_shake_time_left > 0.0 then
+        game.kill_shake_offset_x = math.random_sign() * KILL_COUNTER_SHAKE_MAGNITUDE
+        game.kill_shake_offset_y = math.random_sign() * KILL_COUNTER_SHAKE_MAGNITUDE
+        game.kill_shake_time_left = Basic.tick_timer(game.kill_shake_time_left)
+    else
+        game.kill_shake_offset_x = 0.0
+        game.kill_shake_offset_y = 0.0
+    end
 end
 
 function game.restart()
@@ -194,6 +223,12 @@ function game.restart()
     -- TriggerTiles.add(TriggerTile:new(24,88,8,8, TriggerActions.dialogue))
     game.bike = Bike:new(190*8, 12*8)
     table.insert(game.triggers, game.bike)
+
+    game.kill_count           = 0
+    game.kill_timer           = 0.0
+    game.kill_shake_time_left = 0.0
+    game.kill_shake_offset_x  = 0.0
+    game.kill_shake_offset_y  = 0.0
 
     if SKIP_CUTSCENE then
         game.state = GAME_STATE_GAMEPLAY
@@ -317,6 +352,7 @@ function game.update()
             panda:update()
         end
         game.parallaxscrolling:update()
+        game.update_kill_counter()
 
         if game.player.x >= game.cur_level.tile_x2 * 8 and not game.all_pandas_dead() then
             game.player.x = game.cur_level.tile_x2 * 8 - 1
@@ -353,6 +389,20 @@ function game.update()
 
         -- Плейсхолдер счётчика HP
         print("HP: " .. game.player.health, 2, 2, 6)
+
+        -- Счётчик убийств подряд (правый верхний угол)
+        if game.kill_count > 0 then
+            local kill_text = "x" .. game.kill_count
+            local kx = SCREEN_WIDTH - 20 + game.kill_shake_offset_x
+            local ky = 2 + game.kill_shake_offset_y
+            local should_draw = true
+            if game.kill_timer > 0.0 and game.kill_timer < KILL_COUNTER_BLINK_THRESHOLD then
+                should_draw = math.floor(game.kill_timer / KILL_COUNTER_BLINK_PERIOD) % 2 == 0
+            end
+            if should_draw then
+                print(kill_text, kx, ky, 6)
+            end
+        end
 
         if game.all_pandas_dead() then
             local char_width = 8

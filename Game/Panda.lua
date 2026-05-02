@@ -124,6 +124,7 @@ end
 function Panda:die()
     Basic.play_sound(SOUNDS.PANDA_DEAD)
     table.remove_element(game.current_level.pandas, self)
+    game.on_panda_killed()
 end
 
 function Panda:moving_at_high_speed()
